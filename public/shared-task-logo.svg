@@ -1,0 +1,13 @@
+<svg width="200" height="48" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blue checklist icon -->
+  <rect x="8" y="6" width="32" height="36" rx="6" fill="none" stroke="#2563eb" stroke-width="2"/>
+  
+  <!-- First checkmark -->
+  <path d="M16 20l4 4 8-8" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Second checkmark -->
+  <path d="M16 30l4 4 8-8" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- SharedTask text -->
+  <text x="50" y="30" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#2563eb">SharedTask</text>
+</svg>
