@@ -1,5 +1,4 @@
 // Performance Monitoring for SharedTask
-"use client"
 
 interface PerformanceMetrics {
   requestCount: number
@@ -36,6 +35,8 @@ class PerformanceMonitor {
   }
 
   private trackNavigationTiming() {
+    if (typeof window === 'undefined') return
+    
     window.addEventListener('load', () => {
       setTimeout(() => {
         const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
@@ -58,6 +59,8 @@ class PerformanceMonitor {
   }
 
   private setupResourceObserver() {
+    if (typeof window === 'undefined') return
+    
     this.observer = new PerformanceObserver((list) => {
       const entries = list.getEntries()
       const excessiveRequests = entries.filter(entry => 
@@ -74,6 +77,8 @@ class PerformanceMonitor {
   }
 
   private trackNetworkRequests() {
+    if (typeof window === 'undefined') return
+    
     let requestCount = 0
     const originalFetch = window.fetch
     
@@ -105,6 +110,8 @@ class PerformanceMonitor {
   }
 
   private calculateTotalTransferred(): number {
+    if (typeof window === 'undefined') return 0
+    
     const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[]
     return resources.reduce((total, resource) => {
       return total + (resource.transferSize || 0)

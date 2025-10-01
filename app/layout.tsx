@@ -4,7 +4,6 @@ import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/components/providers'
 import QueryProvider from '@/components/query-provider'
-import { performanceMonitor } from '@/lib/performance-monitor'
 import './globals.css'
 
 export const metadata: Metadata = {

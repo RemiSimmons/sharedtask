@@ -383,6 +383,45 @@ export interface Database {
           }
         ]
       }
+      application_logs: {
+        Row: {
+          id: string
+          timestamp: string
+          level: string
+          category: string
+          message: string
+          context: Json
+          environment: string
+          service: string
+          version: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          timestamp?: string
+          level: string
+          category: string
+          message: string
+          context?: Json
+          environment?: string
+          service?: string
+          version?: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          timestamp?: string
+          level?: string
+          category?: string
+          message?: string
+          context?: Json
+          environment?: string
+          service?: string
+          version?: string
+          created_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -408,6 +447,7 @@ export type TaskComment = Database['public']['Tables']['task_comments']['Row']
 export type UserSubscription = Database['public']['Tables']['user_subscriptions']['Row']
 export type UserTrial = Database['public']['Tables']['user_trials']['Row']
 export type EmailLog = Database['public']['Tables']['email_logs']['Row']
+export type ApplicationLog = Database['public']['Tables']['application_logs']['Row']
 
 export type InsertUser = Database['public']['Tables']['users']['Insert']
 export type InsertProject = Database['public']['Tables']['projects']['Insert']
@@ -417,6 +457,7 @@ export type InsertTaskComment = Database['public']['Tables']['task_comments']['I
 export type InsertUserSubscription = Database['public']['Tables']['user_subscriptions']['Insert']
 export type InsertUserTrial = Database['public']['Tables']['user_trials']['Insert']
 export type InsertEmailLog = Database['public']['Tables']['email_logs']['Insert']
+export type InsertApplicationLog = Database['public']['Tables']['application_logs']['Insert']
 
 export type UpdateUser = Database['public']['Tables']['users']['Update']
 export type UpdateProject = Database['public']['Tables']['projects']['Update']
@@ -426,6 +467,7 @@ export type UpdateTaskComment = Database['public']['Tables']['task_comments']['U
 export type UpdateUserSubscription = Database['public']['Tables']['user_subscriptions']['Update']
 export type UpdateUserTrial = Database['public']['Tables']['user_trials']['Update']
 export type UpdateEmailLog = Database['public']['Tables']['email_logs']['Update']
+export type UpdateApplicationLog = Database['public']['Tables']['application_logs']['Update']
 
 // Subscription and trial status types
 export type SubscriptionStatus = 'active' | 'incomplete' | 'incomplete_expired' | 'trialing' | 'past_due' | 'canceled' | 'unpaid'

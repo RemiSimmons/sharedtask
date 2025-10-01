@@ -27,14 +27,8 @@ const nextConfig = {
   compress: true,
   // Production optimizations
   experimental: {
-    // Enable optimizations for production builds
-    optimizePackageImports: process.env.NODE_ENV === 'production' ? [
-      '@radix-ui/react-icons', 
-      'lucide-react',
-      '@tanstack/react-query',
-      'recharts',
-      'next-auth'
-    ] : [],
+    // Disable optimizePackageImports temporarily to avoid SSR issues
+    // optimizePackageImports: [],
   },
   // Webpack optimizations
   webpack: (config, { isServer }) => {
@@ -50,22 +44,22 @@ const nextConfig = {
     }
     
     // Simplified webpack optimization - avoid conflicts in development
-    if (process.env.NODE_ENV === 'production') {
-      // Only apply complex optimizations in production
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-            },
-          },
-        },
-      }
-    }
+    // Disabled splitChunks temporarily to avoid SSR issues
+    // if (process.env.NODE_ENV === 'production') {
+    //   config.optimization = {
+    //     ...config.optimization,
+    //     splitChunks: {
+    //       chunks: 'all',
+    //       cacheGroups: {
+    //         vendor: {
+    //           test: /[\\/]node_modules[\\/]/,
+    //           name: 'vendors',
+    //           chunks: 'all',
+    //         },
+    //       },
+    //     },
+    //   }
+    // }
     
     return config
   },

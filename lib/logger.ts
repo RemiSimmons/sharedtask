@@ -42,6 +42,7 @@ export interface LogContext {
   
   // Custom metadata
   metadata?: Record<string, any>
+  intervalMs?: number
 }
 
 export interface LogEntry {

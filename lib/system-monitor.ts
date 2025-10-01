@@ -189,7 +189,7 @@ class SystemMonitor {
   private async getCpuStats(): Promise<SystemHealth['cpu']> {
     try {
       // Get load average (Unix-like systems)
-      const loadAverage = typeof process.loadavg === 'function' ? process.loadavg() : [0, 0, 0]
+      const loadAverage = typeof (process as any).loadavg === 'function' ? (process as any).loadavg() : [0, 0, 0]
       
       // Estimate CPU percentage based on load average
       const cpuCount = typeof process.env.CPU_COUNT !== 'undefined' ? parseInt(process.env.CPU_COUNT) : 1
@@ -372,8 +372,9 @@ class SystemMonitor {
 
       // Process logs to calculate endpoint stats
       logs?.forEach(log => {
-        const endpoint = log.context?.endpoint || 'unknown'
-        const method = log.context?.method || 'GET'
+        const context = log.context as any
+        const endpoint = context?.endpoint || 'unknown'
+        const method = context?.method || 'GET'
         const key = `${method} ${endpoint}`
         
         if (!endpointStats.has(key)) {
@@ -387,7 +388,7 @@ class SystemMonitor {
 
         const stats = endpointStats.get(key)!
         stats.totalRequests++
-        stats.totalResponseTime += log.context?.responseTime || 0
+        stats.totalResponseTime += context?.responseTime || 0
         stats.lastChecked = log.timestamp
 
         if (log.level === 'error') {
