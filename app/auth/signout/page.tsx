@@ -9,8 +9,17 @@ export default function SignOutPage() {
 
   useEffect(() => {
     const handleSignOut = async () => {
-      await signOut({ redirect: false })
-      router.push('/')
+      try {
+        await signOut({ 
+          redirect: false,
+          callbackUrl: window.location.origin + '/'
+        })
+        router.push('/')
+      } catch (error) {
+        console.error('Sign out error:', error)
+        // Fallback: clear session and redirect
+        router.push('/')
+      }
     }
     
     handleSignOut()
