@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   // Check if user is authenticated and is admin
   const session = await auth()
   
-  if (!session || !isAdminUser(session.user)) {
+  if (!session || !session.user?.email || !isAdminUser(session.user)) {
     await AuditLogger.logAuthAction(
       session?.user?.email || 'unknown',
       'access_denied',
@@ -25,31 +25,31 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'export_users':
-        return await exportUsers(session.user.email, request)
+        return await exportUsers(session.user!.email!, request)
       
       case 'export_projects':
-        return await exportProjects(session.user.email, request)
+        return await exportProjects(session.user!.email!, request)
       
       case 'clear_cache':
-        return await clearCache(session.user.email, request)
+        return await clearCache(session.user!.email!, request)
       
       case 'system_health':
-        return await getSystemHealth(session.user.email, request)
+        return await getSystemHealth(session.user!.email!, request)
       
       case 'verify_user':
-        return await verifyUser(params?.userId, session.user.email, request)
+        return await verifyUser(params?.userId, session.user!.email!, request)
       
       case 'suspend_user':
-        return await suspendUser(params?.userId, session.user.email, request)
+        return await suspendUser(params?.userId, session.user!.email!, request)
       
       case 'activate_user':
-        return await activateUser(params?.userId, session.user.email, request)
+        return await activateUser(params?.userId, session.user!.email!, request)
       
       case 'reset_user_password':
-        return await resetUserPassword(params?.userId, session.user.email, request)
+        return await resetUserPassword(params?.userId, session.user!.email!, request)
       
       case 'delete_user':
-        return await deleteUser(params?.userId, session.user.email, request)
+        return await deleteUser(params?.userId, session.user!.email!, request)
       
       default:
         return NextResponse.json(

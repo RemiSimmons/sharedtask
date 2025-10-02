@@ -218,7 +218,7 @@ export async function getClientSubscriptionState(userId: string): Promise<Client
       trialDaysRemaining: subscriptionState.trialDaysRemaining,
       trialEndsAt: subscriptionState.trial?.ends_at,
       subscriptionStatus: subscriptionState.subscription?.status,
-      subscriptionId: subscriptionState.subscription?.stripe_subscription_id
+      subscriptionId: subscriptionState.subscription?.stripe_subscription_id || undefined
     }
   } catch (error) {
     console.error('Error getting client subscription state:', error)

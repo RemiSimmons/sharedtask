@@ -66,8 +66,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Subscription canceled successfully',
-      endsAt: canceledSubscription.current_period_end
+      message: 'Subscription canceled successfully'
     })
 
   } catch (error) {
