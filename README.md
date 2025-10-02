@@ -219,3 +219,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 Built with ❤️ using Next.js, Supabase, and Stripe
+# Trigger redeploy to pick up webhook secret
