@@ -201,6 +201,7 @@ export interface ClientSubscriptionState {
   trialDaysRemaining?: number
   trialEndsAt?: string
   subscriptionStatus?: string
+  subscriptionId?: string
 }
 
 export async function getClientSubscriptionState(userId: string): Promise<ClientSubscriptionState> {
@@ -216,7 +217,8 @@ export async function getClientSubscriptionState(userId: string): Promise<Client
       interval: subscriptionState.interval,
       trialDaysRemaining: subscriptionState.trialDaysRemaining,
       trialEndsAt: subscriptionState.trial?.ends_at,
-      subscriptionStatus: subscriptionState.subscription?.status
+      subscriptionStatus: subscriptionState.subscription?.status,
+      subscriptionId: subscriptionState.subscription?.stripe_subscription_id
     }
   } catch (error) {
     console.error('Error getting client subscription state:', error)

@@ -259,10 +259,10 @@ export default function BillingPage() {
             )}
 
             {/* Cancel Subscription */}
-            {subscriptionState?.hasActiveSubscription && subscriptionState?.currentSubscription && (
+            {subscriptionState?.hasActiveSubscription && subscriptionState?.subscriptionId && (
               <CancelSubscription
-                subscriptionId={subscriptionState.currentSubscription.stripe_subscription_id}
-                plan={subscriptionState.currentPlan || 'Unknown'}
+                subscriptionId={subscriptionState.subscriptionId}
+                plan={subscriptionState.plan || 'Unknown'}
                 onCancel={() => {
                   refreshSubscriptionState()
                 }}
