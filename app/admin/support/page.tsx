@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import AppHeader from "@/components/app-header"
+import { isAdminUser } from "@/lib/admin"
 import SupportReplyForm from "@/components/support-reply-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,6 +20,21 @@ export default function SupportPage() {
     originalSubject: '',
     ticketId: ''
   })
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push('/auth/signin')
+      return
+    }
+
+    if (status === "authenticated") {
+      // Check if user has admin access
+      if (!isAdminUser(session?.user)) {
+        router.push('/')
+        return
+      }
+    }
+  }, [status, router, session])
 
   if (status === "loading") {
     return (
@@ -44,6 +60,12 @@ export default function SupportPage() {
 
   if (status === "unauthenticated") {
     router.push('/auth/signin')
+    return null
+  }
+
+  // Redirect non-admin users
+  if (status === "authenticated" && !isAdminUser(session?.user)) {
+    router.push('/')
     return null
   }
 

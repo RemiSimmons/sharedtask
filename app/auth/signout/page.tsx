@@ -14,11 +14,14 @@ export default function SignOutPage() {
           redirect: false,
           callbackUrl: window.location.origin + '/'
         })
-        router.push('/')
+        // Force a hard redirect to clear all state
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 100)
       } catch (error) {
         console.error('Sign out error:', error)
         // Fallback: clear session and redirect
-        router.push('/')
+        window.location.href = '/'
       }
     }
     

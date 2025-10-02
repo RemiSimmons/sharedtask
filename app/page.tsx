@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { isAdminUser } from "@/lib/admin"
 
 function LandingPageContent() {
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -265,7 +266,15 @@ function LandingPageContent() {
   )
 
   // Render authenticated user view
-  const renderAuthenticatedView = () => (
+  const renderAuthenticatedView = () => {
+    // Debug: Log current user info
+    console.log('Current user session:', {
+      name: session?.user?.name,
+      email: session?.user?.email,
+      isAdmin: isAdminUser(session?.user)
+    })
+    
+    return (
     <div className="min-h-screen p-6 md:p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
@@ -279,7 +288,13 @@ function LandingPageContent() {
           <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
             {session?.user?.name ? `Welcome back, ${session.user.name}!` : `Hi ${session?.user?.email}!`} Ready to manage your projects?
           </p>
+          {/* Debug info - remove in production */}
+          <div className="text-sm text-gray-500 bg-gray-100 p-2 rounded">
+            Debug: Signed in as {session?.user?.email} ({session?.user?.name}) - Admin: {isAdminUser(session?.user) ? 'Yes' : 'No'}
+          </div>
         </div>
+    )
+  }
 
         {/* Action Options for Authenticated Users */}
         <div className="grid gap-8 max-w-2xl mx-auto">
@@ -302,24 +317,44 @@ function LandingPageContent() {
             </button>
           </div>
 
-          {/* Access Admin Dashboard */}
-          <div className="card-form p-8 text-center hover-lift">
-            <div className="w-20 h-20 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-6">
-              <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
+          {/* Dashboard Access - Different for Admin vs Regular Users */}
+          {isAdminUser(session?.user) ? (
+            <div className="card-form p-8 text-center hover-lift">
+              <div className="w-20 h-20 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">⚙️ Admin Dashboard</h2>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                View and manage all projects, access support center, and monitor system operations.
+              </p>
+              <button
+                onClick={() => router.push('/admin')}
+                className="w-full btn-secondary text-lg py-4 border-2 border-blue-200 hover:border-blue-300 transition-all duration-300"
+              >
+                🔧 Go to Admin Dashboard
+              </button>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">⚙️ Admin Dashboard</h2>
-            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-              View and manage all your existing projects in one place.
-            </p>
-            <button
-              onClick={() => router.push('/admin')}
-              className="w-full btn-secondary text-lg py-4 border-2 border-blue-200 hover:border-blue-300 transition-all duration-300"
-            >
-              🔧 Go to Dashboard
-            </button>
-          </div>
+          ) : (
+            <div className="card-form p-8 text-center hover-lift">
+              <div className="w-20 h-20 mx-auto bg-purple-100 rounded-full flex items-center justify-center mb-6">
+                <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">👤 My Account</h2>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Manage your account settings, view your projects, and access billing information.
+              </p>
+              <button
+                onClick={() => router.push('/account')}
+                className="w-full btn-secondary text-lg py-4 border-2 border-purple-200 hover:border-purple-300 transition-all duration-300"
+              >
+                📋 View My Account
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Sign Out and Support Options */}

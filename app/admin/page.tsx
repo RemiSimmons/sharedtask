@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import AppHeader from "@/components/app-header"
+import { isAdminUser } from "@/lib/admin"
 
 interface Project {
   id: string
@@ -30,9 +31,22 @@ export default function AdminDashboard() {
     }
 
     if (status === "authenticated") {
+      // Debug: Log user info
+      console.log('Admin page access attempt:', {
+        email: session?.user?.email,
+        isAdmin: isAdminUser(session?.user),
+        user: session?.user
+      })
+      
+      // Check if user has admin access
+      if (!isAdminUser(session?.user)) {
+        console.log('Non-admin user redirected from admin page:', session?.user?.email)
+        router.push('/')
+        return
+      }
       loadProjects()
     }
-  }, [status, router])
+  }, [status, router, session])
 
   const loadProjects = async () => {
     try {
@@ -76,6 +90,11 @@ export default function AdminDashboard() {
   }
 
   if (status === "unauthenticated") {
+    return null // Will redirect
+  }
+
+  // Redirect non-admin users
+  if (status === "authenticated" && !isAdminUser(session?.user)) {
     return null // Will redirect
   }
 

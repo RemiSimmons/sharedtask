@@ -35,8 +35,15 @@ export default function SignInPage() {
         return
       }
 
-      // Redirect to admin dashboard
-      router.push('/admin')
+      if (result?.ok) {
+        // Force a small delay to ensure session is properly set
+        setTimeout(() => {
+          // Redirect to home page for all users
+          window.location.href = '/'
+        }, 100)
+      } else {
+        setError('Sign in failed. Please try again.')
+      }
     } catch (error) {
       console.error('Sign in error:', error)
       setError('Something went wrong. Please try again.')

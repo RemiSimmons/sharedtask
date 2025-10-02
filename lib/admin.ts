@@ -9,6 +9,7 @@ const ADMIN_EMAILS = [
   'contact@remisimmons.com'  // Your current admin email
   // Add more admin emails here as needed
   // 'manager@example.com'
+  // Note: 'Aderemis@gmail.com' is NOT an admin - regular user only
 ]
 
 /**
