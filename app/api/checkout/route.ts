@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     // Check if user already has an active subscription to prevent duplicates
     if (subscriptionState.hasActiveSubscription) {
       return NextResponse.json(
-        { error: `You already have an active ${subscriptionState.currentPlan} subscription. Please cancel your current subscription before subscribing to a new plan, or contact support for plan changes.` },
+        { error: `You already have an active ${subscriptionState.plan} subscription. Please cancel your current subscription before subscribing to a new plan, or contact support for plan changes.` },
         { status: 400 }
       )
     }
