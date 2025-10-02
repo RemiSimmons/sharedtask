@@ -89,8 +89,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle paid subscription (Stripe checkout)
-    // Note: We allow users to subscribe even if they have active subscriptions or trials
-    // This provides flexibility for plan changes, upgrades, or multiple subscriptions
+    // Check if user already has an active subscription to prevent duplicates
+    if (subscriptionState.hasActiveSubscription) {
+      return NextResponse.json(
+        { error: `You already have an active ${subscriptionState.currentPlan} subscription. Please cancel your current subscription before subscribing to a new plan, or contact support for plan changes.` },
+        { status: 400 }
+      )
+    }
 
     // Get price ID for Stripe checkout
     const priceId = getPriceId(plan, billing)

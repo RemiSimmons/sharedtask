@@ -260,7 +260,7 @@ export default function SupportPage() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900">Email Support</p>
-                    <p className="text-gray-600">contact@remisimmons.com</p>
+                    <p className="text-gray-600">support@sharedtask.ai</p>
                   </div>
                 </div>
 

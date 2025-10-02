@@ -67,7 +67,7 @@ function PricingContent() {
         '"Powered by SharedTask" footer'
       ],
       cta: 'Start Free Trial',
-      popular: true,
+      popular: false,
       color: 'blue'
     },
     {
@@ -479,11 +479,11 @@ function PricingContent() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
-                onClick={() => handlePlanSelect('pro')}
+                onClick={() => handlePlanSelect('basic')}
                 disabled={loading}
                 className="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {actionType === 'trial' ? 'Start Free Trial' : 'Subscribe Now'}
+                {actionType === 'trial' ? 'Start Basic Trial' : 'Subscribe to Basic'}
               </button>
               <button
                 onClick={() => router.push('/demo')}

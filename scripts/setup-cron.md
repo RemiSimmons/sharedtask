@@ -11,8 +11,8 @@ Add these to your `.env.local` file:
 CRON_SECRET=your-secure-random-string-here
 
 # Email configuration (for production)
-EMAIL_FROM="SharedTask <noreply@sharedtask.com>"
-EMAIL_REPLY_TO="support@sharedtask.com"
+EMAIL_FROM="SharedTask <support@sharedtask.ai>"
+EMAIL_REPLY_TO="support@sharedtask.ai"
 NEXT_PUBLIC_APP_URL="https://your-domain.com"
 
 # Email service API key (replace with your provider)

@@ -143,7 +143,7 @@ function TrialWelcomeContent() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500">
-          <p>Questions? Contact us at <a href="mailto:support@sharedtask.com" className="text-blue-600 hover:underline">support@sharedtask.com</a></p>
+          <p>Questions? Contact us at <a href="mailto:support@sharedtask.ai" className="text-blue-600 hover:underline">support@sharedtask.ai</a></p>
         </div>
       </div>
     </div>

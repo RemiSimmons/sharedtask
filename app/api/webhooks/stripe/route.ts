@@ -107,10 +107,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
     if (user && subscription.status === 'active') {
       // Send welcome email
-      await sendSubscriptionWelcomeEmail(user, {
-        plan: subscription.metadata.plan || 'basic',
-        interval: subscription.items.data[0]?.price.recurring?.interval || 'monthly'
-      })
+      console.log('🎯 Attempting to send welcome email to:', user.email)
+      try {
+        await sendSubscriptionWelcomeEmail(user, {
+          plan: subscription.metadata.plan || 'basic',
+          interval: subscription.items.data[0]?.price.recurring?.interval || 'monthly'
+        })
+        console.log('✅ Welcome email sent successfully to:', user.email)
+      } catch (emailError) {
+        console.error('❌ Failed to send welcome email:', emailError)
+      }
+    } else {
+      console.log('⚠️ Skipping welcome email - user:', !!user, 'status:', subscription.status)
     }
 
     console.log('✅ Successfully processed checkout session:', session.id)

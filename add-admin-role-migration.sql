@@ -59,3 +59,5 @@ GRANT ALL ON admin_access_logs TO service_role;
 COMMENT ON TABLE admin_access_logs IS 'Logs all admin actions for security auditing';
 COMMENT ON COLUMN users.role IS 'User role: user, admin, or super_admin';
 
+
+

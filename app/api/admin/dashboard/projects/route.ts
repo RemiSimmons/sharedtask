@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { auth } from '@/lib/auth'
+import { isAdminUser } from '@/lib/admin'
 
 export async function GET() {
   // Check if user is authenticated and is admin
   const session = await auth()
   
-  if (!session || session.user?.email !== 'contact@remisimmons.com') {
+  if (!session || !isAdminUser(session.user)) {
     return NextResponse.json(
       { error: 'Unauthorized - Admin access required' },
       { status: 403 }

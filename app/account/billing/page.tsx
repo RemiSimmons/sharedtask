@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useSubscription, useFeatureFlags } from '@/hooks/use-subscription'
+import CancelSubscription from '@/components/cancel-subscription'
 
 export default function BillingPage() {
   const router = useRouter()
@@ -255,6 +256,17 @@ export default function BillingPage() {
                   View Plans
                 </button>
               </div>
+            )}
+
+            {/* Cancel Subscription */}
+            {subscriptionState?.hasActiveSubscription && subscriptionState?.currentSubscription && (
+              <CancelSubscription
+                subscriptionId={subscriptionState.currentSubscription.stripe_subscription_id}
+                plan={subscriptionState.currentPlan || 'Unknown'}
+                onCancel={() => {
+                  refreshSubscriptionState()
+                }}
+              />
             )}
           </div>
         </div>

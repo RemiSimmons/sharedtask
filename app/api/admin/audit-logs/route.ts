@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { AuditLogger } from '@/lib/audit-logger'
+import { isAdminUser } from '@/lib/admin'
 
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     
-    if (!session?.user?.email || session.user.email !== 'contact@remisimmons.com') {
+    if (!session?.user?.email || !isAdminUser(session.user)) {
       await AuditLogger.logAuthAction(
         session?.user?.email || 'unknown',
         'access_denied',
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     
-    if (!session?.user?.email || session.user.email !== 'contact@remisimmons.com') {
+    if (!session?.user?.email || !isAdminUser(session.user)) {
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 })
     }
 

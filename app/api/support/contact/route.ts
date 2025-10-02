@@ -106,8 +106,8 @@ export async function POST(request: NextRequest) {
     try {
       // Send notification email to support team
       const supportEmailResponse = await resend.emails.send({
-        from: process.env.EMAIL_FROM || 'SharedTask Support <contact@remisimmons.com>',
-        to: [process.env.EMAIL_REPLY_TO || 'contact@remisimmons.com'],
+        from: process.env.EMAIL_FROM || 'SharedTask Support <support@sharedtask.ai>',
+        to: [process.env.EMAIL_REPLY_TO || 'support@sharedtask.ai'],
         subject: `${config.emoji} Support Request: ${sanitizedSubject} [${ticketId}]`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
 
       // Send confirmation email to user
       const userEmailResponse = await resend.emails.send({
-        from: process.env.EMAIL_FROM || 'SharedTask Support <contact@remisimmons.com>',
+        from: process.env.EMAIL_FROM || 'SharedTask Support <support@sharedtask.ai>',
         to: [sanitizedEmail],
         subject: `Support Request Received - ${ticketId}`,
         html: `

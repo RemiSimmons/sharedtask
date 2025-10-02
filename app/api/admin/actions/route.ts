@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { auth } from '@/lib/auth'
 import { AuditLogger } from '@/lib/audit-logger'
+import { isAdminUser } from '@/lib/admin'
 
 export async function POST(request: NextRequest) {
   // Check if user is authenticated and is admin
   const session = await auth()
   
-  if (!session || session.user?.email !== 'contact@remisimmons.com') {
+  if (!session || !isAdminUser(session.user)) {
     await AuditLogger.logAuthAction(
       session?.user?.email || 'unknown',
       'access_denied',

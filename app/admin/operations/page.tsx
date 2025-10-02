@@ -95,7 +95,7 @@ export default function WebsiteOperationsDashboard() {
 
     if (status === "authenticated") {
       // Check if user is admin
-      if (session?.user?.email !== 'contact@remisimmons.com') {
+      if (session?.user?.email !== 'admin@sharedtask.ai') {
         router.push('/admin') // Redirect non-admin users to regular admin page
         return
       }
@@ -1159,7 +1159,7 @@ export default function WebsiteOperationsDashboard() {
                           <td className="py-3 px-4">
                             {(() => {
                               const isSuspended = (user as any).reset_token === 'SUSPENDED'
-                              const isCurrentAdmin = user.email === 'contact@remisimmons.com'
+                              const isCurrentAdmin = user.email === 'admin@sharedtask.ai'
 
                               if (isCurrentAdmin) {
                                 return (

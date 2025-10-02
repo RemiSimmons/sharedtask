@@ -145,3 +145,5 @@ COMMENT ON FUNCTION get_users_with_project_counts() IS 'Optimized function to ge
 COMMENT ON FUNCTION get_projects_with_details() IS 'Optimized function to get projects with task counts and last activity in a single query';
 COMMENT ON FUNCTION get_dashboard_stats() IS 'Optimized function to get all dashboard statistics in a single query';
 
+
+

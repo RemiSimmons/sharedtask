@@ -81,3 +81,5 @@ We went "nuclear" trying to fix what we thought was continuous polling, but it w
 
 The app should now work as intended with **good performance AND full functionality**! 🎉
 
+
+

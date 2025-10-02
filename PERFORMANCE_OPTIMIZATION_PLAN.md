@@ -126,3 +126,5 @@ We'll track these KPIs:
 - **Images**: Next.js Image component
 - **Code Splitting**: Dynamic imports, lazy loading
 
+
+

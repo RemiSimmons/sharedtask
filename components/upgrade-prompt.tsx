@@ -193,3 +193,4 @@ export function SuccessPrompt({ onClose, onUpgrade }: { onClose: () => void, onU
   )
 }
 
+

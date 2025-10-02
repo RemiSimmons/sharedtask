@@ -172,3 +172,5 @@ COMMENT ON MATERIALIZED VIEW task_stats IS 'Pre-computed task statistics for pro
 
 SELECT 'Performance indexes and optimizations applied successfully!' as result;
 
+
+

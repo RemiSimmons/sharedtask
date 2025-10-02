@@ -45,8 +45,8 @@ TEAM_PRICE_ID_YEARLY=price_...
 CRON_SECRET=your-secure-random-string
 
 # Email Configuration
-EMAIL_FROM="SharedTask <noreply@sharedtask.com>"
-EMAIL_REPLY_TO="support@sharedtask.com"
+EMAIL_FROM="SharedTask <support@sharedtask.ai>"
+EMAIL_REPLY_TO="support@sharedtask.ai"
 NEXT_PUBLIC_APP_URL="https://your-domain.com"
 
 # Email Service (choose one)

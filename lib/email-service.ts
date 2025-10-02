@@ -4,8 +4,8 @@ import { getDaysUntilTrialEnd } from './subscription-service'
 
 // Email configuration - in production, use environment variables
 const EMAIL_CONFIG = {
-  from: process.env.EMAIL_FROM || 'SharedTask <noreply@sharedtask.com>',
-  replyTo: process.env.EMAIL_REPLY_TO || 'support@sharedtask.com',
+  from: process.env.EMAIL_FROM || 'SharedTask <support@sharedtask.ai>',
+  replyTo: process.env.EMAIL_REPLY_TO || 'support@sharedtask.ai',
   baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 }
 

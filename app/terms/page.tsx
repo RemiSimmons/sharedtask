@@ -143,7 +143,7 @@ export default function TermsPage() {
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg mt-4">
                   <p className="text-gray-700">
-                    <strong>Email:</strong> contact@remisimmons.com<br />
+                    <strong>Email:</strong> support@sharedtask.ai<br />
                     <strong>Support:</strong> Available through our support page
                   </p>
                 </div>
@@ -169,3 +169,4 @@ export default function TermsPage() {
     </>
   )
 }
+

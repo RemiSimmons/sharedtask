@@ -114,7 +114,13 @@ export default function AdminDashboard() {
             >
               🚀 Create Project
             </button>
-            {session?.user?.email === 'contact@remisimmons.com' && (
+            <button
+              onClick={() => router.push('/admin/support')}
+              className="btn-secondary text-lg py-3 px-6 border-2 border-green-600 text-green-600 hover:bg-green-50"
+            >
+              📧 Support Center
+            </button>
+            {session?.user?.email === 'admin@sharedtask.ai' && (
               <button
                 onClick={() => router.push('/admin/operations')}
                 className="btn-secondary text-lg py-3 px-6 border-2 border-blue-600 text-blue-600 hover:bg-blue-50"

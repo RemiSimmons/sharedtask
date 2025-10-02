@@ -118,7 +118,7 @@ export default function PrivacyPage() {
                   <li><strong>Objection:</strong> Object to certain processing of your information</li>
                 </ul>
                 <p className="text-gray-700 leading-relaxed mt-4">
-                  To exercise these rights, please contact us at contact@remisimmons.com.
+                  To exercise these rights, please contact us at support@sharedtask.ai.
                 </p>
               </section>
 
@@ -181,9 +181,9 @@ export default function PrivacyPage() {
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg mt-4">
                   <p className="text-gray-700">
-                    <strong>Email:</strong> contact@remisimmons.com<br />
+                    <strong>Email:</strong> support@sharedtask.ai<br />
                     <strong>Support:</strong> Available through our support page<br />
-                    <strong>Data Protection Officer:</strong> contact@remisimmons.com
+                    <strong>Data Protection Officer:</strong> support@sharedtask.ai
                   </p>
                 </div>
               </section>
@@ -208,3 +208,4 @@ export default function PrivacyPage() {
     </>
   )
 }
+

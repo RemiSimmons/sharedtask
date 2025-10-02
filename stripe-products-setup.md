@@ -158,5 +158,5 @@ To update pricing:
 ### Support Resources
 - [Stripe Documentation](https://stripe.com/docs)
 - [Stripe Support](https://support.stripe.com/)
-- [SharedTask Support](mailto:support@sharedtask.com)
+- [SharedTask Support](mailto:support@sharedtask.ai)
 

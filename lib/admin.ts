@@ -5,9 +5,9 @@
  * Add more emails here to grant admin access
  */
 const ADMIN_EMAILS = [
-  'contact@remisimmons.com'
+  'admin@sharedtask.ai',
+  'contact@remisimmons.com'  // Your current admin email
   // Add more admin emails here as needed
-  // 'admin@example.com',
   // 'manager@example.com'
 ]
 
