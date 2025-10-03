@@ -133,15 +133,8 @@ export default function AdminDashboard() {
             >
               🚀 Create Project
             </button>
-            {/* Support Center - Available to all admin users */}
-            {isAdminUser(session?.user) && (
-              <button
-                onClick={() => router.push('/admin/support')}
-                className="btn-secondary text-lg py-3 px-6 border-2 border-green-600 text-green-600 hover:bg-green-50"
-              >
-                📧 Support Center
-              </button>
-            )}
+            {/* Support Center button removed - users should use /support for tickets */}
+            {/* Old admin email composer was replaced with proper user-facing support system */}
             {/* Operations Dashboard - Only for main admin */}
             {session?.user?.email === 'admin@sharedtask.ai' && (
               <button
