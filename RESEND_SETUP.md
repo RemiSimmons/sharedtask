@@ -1,5 +1,25 @@
 # 📧 Resend Email Setup Guide
 
+> **⚠️ IMPORTANT**: This guide is outdated. Please use the comprehensive **[EMAIL_SETUP_GUIDE.md](./EMAIL_SETUP_GUIDE.md)** instead.
+
+## 🔄 What Changed
+
+The email system now requires additional configuration:
+- **EMAIL_REPLY_TO**: Where support tickets are forwarded
+- **Domain verification**: For sending from support@sharedtask.ai
+- **Complete email flow setup**: User tickets → Admin inbox → Admin replies
+
+## 📖 Updated Instructions
+
+See **[EMAIL_SETUP_GUIDE.md](./EMAIL_SETUP_GUIDE.md)** for:
+- Complete email architecture explanation
+- Step-by-step Resend domain setup
+- Environment variable configuration
+- Testing procedures
+- Troubleshooting guide
+
+---
+
 ## ✅ What's Already Done
 
 - ✅ **Resend package installed**
