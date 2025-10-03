@@ -43,6 +43,8 @@ const PRODUCTION_CORS_OPTIONS: CorsOptions = {
   origin: [
     'https://sharedtask.ai',
     'https://www.sharedtask.ai',
+    'https://sharedtask.vercel.app',
+    'https://sharedtask-jvtbzg8ii-remi-westaymovings-projects.vercel.app',
     // Add your production domains here
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

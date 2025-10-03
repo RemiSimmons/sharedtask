@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { supabaseAdmin } from './supabase'
 
 export const authOptions = {
+  trustHost: true, // Allow multiple domains
   providers: [
     Credentials({
       name: 'credentials',
