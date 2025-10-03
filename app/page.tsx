@@ -293,8 +293,6 @@ function LandingPageContent() {
             🔍 Debug Mode: Check browser console for authentication details
           </div>
         </div>
-    )
-  }
 
         {/* Action Options for Authenticated Users */}
         <div className="grid gap-8 max-w-2xl mx-auto">
@@ -377,6 +375,7 @@ function LandingPageContent() {
       </div>
     </div>
   )
+  }
 
   // Render non-authenticated user view
   const renderGuestView = () => (
