@@ -133,12 +133,16 @@ export default function AdminDashboard() {
             >
               🚀 Create Project
             </button>
-            <button
-              onClick={() => router.push('/admin/support')}
-              className="btn-secondary text-lg py-3 px-6 border-2 border-green-600 text-green-600 hover:bg-green-50"
-            >
-              📧 Support Center
-            </button>
+            {/* Support Center - Available to all admin users */}
+            {isAdminUser(session?.user) && (
+              <button
+                onClick={() => router.push('/admin/support')}
+                className="btn-secondary text-lg py-3 px-6 border-2 border-green-600 text-green-600 hover:bg-green-50"
+              >
+                📧 Support Center
+              </button>
+            )}
+            {/* Operations Dashboard - Only for main admin */}
             {session?.user?.email === 'admin@sharedtask.ai' && (
               <button
                 onClick={() => router.push('/admin/operations')}

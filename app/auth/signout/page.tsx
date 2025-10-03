@@ -10,14 +10,30 @@ export default function SignOutPage() {
   useEffect(() => {
     const handleSignOut = async () => {
       try {
+        // Clear all possible session storage
+        if (typeof window !== 'undefined') {
+          localStorage.clear()
+          sessionStorage.clear()
+          
+          // Clear NextAuth cookies
+          document.cookie.split(";").forEach((c) => {
+            const eqPos = c.indexOf("=")
+            const name = eqPos > -1 ? c.substr(0, eqPos) : c
+            if (name.includes('next-auth') || name.includes('__Secure-next-auth')) {
+              document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
+            }
+          })
+        }
+
         await signOut({ 
           redirect: false,
           callbackUrl: window.location.origin + '/'
         })
+        
         // Force a hard redirect to clear all state
         setTimeout(() => {
           window.location.href = '/'
-        }, 100)
+        }, 200)
       } catch (error) {
         console.error('Sign out error:', error)
         // Fallback: clear session and redirect

@@ -16,8 +16,22 @@ const ADMIN_EMAILS = [
  * Check if an email address has admin privileges
  */
 export function isAdmin(email: string | null | undefined): boolean {
-  if (!email) return false
-  return ADMIN_EMAILS.includes(email.toLowerCase())
+  if (!email) {
+    console.log('isAdmin: No email provided')
+    return false
+  }
+  
+  const normalizedEmail = email.toLowerCase().trim()
+  const isAdminResult = ADMIN_EMAILS.includes(normalizedEmail)
+  
+  console.log('Admin check:', {
+    originalEmail: email,
+    normalizedEmail,
+    adminEmails: ADMIN_EMAILS,
+    isAdmin: isAdminResult
+  })
+  
+  return isAdminResult
 }
 
 /**

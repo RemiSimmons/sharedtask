@@ -288,9 +288,9 @@ function LandingPageContent() {
           <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
             {session?.user?.name ? `Welcome back, ${session.user.name}!` : `Hi ${session?.user?.email}!`} Ready to manage your projects?
           </p>
-          {/* Debug info - remove in production */}
-          <div className="text-sm text-gray-500 bg-gray-100 p-2 rounded">
-            Debug: Signed in as {session?.user?.email} ({session?.user?.name}) - Admin: {isAdminUser(session?.user) ? 'Yes' : 'No'}
+          {/* Debug info - check console for detailed logs */}
+          <div className="text-sm text-gray-500 bg-yellow-50 border border-yellow-200 p-3 rounded">
+            🔍 Debug Mode: Check browser console for authentication details
           </div>
         </div>
     )

@@ -50,9 +50,8 @@ export const authOptions = {
   ],
   session: {
     strategy: 'jwt' as const,
-    // Reduce session polling frequency globally
     maxAge: 24 * 60 * 60, // 24 hours
-    updateAge: 5 * 60, // Update every 5 minutes instead of 30 seconds
+    updateAge: 24 * 60 * 60, // Only update once per day to prevent conflicts
   },
   pages: {
     signIn: '/auth/signin',

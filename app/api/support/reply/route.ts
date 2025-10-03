@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { auth } from '@/lib/auth'
+import { isAdminUser } from '@/lib/admin'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication and admin privileges
+    const session = await auth()
+    
+    if (!session || !session.user?.email || !isAdminUser(session.user)) {
+      console.log('Unauthorized support reply attempt:', {
+        hasSession: !!session,
+        email: session?.user?.email,
+        isAdmin: isAdminUser(session?.user)
+      })
+      return NextResponse.json(
+        { error: 'Unauthorized - Admin access required' }, 
+        { status: 403 }
+      )
+    }
+
     const { to, subject, message, ticketId } = await request.json()
 
     // Send reply via Resend

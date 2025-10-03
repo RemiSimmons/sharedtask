@@ -24,6 +24,12 @@ export default function SignInPage() {
     setIsLoading(true)
 
     try {
+      // Clear any existing session data before signing in
+      if (typeof window !== 'undefined') {
+        localStorage.clear()
+        sessionStorage.clear()
+      }
+
       const result = await signIn('credentials', {
         email,
         password,
@@ -36,11 +42,11 @@ export default function SignInPage() {
       }
 
       if (result?.ok) {
-        // Force a small delay to ensure session is properly set
+        // Wait longer to ensure session is fully established
         setTimeout(() => {
-          // Redirect to home page for all users
-          window.location.href = '/'
-        }, 100)
+          // Use window.location.replace to prevent back button issues
+          window.location.replace('/')
+        }, 300)
       } else {
         setError('Sign in failed. Please try again.')
       }
