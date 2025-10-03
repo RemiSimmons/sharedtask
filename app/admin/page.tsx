@@ -135,8 +135,8 @@ export default function AdminDashboard() {
             </button>
             {/* Support Center button removed - users should use /support for tickets */}
             {/* Old admin email composer was replaced with proper user-facing support system */}
-            {/* Operations Dashboard - Only for main admin */}
-            {session?.user?.email === 'admin@sharedtask.ai' && (
+            {/* Operations Dashboard - Available to all admin users */}
+            {isAdminUser(session?.user) && (
               <button
                 onClick={() => router.push('/admin/operations')}
                 className="btn-secondary text-lg py-3 px-6 border-2 border-blue-600 text-blue-600 hover:bg-blue-50"

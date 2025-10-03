@@ -4,8 +4,7 @@
 
 SharedTask uses **Resend** for email delivery with the following email addresses:
 - **`support@sharedtask.ai`** - Customer-facing support address (sender)
-- **`admin@sharedtask.ai`** - Admin role identification only (not for email)
-- **Your personal email** - Where support tickets are forwarded (EMAIL_REPLY_TO)
+- **`contact@remisimmons.com`** - Admin email where support tickets are forwarded
 
 ## 📧 Email Flow Architecture
 
@@ -14,8 +13,9 @@ SharedTask uses **Resend** for email delivery with the following email addresses
 │   CUSTOMER      │    │   SYSTEM        │    │   YOU (ADMIN)   │
 │                 │    │                 │    │                 │
 │ Submits ticket  │───▶│ Sends TO:       │───▶│ Receives at:    │
-│ via /support    │    │ EMAIL_REPLY_TO  │    │ your-email@     │
-│                 │    │ FROM: support@  │    │ gmail.com       │
+│ via /support    │    │ contact@        │    │ contact@        │
+│                 │    │ remisimmons.com │    │ remisimmons.com │
+│                 │    │ FROM: support@  │    │                 │
 │                 │    │ sharedtask.ai   │    │                 │
 │                 │◀───│ Admin replies   │◀───│ Uses /admin/    │
 │ Receives reply  │    │ FROM: support@  │    │ support to      │
@@ -61,7 +61,7 @@ RESEND_API_KEY=re_your_actual_resend_api_key
 
 # Email Routing - CRITICAL SETUP
 EMAIL_FROM=SharedTask Support <support@sharedtask.ai>
-EMAIL_REPLY_TO=your-personal-email@gmail.com  # WHERE TICKETS GO
+EMAIL_REPLY_TO=contact@remisimmons.com  # WHERE TICKETS GO
 
 # Other required vars...
 NEXTAUTH_URL=https://sharedtask.ai
@@ -73,7 +73,7 @@ NEXT_PUBLIC_APP_URL=https://sharedtask.ai
 # In Vercel dashboard > Settings > Environment Variables
 RESEND_API_KEY=re_your_actual_key
 EMAIL_FROM=SharedTask Support <support@sharedtask.ai>
-EMAIL_REPLY_TO=your-personal-email@gmail.com
+EMAIL_REPLY_TO=contact@remisimmons.com
 ```
 
 ## 📋 Step 3: Testing the Email System
@@ -147,7 +147,7 @@ curl -X POST http://localhost:3000/api/support/contact \
 ## 🎯 Quick Setup Summary
 
 1. **Resend**: Add domain `sharedtask.ai` + DNS records
-2. **Environment**: Set `EMAIL_REPLY_TO=your-email@gmail.com`
+2. **Environment**: Set `EMAIL_REPLY_TO=contact@remisimmons.com`
 3. **Test**: Submit ticket → Check your inbox
 4. **Verify**: Admin reply → Customer receives from support@
 

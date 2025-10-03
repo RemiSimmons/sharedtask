@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import AppHeader from "@/components/app-header"
+import { isAdminUser, isAdmin } from "@/lib/admin"
 // Dynamic import for charts to reduce initial bundle size
 import dynamic from 'next/dynamic'
 
@@ -95,7 +96,7 @@ export default function WebsiteOperationsDashboard() {
 
     if (status === "authenticated") {
       // Check if user is admin
-      if (session?.user?.email !== 'admin@sharedtask.ai') {
+      if (!isAdminUser(session?.user)) {
         router.push('/admin') // Redirect non-admin users to regular admin page
         return
       }
@@ -1159,7 +1160,7 @@ export default function WebsiteOperationsDashboard() {
                           <td className="py-3 px-4">
                             {(() => {
                               const isSuspended = (user as any).reset_token === 'SUSPENDED'
-                              const isCurrentAdmin = user.email === 'admin@sharedtask.ai'
+                              const isCurrentAdmin = isAdmin(user.email)
 
                               if (isCurrentAdmin) {
                                 return (

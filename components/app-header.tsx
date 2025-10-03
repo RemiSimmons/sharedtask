@@ -4,6 +4,7 @@ import React from "react"
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { isAdminUser } from "@/lib/admin"
 
 interface AppHeaderProps {
   showBackButton?: boolean
@@ -74,8 +75,8 @@ export default function AppHeader({
 
                 {/* Navigation buttons */}
                 <div className="flex items-center gap-2 sm:gap-3">
-                  {/* Operations Dashboard button - Only for admin users */}
-                  {session.user.email === 'admin@sharedtask.ai' && (
+                  {/* Operations Dashboard button - For admin users */}
+                  {isAdminUser(session?.user) && (
                     <Link 
                       href="/admin/operations" 
                       className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 px-3 sm:px-4 py-2 rounded-lg font-medium transition-colors border border-purple-200"

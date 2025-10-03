@@ -21,15 +21,9 @@ echo "📧 Email Configuration Required:"
 echo ""
 
 # Get EMAIL_REPLY_TO
-echo "1. Where should support tickets be sent?"
-echo "   (This is YOUR email address where you'll receive customer tickets)"
-read -p "   Enter your email: " EMAIL_REPLY_TO
-
-# Validate email format
-if [[ ! "$EMAIL_REPLY_TO" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
-    echo "❌ Invalid email format. Please run the script again."
-    exit 1
-fi
+echo "1. Setting support ticket destination email..."
+EMAIL_REPLY_TO="contact@remisimmons.com"
+echo "   ✅ Tickets will be sent to: $EMAIL_REPLY_TO"
 
 # Get RESEND_API_KEY
 echo ""

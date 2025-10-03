@@ -5,11 +5,8 @@
  * Add more emails here to grant admin access
  */
 const ADMIN_EMAILS = [
-  'admin@sharedtask.ai',
-  'contact@remisimmons.com'  // Your current admin email
+  'contact@remisimmons.com'  // Single admin account
   // Add more admin emails here as needed
-  // 'manager@example.com'
-  // Note: 'Aderemis@gmail.com' is NOT an admin - regular user only
 ]
 
 /**
