@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { isAdminUser } from "@/lib/admin"
+// Force rebuild - syntax errors fixed
 
 function LandingPageContent() {
   const [showCreateForm, setShowCreateForm] = useState(false)
