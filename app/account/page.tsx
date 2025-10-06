@@ -45,6 +45,10 @@ export default function AccountManagementPage() {
   const [projects, setProjects] = useState<any[]>([])
   const [isLoadingProjects, setIsLoadingProjects] = useState(true)
   const [isDeletingProject, setIsDeletingProject] = useState<string | null>(null)
+  
+  // Usage data state
+  const [usageData, setUsageData] = useState<any>(null)
+  const [isLoadingUsage, setIsLoadingUsage] = useState(true)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -59,6 +63,8 @@ export default function AccountManagementPage() {
       fetchEmailVerificationStatus()
       // Load user's projects
       loadProjects()
+      // Load usage data
+      loadUsageData()
     }
   }, [session, status, router])
 
@@ -93,6 +99,23 @@ export default function AccountManagementPage() {
     }
   }
 
+  const loadUsageData = async () => {
+    try {
+      setIsLoadingUsage(true)
+      const response = await fetch('/api/account/usage')
+      if (response.ok) {
+        const data = await response.json()
+        setUsageData(data)
+      }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to load usage data:', error)
+      }
+    } finally {
+      setIsLoadingUsage(false)
+    }
+  }
+
   const handleDeleteProjectFromAccount = async (projectId: string, projectName: string) => {
     if (!confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
       return
@@ -112,8 +135,9 @@ export default function AccountManagementPage() {
       const result = await response.json()
       setSuccessMessage(result.message || 'Project deleted successfully!')
       
-      // Reload projects list
+      // Reload projects list and usage data
       await loadProjects()
+      await loadUsageData()
     } catch (error) {
       console.error('Error deleting project:', error)
       setErrorMessage(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -709,44 +733,74 @@ export default function AccountManagementPage() {
               <h2 className="header-section">Billing & Usage</h2>
             </div>
 
-            <div className="space-y-6">
-              <div>
-                <label className="block text-lg font-semibold text-gray-900 mb-2">
-                  💳 Current Plan
-                </label>
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                    Free Plan
-                  </span>
-                  <button 
-                    onClick={() => router.push('/pricing')}
-                    className="btn-secondary text-sm px-4 py-2"
-                  >
-                    Upgrade Plan
-                  </button>
-                </div>
+            {isLoadingUsage ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-gray-600 text-sm">Loading usage data...</p>
               </div>
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-lg font-semibold text-gray-900 mb-2">
+                    💳 Current Plan
+                  </label>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        usageData?.subscription?.accessLevel === 'free' 
+                          ? 'bg-gray-100 text-gray-800' 
+                          : usageData?.subscription?.accessLevel === 'trial'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {usageData?.subscription?.hasActiveTrial 
+                          ? `${usageData.subscription.plan || 'Pro'} Trial` 
+                          : usageData?.subscription?.hasActiveSubscription
+                          ? `${usageData.subscription.plan || 'Pro'} Plan`
+                          : 'Free Plan'
+                        }
+                      </span>
+                      {usageData?.subscription?.hasActiveTrial && usageData?.subscription?.trialDaysRemaining && (
+                        <span className="text-sm text-blue-600">
+                          {usageData.subscription.trialDaysRemaining} days left
+                        </span>
+                      )}
+                    </div>
+                    {usageData?.subscription?.accessLevel === 'free' && (
+                      <button 
+                        onClick={() => router.push('/pricing')}
+                        className="btn-secondary text-sm px-4 py-2"
+                      >
+                        Upgrade Plan
+                      </button>
+                    )}
+                  </div>
+                </div>
 
-              <div>
-                <label className="block text-lg font-semibold text-gray-900 mb-2">
-                  📊 Usage Stats
-                </label>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Projects Created:</span>
-                    <span className="font-medium">3 / 5</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tasks This Month:</span>
-                    <span className="font-medium">47 / 100</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Storage Used:</span>
-                    <span className="font-medium">12 MB / 100 MB</span>
+                <div>
+                  <label className="block text-lg font-semibold text-gray-900 mb-2">
+                    📊 Usage Stats
+                  </label>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Projects:</span>
+                      <span className="font-medium">
+                        {usageData?.usage?.projects?.total || 0} total, {usageData?.usage?.projects?.active || 0} active
+                        {usageData?.usage?.projects?.max !== -1 && ` / ${usageData.usage.projects.max} max`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Total Tasks:</span>
+                      <span className="font-medium">{usageData?.usage?.tasks?.total || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Storage Used:</span>
+                      <span className="font-medium">{usageData?.usage?.storage?.used || 0} MB / {usageData?.usage?.storage?.max || 100} MB</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Project Management Card */}
