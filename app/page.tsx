@@ -64,16 +64,23 @@ function LandingPageContent() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create project')
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('Project creation failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        })
+        throw new Error(errorData.message || errorData.error || 'Failed to create project')
       }
 
       const project = await response.json()
+      console.log('Project created successfully:', project)
       
       // Redirect to admin dashboard for the new project
       router.push(`/admin/project/${project.id}`)
     } catch (error) {
       console.error('Error creating project:', error)
-      alert('Failed to create project. Please try again.')
+      alert(`Failed to create project: ${error.message}`)
     } finally {
       setIsCreating(false)
     }

@@ -9,9 +9,12 @@ import { sanitizeInput } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('=== PROJECT CREATION DEBUG START ===')
     const session = await auth()
+    console.log('Session check:', { hasSession: !!session, userId: session?.user?.id, email: session?.user?.email })
     
     if (!session?.user?.id) {
+      console.log('Authentication failed - no session or user ID')
       return NextResponse.json({ 
         error: 'Authentication required',
         message: 'You must be signed in to create a project.'
@@ -19,6 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Comprehensive request validation with rate limiting
+    console.log('Starting validation...')
     const validation = await validateRequest(request, {
       bodySchema: projectSchema,
       rateLimit: {
@@ -30,8 +34,10 @@ export async function POST(request: NextRequest) {
     })
 
     if (!validation.success) {
+      console.log('Validation failed:', validation.response)
       return validation.response
     }
+    console.log('Validation passed:', validation.data)
 
     const { 
       name, 
@@ -46,10 +52,14 @@ export async function POST(request: NextRequest) {
     } = validation.data.body!
 
     // Get user's subscription state and limits
+    console.log('Getting subscription state...')
     const subscriptionState = await getUserSubscriptionState(session.user.id)
+    console.log('Subscription state:', subscriptionState)
     const planLimits = getPlanLimits(subscriptionState)
+    console.log('Plan limits:', planLimits)
 
     // Check current project count and active projects for free tier
+    console.log('Checking existing projects...')
     const { data: existingProjects, error: countError } = await supabaseAdmin
       .from('projects')
       .select('id, created_at, name')
@@ -62,6 +72,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+    console.log('Existing projects:', existingProjects)
 
     const currentProjectCount = existingProjects?.length || 0
 
@@ -180,9 +191,17 @@ export async function POST(request: NextRequest) {
       }
     }, { status: 201 })
   } catch (error) {
-    console.error('Project creation error:', error)
+    console.error('=== PROJECT CREATION ERROR ===')
+    console.error('Error type:', typeof error)
+    console.error('Error message:', error instanceof Error ? error.message : String(error))
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+    console.error('Full error object:', error)
+    console.error('=== END PROJECT CREATION ERROR ===')
     return NextResponse.json(
-      { error: 'Internal server error. Please try again later.' },
+      { 
+        error: 'Internal server error. Please try again later.',
+        debug: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     )
   }
