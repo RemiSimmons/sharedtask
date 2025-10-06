@@ -55,10 +55,13 @@ function LandingPageContent() {
   }
 
   const handleCreateProjectClick = () => {
+    console.log('Create Project button clicked!', { status, showCreateForm })
     if (status === "unauthenticated") {
+      console.log('User not authenticated, redirecting to signup')
       router.push('/auth/signup')
       return
     }
+    console.log('Setting showCreateForm to true')
     setShowCreateForm(true)
   }
 
@@ -818,14 +821,19 @@ function LandingPageContent() {
 
   // Main render logic with single return
   const content = (() => {
+    console.log('Rendering with state:', { showCreateForm, status })
+    
     if (showCreateForm) {
+      console.log('Rendering create form')
       return renderCreateForm()
     }
 
     if (status === "authenticated") {
+      console.log('Rendering authenticated view')
       return renderAuthenticatedView()
     }
 
+    console.log('Rendering guest view')
     return renderGuestView()
   })()
 
