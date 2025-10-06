@@ -80,7 +80,7 @@ function LandingPageContent() {
       router.push(`/admin/project/${project.id}`)
     } catch (error) {
       console.error('Error creating project:', error)
-      alert(`Failed to create project: ${error.message}`)
+      alert(`Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsCreating(false)
     }
