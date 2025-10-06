@@ -19,20 +19,40 @@ function LandingPageContent() {
   const [isCreating, setIsCreating] = useState(false)
   const [showProjectLimitModal, setShowProjectLimitModal] = useState(false)
   const [projectLimitError, setProjectLimitError] = useState<any>(null)
+  const [userProjects, setUserProjects] = useState<any[]>([])
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session, status } = useSession()
 
-  // Check for create=true query parameter
+  // Check for create=true query parameter and load projects
   useEffect(() => {
     try {
       if (searchParams?.get('create') === 'true' && status === 'authenticated') {
         setShowCreateForm(true)
       }
+      if (status === 'authenticated') {
+        loadUserProjects()
+      }
     } catch (error) {
       console.log('Error reading search params:', error)
     }
   }, [searchParams, status])
+
+  const loadUserProjects = async () => {
+    try {
+      setIsLoadingProjects(true)
+      const response = await fetch('/api/debug/projects')
+      if (response.ok) {
+        const data = await response.json()
+        setUserProjects(data.projects || [])
+      }
+    } catch (error) {
+      console.error('Failed to load projects:', error)
+    } finally {
+      setIsLoadingProjects(false)
+    }
+  }
 
   const handleCreateProjectClick = () => {
     if (status === "unauthenticated") {
@@ -48,7 +68,14 @@ function LandingPageContent() {
     setIsCreating(false)
   }
 
-  const handleDeleteProject = async (projectId: string) => {
+  const handleDeleteProject = async (projectId: string, projectName?: string) => {
+    // If called from modal, we don't need confirmation
+    const needsConfirmation = !!projectName
+    
+    if (needsConfirmation && !confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+      return
+    }
+
     try {
       const response = await fetch(`/api/projects/${projectId}/delete`, {
         method: 'DELETE',
@@ -62,9 +89,9 @@ function LandingPageContent() {
       const result = await response.json()
       alert(result.message || 'Project deleted successfully!')
       
-      // Close modal and redirect to account page to manage projects
+      // Close modal if open and reload projects list
       setShowProjectLimitModal(false)
-      router.push('/account')
+      await loadUserProjects()
     } catch (error) {
       console.error('Error deleting project:', error)
       alert(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -311,7 +338,7 @@ function LandingPageContent() {
     </div>
   )
 
-  // Render authenticated user view
+  // Render authenticated user view - Main Dashboard
   const renderAuthenticatedView = () => {
     // Debug: Log current user info
     console.log('Current user session:', {
@@ -319,108 +346,188 @@ function LandingPageContent() {
       email: session?.user?.email,
       isAdmin: isAdminUser(session?.user)
     })
-    
+
     return (
-    <div className="min-h-screen p-6 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center space-y-6 mb-12">
-          <div className="flex items-center justify-center gap-4">
-            <svg className="header-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-            <h1 className="header-main">{session?.user?.name ? `Welcome Back, ${session.user.name}!` : 'Welcome Back!'}</h1>
-          </div>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
-            {session?.user?.name ? `Welcome back, ${session.user.name}!` : `Hi ${session?.user?.email}!`} Ready to manage your projects?
-          </p>
-          {/* Debug info - check console for detailed logs */}
-          <div className="text-sm text-gray-500 bg-yellow-50 border border-yellow-200 p-3 rounded">
-            🔍 Debug Mode: Check browser console for authentication details
-          </div>
-        </div>
-
-        {/* Action Options for Authenticated Users */}
-        <div className="grid gap-8 max-w-2xl mx-auto">
-          {/* Create New Project */}
-          <div className="card-beautiful p-8 text-center hover-lift">
-            <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
-              <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+      <div className="min-h-screen p-6 md:p-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center space-y-6 mb-12">
+            <div className="flex items-center justify-center gap-4">
+              <svg className="header-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
+              <h1 className="header-main">{session?.user?.name ? `Welcome Back, ${session.user.name}!` : 'Welcome Back!'}</h1>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">📋 Create New Project</h2>
-            <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-              Start organizing tasks for your next event, potluck, or project.
+            <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
+              {session?.user?.name ? `Welcome back, ${session.user.name}!` : `Hi ${session?.user?.email}!`} Ready to manage your projects?
             </p>
-            <button
-              onClick={handleCreateProjectClick}
-              className="w-full btn-primary text-lg py-4 shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              Create Project
-            </button>
+            {/* Debug info - check console for detailed logs */}
+            <div className="text-sm text-gray-500 bg-yellow-50 border border-yellow-200 p-3 rounded">
+              🔍 Debug Mode: Check browser console for authentication details
+            </div>
           </div>
 
-          {/* Dashboard Access - Different for Admin vs Regular Users */}
-          {isAdminUser(session?.user) ? (
-            <div className="card-form p-8 text-center hover-lift">
-              <div className="w-20 h-20 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
+          {/* Main Dashboard Content */}
+          <div className="grid gap-8 lg:grid-cols-3">
+            {/* Left Column - Create New Project */}
+            <div className="lg:col-span-1">
+              <div className="card-beautiful p-8 text-center hover-lift">
+                <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
+                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">📋 Create New Project</h2>
+                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                  Start organizing tasks for your next event, potluck, or project.
+                </p>
+                <button
+                  onClick={handleCreateProjectClick}
+                  className="w-full btn-primary text-lg py-4 shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  Create Project
+                </button>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">⚙️ Admin Dashboard</h2>
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                View and manage all projects, access support center, and monitor system operations.
-              </p>
-              <button
-                onClick={() => router.push('/admin')}
-                className="w-full btn-secondary text-lg py-4 border-2 border-blue-200 hover:border-blue-300 transition-all duration-300"
-              >
-                🔧 Go to Admin Dashboard
-              </button>
+
+              {/* Admin Dashboard Access */}
+              {isAdminUser(session?.user) && (
+                <div className="card-form p-6 text-center hover-lift mt-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-3">⚙️ Admin Dashboard</h3>
+                  <button
+                    onClick={() => router.push('/admin')}
+                    className="w-full btn-secondary py-3 border-2 border-blue-200 hover:border-blue-300 transition-all duration-300"
+                  >
+                    🔧 Go to Admin Dashboard
+                  </button>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="card-form p-8 text-center hover-lift">
-              <div className="w-20 h-20 mx-auto bg-purple-100 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
+
+            {/* Right Column - My Projects */}
+            <div className="lg:col-span-2">
+              <div className="card-beautiful p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <svg className="section-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <h2 className="header-section">My Projects</h2>
+                  </div>
+                  <button 
+                    onClick={() => router.push('/account')}
+                    className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                  >
+                    Account Settings →
+                  </button>
+                </div>
+
+                {isLoadingProjects ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Loading projects...</p>
+                  </div>
+                ) : userProjects.length === 0 ? (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg">
+                    <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <h3 className="text-xl font-medium text-gray-900 mb-2">No projects yet</h3>
+                    <p className="text-gray-600 mb-6">Create your first project to get started!</p>
+                    <button 
+                      onClick={handleCreateProjectClick}
+                      className="btn-primary px-6 py-3"
+                    >
+                      Create Your First Project
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {userProjects.map((project) => (
+                      <div key={project.id} className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                              {project.isExpired ? (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                  Expired
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                  Active
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <button
+                              onClick={() => router.push(`/project/${project.id}`)}
+                              className="btn-primary px-4 py-2 text-sm"
+                            >
+                              Open Project
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProject(project.id, project.name)}
+                              className="text-red-600 hover:text-red-800 font-medium text-sm"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {userProjects.filter(p => !p.isExpired).length > 1 && (
+                      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                          </svg>
+                          <div>
+                            <h4 className="font-medium text-yellow-800">Free Tier Limit</h4>
+                            <p className="text-sm text-yellow-700 mt-1">
+                              You have {userProjects.filter(p => !p.isExpired).length} active projects. Free users can only have 1 active project at a time. 
+                              Delete old projects or <button onClick={() => router.push('/pricing')} className="underline font-medium">upgrade your plan</button> to create more.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">👤 My Account</h2>
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                Manage your account settings, view your projects, and access billing information.
-              </p>
+            </div>
+          </div>
+
+          {/* Bottom Navigation */}
+          <div className="text-center mt-12 space-y-4">
+            <div className="flex justify-center gap-8">
+              <button
+                onClick={() => router.push('/support')}
+                className="text-blue-600 hover:text-blue-800 font-medium"
+              >
+                💬 Support
+              </button>
               <button
                 onClick={() => router.push('/account')}
-                className="w-full btn-secondary text-lg py-4 border-2 border-purple-200 hover:border-purple-300 transition-all duration-300"
+                className="text-gray-600 hover:text-gray-800 font-medium"
               >
-                📋 View My Account
+                👤 Account Settings
+              </button>
+              <button
+                onClick={() => router.push('/auth/signout')}
+                className="text-gray-600 hover:text-gray-800 font-medium"
+              >
+                🚪 Sign Out
               </button>
             </div>
-          )}
-        </div>
-
-        {/* Sign Out and Support Options */}
-        <div className="text-center mt-8 space-y-4">
-          <div className="flex justify-center gap-6">
-            <button
-              onClick={() => router.push('/support')}
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              💬 Support
-            </button>
-            <button
-              onClick={() => router.push('/auth/signout')}
-              className="text-gray-600 hover:text-gray-800 font-medium"
-            >
-              🚪 Sign Out
-            </button>
           </div>
         </div>
       </div>
-    </div>
-  )
+    )
   }
 
   // Render non-authenticated user view
