@@ -17,6 +17,8 @@ function LandingPageContent() {
   const [allowContributorsAddNames, setAllowContributorsAddNames] = useState(true)
   const [allowContributorsAddTasks, setAllowContributorsAddTasks] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
+  const [showProjectLimitModal, setShowProjectLimitModal] = useState(false)
+  const [projectLimitError, setProjectLimitError] = useState<any>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session, status } = useSession()
@@ -38,6 +40,35 @@ function LandingPageContent() {
       return
     }
     setShowCreateForm(true)
+  }
+
+  const handleProjectLimitError = (errorData: any) => {
+    setProjectLimitError(errorData)
+    setShowProjectLimitModal(true)
+    setIsCreating(false)
+  }
+
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/delete`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to delete project' }))
+        throw new Error(errorData.message || 'Failed to delete project')
+      }
+
+      const result = await response.json()
+      alert(result.message || 'Project deleted successfully!')
+      
+      // Close modal and refresh the page to update project list
+      setShowProjectLimitModal(false)
+      window.location.reload()
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      alert(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
   }
 
   const handleCreateProject = async (e: React.FormEvent) => {
@@ -70,6 +101,13 @@ function LandingPageContent() {
           statusText: response.statusText,
           error: errorData
         })
+        
+        // Handle specific error codes with better UX
+        if (errorData.code === 'FREE_TIER_ACTIVE_PROJECT_LIMIT' || errorData.code === 'PROJECT_LIMIT_REACHED') {
+          handleProjectLimitError(errorData)
+          return
+        }
+        
         throw new Error(errorData.message || errorData.error || 'Failed to create project')
       }
 
@@ -585,16 +623,111 @@ function LandingPageContent() {
     </div>
   )
 
+  // Project Limit Modal
+  const renderProjectLimitModal = () => {
+    if (!showProjectLimitModal || !projectLimitError) return null
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 mx-auto bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Project Limit Reached</h3>
+            <p className="text-gray-600">{projectLimitError.message}</p>
+          </div>
+
+          <div className="space-y-3 mb-6">
+            {projectLimitError.solutions?.map((solution: any, index: number) => (
+              <div key={index} className="border rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-1">{solution.title}</h4>
+                <p className="text-sm text-gray-600 mb-3">{solution.description}</p>
+                
+                {solution.action === 'upgrade_plan' && (
+                  <button
+                    onClick={() => router.push('/pricing')}
+                    className="w-full btn-primary py-2"
+                  >
+                    Upgrade Now
+                  </button>
+                )}
+                
+                {solution.action === 'delete_project' && solution.projectId && (
+                  <button
+                    onClick={() => {
+                      if (confirm(`Are you sure you want to delete "${projectLimitError.activeProject?.name}"? This action cannot be undone.`)) {
+                        handleDeleteProject(solution.projectId)
+                      }
+                    }}
+                    className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors"
+                  >
+                    Delete Project
+                  </button>
+                )}
+                
+                {solution.action === 'manage_projects' && (
+                  <div className="space-y-2">
+                    {projectLimitError.activeProjects?.map((project: any) => (
+                      <div key={project.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                        <div>
+                          <div className="font-medium text-sm">{project.name}</div>
+                          <div className="text-xs text-gray-500">
+                            Created {new Date(project.created_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Are you sure you want to delete "${project.name}"? This action cannot be undone.`)) {
+                              handleDeleteProject(project.id)
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-800 text-sm font-medium"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowProjectLimitModal(false)}
+              className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Main render logic with single return
-  if (showCreateForm) {
-    return renderCreateForm()
-  }
+  const content = (() => {
+    if (showCreateForm) {
+      return renderCreateForm()
+    }
 
-  if (status === "authenticated") {
-    return renderAuthenticatedView()
-  }
+    if (status === "authenticated") {
+      return renderAuthenticatedView()
+    }
 
-  return renderGuestView()
+    return renderGuestView()
+  })()
+
+  return (
+    <>
+      {content}
+      {renderProjectLimitModal()}
+    </>
+  )
 }
 
 export default function LandingPage() {

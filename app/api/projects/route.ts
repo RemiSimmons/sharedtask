@@ -85,15 +85,31 @@ export async function POST(request: NextRequest) {
       if (activeProject) {
         return NextResponse.json({
           error: 'Free tier project limit reached',
-          message: 'Free users can only have 1 active project at a time. Upgrade to manage multiple events simultaneously!',
+          message: 'Free users can only have 1 active project at a time. You can either upgrade your plan or delete an existing project to create a new one.',
           code: 'FREE_TIER_ACTIVE_PROJECT_LIMIT',
           upgradePrompt: 'multiproject',
           currentActiveProjects: 1,
           maxActiveProjects: 1,
           activeProject: {
             id: activeProject.id,
-            name: activeProject.name
-          }
+            name: activeProject.name,
+            created_at: activeProject.created_at
+          },
+          solutions: [
+            {
+              type: 'upgrade',
+              title: 'Upgrade to Pro',
+              description: 'Get unlimited active projects and advanced features',
+              action: 'upgrade_plan'
+            },
+            {
+              type: 'delete',
+              title: 'Delete Existing Project',
+              description: `Delete "${activeProject.name}" to create a new project`,
+              action: 'delete_project',
+              projectId: activeProject.id
+            }
+          ]
         }, { status: 403 })
       }
     }
@@ -101,14 +117,37 @@ export async function POST(request: NextRequest) {
     // Check project limits (unless unlimited)
     if (planLimits.maxProjects !== -1 && currentProjectCount >= planLimits.maxProjects) {
       const planName = subscriptionState.plan || 'free'
+      const activeProjects = existingProjects?.filter(p => 
+        !isProjectExpired(p.created_at || new Date().toISOString(), planLimits.projectActiveWindow)
+      ) || []
+      
       return NextResponse.json(
         { 
           error: 'Project limit reached',
-          message: `Your ${planName} plan allows up to ${planLimits.maxProjects} project${planLimits.maxProjects === 1 ? '' : 's'}. Upgrade to create more projects.`,
+          message: `Your ${planName} plan allows up to ${planLimits.maxProjects} project${planLimits.maxProjects === 1 ? '' : 's'}. You currently have ${currentProjectCount} projects.`,
           code: 'PROJECT_LIMIT_REACHED',
           currentCount: currentProjectCount,
           maxProjects: planLimits.maxProjects,
-          planName
+          planName,
+          activeProjects: activeProjects.map(p => ({
+            id: p.id,
+            name: p.name,
+            created_at: p.created_at
+          })),
+          solutions: [
+            {
+              type: 'upgrade',
+              title: 'Upgrade Your Plan',
+              description: 'Get more projects and advanced features',
+              action: 'upgrade_plan'
+            },
+            {
+              type: 'manage',
+              title: 'Manage Existing Projects',
+              description: 'Delete old projects to make room for new ones',
+              action: 'manage_projects'
+            }
+          ]
         },
         { status: 403 }
       )
