@@ -41,10 +41,6 @@ export default function AccountManagementPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState("")
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   
-  // Project management state
-  const [projects, setProjects] = useState<any[]>([])
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true)
-  const [isDeletingProject, setIsDeletingProject] = useState<string | null>(null)
   
   // Usage data state
   const [usageData, setUsageData] = useState<any>(null)
@@ -61,8 +57,6 @@ export default function AccountManagementPage() {
       setEmail(session.user.email || "")
       // Fetch email verification status from database
       fetchEmailVerificationStatus()
-      // Load user's projects
-      loadProjects()
       // Load usage data
       loadUsageData()
     }
@@ -82,23 +76,6 @@ export default function AccountManagementPage() {
     }
   }
 
-  const loadProjects = async () => {
-    try {
-      setIsLoadingProjects(true)
-      const response = await fetch('/api/debug/projects')
-      if (response.ok) {
-        const data = await response.json()
-        setProjects(data.projects || [])
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to load projects:', error)
-      }
-    } finally {
-      setIsLoadingProjects(false)
-    }
-  }
-
   const loadUsageData = async () => {
     try {
       setIsLoadingUsage(true)
@@ -113,36 +90,6 @@ export default function AccountManagementPage() {
       }
     } finally {
       setIsLoadingUsage(false)
-    }
-  }
-
-  const handleDeleteProjectFromAccount = async (projectId: string, projectName: string) => {
-    if (!confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
-      return
-    }
-
-    try {
-      setIsDeletingProject(projectId)
-      const response = await fetch(`/api/projects/${projectId}/delete`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to delete project' }))
-        throw new Error(errorData.message || 'Failed to delete project')
-      }
-
-      const result = await response.json()
-      setSuccessMessage(result.message || 'Project deleted successfully!')
-      
-      // Reload projects list and usage data
-      await loadProjects()
-      await loadUsageData()
-    } catch (error) {
-      console.error('Error deleting project:', error)
-      setErrorMessage(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setIsDeletingProject(null)
     }
   }
 
@@ -803,110 +750,6 @@ export default function AccountManagementPage() {
             )}
           </div>
 
-          {/* Project Management Card */}
-          <div className="card-beautiful p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <svg className="section-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-              <h2 className="header-section">My Projects</h2>
-            </div>
-
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <p className="text-gray-600">
-                  Manage your existing projects or create new ones.
-                </p>
-                <button 
-                  onClick={() => router.push('/?create=true')}
-                  className="btn-primary text-sm px-4 py-2"
-                >
-                  + Create New Project
-                </button>
-              </div>
-
-              {isLoadingProjects ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Loading projects...</p>
-                </div>
-              ) : projects.length === 0 ? (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <svg className="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                  </svg>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
-                  <p className="text-gray-600 mb-4">Create your first project to get started!</p>
-                  <button 
-                    onClick={() => router.push('/?create=true')}
-                    className="btn-primary"
-                  >
-                    Create Your First Project
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {projects.map((project) => (
-                    <div key={project.id} className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-medium text-gray-900">{project.name}</h3>
-                            {project.isExpired ? (
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                Expired
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Active
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => router.push(`/project/${project.id}`)}
-                            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                          >
-                            View
-                          </button>
-                          <button
-                            onClick={() => handleDeleteProjectFromAccount(project.id, project.name)}
-                            disabled={isDeletingProject === project.id}
-                            className={`text-red-600 hover:text-red-800 font-medium text-sm ${
-                              isDeletingProject === project.id ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                          >
-                            {isDeletingProject === project.id ? 'Deleting...' : 'Delete'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {projects.length > 1 && (
-                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                        </svg>
-                        <div>
-                          <h4 className="font-medium text-yellow-800">Free Tier Limit</h4>
-                          <p className="text-sm text-yellow-700 mt-1">
-                            You have {projects.filter(p => !p.isExpired).length} active projects. Free users can only have 1 active project at a time. 
-                            Delete old projects or <button onClick={() => router.push('/pricing')} className="underline font-medium">upgrade your plan</button> to create more.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
 
           {/* Account Actions Card */}
           <div className="card-beautiful p-8">

@@ -323,14 +323,14 @@ function LandingPageContent() {
             </button>
           </form>
 
-          {/* Admin Access */}
+          {/* Back to Dashboard */}
           <div className="text-center mt-8 pt-6 border-t border-gray-200">
             <p className="text-gray-600 mb-4">Already have a project?</p>
             <button
-              onClick={() => router.push('/admin')}
+              onClick={() => setShowCreateForm(false)}
               className="btn-secondary"
             >
-              🔑 Back to Dashboard
+              ← Back to Dashboard
             </button>
           </div>
         </div>
