@@ -62,9 +62,9 @@ function LandingPageContent() {
       const result = await response.json()
       alert(result.message || 'Project deleted successfully!')
       
-      // Close modal and refresh the page to update project list
+      // Close modal and redirect to account page to manage projects
       setShowProjectLimitModal(false)
-      window.location.reload()
+      router.push('/account')
     } catch (error) {
       console.error('Error deleting project:', error)
       alert(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
