@@ -28,10 +28,13 @@ function LandingPageContent() {
   // Check for create=true query parameter and load projects
   useEffect(() => {
     try {
+      console.log('useEffect triggered:', { searchParams: searchParams?.get('create'), status })
       if (searchParams?.get('create') === 'true' && status === 'authenticated') {
+        console.log('Setting showCreateForm from URL param')
         setShowCreateForm(true)
       }
       if (status === 'authenticated') {
+        console.log('Loading user projects...')
         loadUserProjects()
       }
     } catch (error) {
@@ -55,7 +58,7 @@ function LandingPageContent() {
   }
 
   const handleCreateProjectClick = () => {
-    console.log('Create Project button clicked!', { status, showCreateForm })
+    console.log('Create Project button clicked!', { status, showCreateForm, session: session?.user?.email })
     if (status === "unauthenticated") {
       console.log('User not authenticated, redirecting to signup')
       router.push('/auth/signup')
@@ -63,6 +66,10 @@ function LandingPageContent() {
     }
     console.log('Setting showCreateForm to true')
     setShowCreateForm(true)
+    // Force a small delay to ensure state is set
+    setTimeout(() => {
+      console.log('State after timeout:', { showCreateForm: true })
+    }, 100)
   }
 
   const handleProjectLimitError = (errorData: any) => {
@@ -821,19 +828,24 @@ function LandingPageContent() {
 
   // Main render logic with single return
   const content = (() => {
-    console.log('Rendering with state:', { showCreateForm, status })
+    console.log('Rendering with state:', { 
+      showCreateForm, 
+      status, 
+      sessionEmail: session?.user?.email,
+      timestamp: new Date().toISOString()
+    })
     
     if (showCreateForm) {
-      console.log('Rendering create form')
+      console.log('✅ Rendering create form - showCreateForm is true')
       return renderCreateForm()
     }
 
     if (status === "authenticated") {
-      console.log('Rendering authenticated view')
+      console.log('Rendering authenticated view - showCreateForm is false')
       return renderAuthenticatedView()
     }
 
-    console.log('Rendering guest view')
+    console.log('Rendering guest view - not authenticated')
     return renderGuestView()
   })()
 
