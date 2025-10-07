@@ -728,3 +728,8 @@ export type Project = Database['public']['Tables']['projects']['Row']
 export type Task = Database['public']['Tables']['tasks']['Row']
 export type TaskAssignment = Database['public']['Tables']['task_assignments']['Row']
 export type TaskComment = Database['public']['Tables']['task_comments']['Row']
+export type InsertEmailLog = Database['public']['Tables']['email_logs']['Insert']
+export type User = Database['public']['Tables']['users']['Row']
+
+// Email types
+export type EmailType = 'trial_welcome' | 'trial_reminder' | 'trial_expired' | 'subscription_welcome' | 'subscription_reminder' | 'subscription_canceled'
