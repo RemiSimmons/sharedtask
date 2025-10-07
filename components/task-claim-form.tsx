@@ -10,7 +10,8 @@ export default function TaskClaimForm() {
     tasks, 
     projectSettings, 
     claimTask, 
-    addTasks, 
+    addTasks,
+    addTaskAndClaim, 
     activeContributors,
     selectedTasksForClaiming,
     currentContributorName,
@@ -76,19 +77,12 @@ export default function TaskClaimForm() {
           throw new Error('You are not allowed to add custom tasks to this project')
         }
         
-        // Add new custom task and then claim it
-        await addTasks([customTask])
-        // Find the newly added task (it will have the most recent timestamp)
-        setTimeout(() => {
-          const newTask = tasks.find(task => task.name === customTask && task.status === "available")
-          if (newTask) {
-            claimTask(newTask.id, finalName)
-          }
-        }, 100)
+        // Add new custom task and claim it atomically
+        await addTaskAndClaim(customTask, finalName)
         setClaimedTaskName(customTask)
       } else {
         // Claim existing task
-        claimTask(selectedTask, finalName)
+        await claimTask(selectedTask, finalName)
         const taskName = availableTasks.find((t) => t.id === selectedTask)?.name || ""
         setClaimedTaskName(taskName)
       }
@@ -166,51 +160,51 @@ export default function TaskClaimForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto" data-task-claim-form="true">
-      <div className="card-form p-8">
-        <div className="flex items-center justify-center mb-8">
-          <svg className="section-icon text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="max-w-2xl mx-auto px-3" data-task-claim-form="true">
+      <div className="card-form p-7 md:p-8">
+        <div className="flex items-center justify-center mb-8 md:mb-8">
+          <svg className="w-10 h-10 md:w-8 md:h-8 text-blue-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
-          <h2 className="header-section text-center mb-0">Claim a Task</h2>
+          <h2 className="text-3xl md:text-2xl font-bold text-gray-900 text-center mb-0">Pick a Task</h2>
         </div>
-        <div className="space-y-8">
+        <div className="space-y-8 md:space-y-8">
           {showSuccess ? (
-            <div className="text-center py-8 space-y-4">
-              <div className="w-16 h-16 mx-auto bg-accent/10 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="text-center py-10 md:py-8 space-y-5 md:space-y-4">
+              <div className="w-20 h-20 md:w-16 md:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12 md:w-8 md:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900">Task claimed successfully!</h3>
-              <p className="text-lg text-muted-foreground">The table will update shortly.</p>
+              <h3 className="text-3xl md:text-xl font-bold md:font-semibold text-gray-900">Success!</h3>
+              <p className="text-2xl md:text-lg text-gray-700 md:text-muted-foreground">You claimed the task</p>
             </div>
           ) : showMultipleClaimPrompt ? (
-            <div className="text-center py-8 space-y-6">
-              <div className="w-16 h-16 mx-auto bg-accent/10 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="text-center py-10 md:py-8 space-y-7 md:space-y-6">
+              <div className="w-20 h-20 md:w-16 md:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-12 h-12 md:w-8 md:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-gray-900">Task claimed successfully!</h3>
-                <p className="text-lg text-muted-foreground">
-                  You claimed: <span className="font-medium text-gray-900">{claimedTaskName}</span>
+              <div className="space-y-3 md:space-y-2">
+                <h3 className="text-3xl md:text-xl font-bold md:font-semibold text-gray-900">Success!</h3>
+                <p className="text-2xl md:text-lg text-gray-700 md:text-muted-foreground">
+                  You claimed: <span className="font-bold text-gray-900">{claimedTaskName}</span>
                 </p>
               </div>
-              <div className="space-y-3">
-                <p className="text-base text-muted-foreground">Want to claim another task?</p>
-                <div className="flex gap-3 justify-center">
+              <div className="space-y-5 md:space-y-3">
+                <p className="text-xl md:text-base text-gray-700 md:text-muted-foreground font-medium">Want to claim another?</p>
+                <div className="flex flex-col md:flex-row gap-4 md:gap-3 justify-center">
                   <Button
                     onClick={handleClaimAnother}
-                    className="text-base px-6 py-3 h-12 font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    className="text-xl md:text-base px-8 py-6 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium bg-blue-600 text-white hover:bg-blue-700"
                   >
                     Claim Another Task
                   </Button>
                   <Button
                     onClick={handleFinishClaiming}
                     variant="outline"
-                    className="text-base px-6 py-3 h-12 font-medium bg-transparent"
+                    className="text-xl md:text-base px-8 py-6 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium border-2 md:border"
                   >
                     I'm Done
                   </Button>
@@ -277,10 +271,10 @@ export default function TaskClaimForm() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="space-y-3">
-                <label htmlFor="name-select" className="text-lg font-semibold text-gray-900 block">
-                  Select Your Name
+              <form onSubmit={handleSubmit} className="space-y-8 md:space-y-8">
+              <div className="space-y-4 md:space-y-3">
+                <label htmlFor="name-select" className="text-2xl md:text-lg font-bold md:font-semibold text-gray-900 block">
+                  Your Name
                 </label>
                 <Select 
                   value={selectedName} 
@@ -316,9 +310,9 @@ export default function TaskClaimForm() {
                 </Select>
 
                 {(selectedName === "new" || (activeContributors.length === 0 && projectSettings.allowContributorsAddNames)) && (
-                  <div className="space-y-2">
-                    <label htmlFor="custom-name" className="text-base font-medium text-gray-900 block">
-                      Enter Your Name
+                  <div className="space-y-3 md:space-y-2">
+                    <label htmlFor="custom-name" className="text-xl md:text-base font-bold md:font-medium text-gray-900 block">
+                      Type Your Name
                     </label>
                     <input
                       id="custom-name"
@@ -328,13 +322,13 @@ export default function TaskClaimForm() {
                         setCustomName(e.target.value)
                         setCurrentContributorName(e.target.value)
                       }}
-                      placeholder="Type your name here..."
-                      className="form-input"
+                      placeholder="Your name..."
+                      className="form-input text-xl md:text-base py-4 md:py-2 px-4 md:px-3"
                       autoFocus={activeContributors.length === 0}
                     />
                     {activeContributors.length === 0 && (
-                      <p className="text-sm text-gray-600">
-                        💡 This will be the first contributor name in the project
+                      <p className="text-lg md:text-sm text-gray-700 md:text-gray-600 font-medium md:font-normal">
+                        💡 You'll be the first person on this project
                       </p>
                     )}
                   </div>
@@ -350,9 +344,9 @@ export default function TaskClaimForm() {
                 )}
               </div>
 
-              <div className="space-y-3">
-                <label htmlFor="task-select" className="text-lg font-semibold text-gray-900 block">
-                  Choose Available Task
+              <div className="space-y-4 md:space-y-3">
+                <label htmlFor="task-select" className="text-2xl md:text-lg font-bold md:font-semibold text-gray-900 block">
+                  Pick a Task
                 </label>
                 <Select value={selectedTask} onValueChange={setSelectedTask}>
                   <SelectTrigger className="select-trigger">
@@ -389,17 +383,17 @@ export default function TaskClaimForm() {
                 )}
 
                 {selectedTask === "custom" && (
-                  <div className="space-y-2">
-                    <label htmlFor="custom-task" className="text-base font-medium text-gray-900 block">
-                      Enter Task Description
+                  <div className="space-y-3 md:space-y-2">
+                    <label htmlFor="custom-task" className="text-xl md:text-base font-bold md:font-medium text-gray-900 block">
+                      What task do you want to do?
                     </label>
                     <input
                       id="custom-task"
                       type="text"
                       value={customTask}
                       onChange={(e) => setCustomTask(e.target.value)}
-                      placeholder="Describe the task you want to claim..."
-                      className="form-input"
+                      placeholder="Type your task..."
+                      className="form-input text-xl md:text-base py-4 md:py-2 px-4 md:px-3"
                     />
                   </div>
                 )}
@@ -408,9 +402,9 @@ export default function TaskClaimForm() {
               <button
                 type="submit"
                 disabled={!isFormValid() || isSubmitting}
-                className={`w-full btn-primary text-base py-3 ${(!isFormValid() || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full btn-primary text-2xl md:text-base py-6 md:py-3 font-bold md:font-medium min-h-[64px] md:min-h-0 ${(!isFormValid() || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {isSubmitting ? "Claiming Task..." : "Claim Task"}
+                {isSubmitting ? "Claiming..." : "Claim This Task"}
               </button>
             </form>
             </div>

@@ -508,29 +508,29 @@ function LandingPageContent() {
 
   // Render non-authenticated user view
   const renderGuestView = () => (
-    <div className="min-h-screen p-4 md:p-6">
+    <div className="min-h-screen p-5 md:p-6">
       <div className="max-w-5xl mx-auto min-h-screen flex flex-col pb-8">
         {/* Hero Section */}
-        <div className="text-center space-y-2 mb-6">
-          <div className="flex flex-col items-center gap-2">
+        <div className="text-center space-y-4 md:space-y-2 mb-8 md:mb-6">
+          <div className="flex flex-col items-center gap-3 md:gap-2">
             <img
               src="/shared-task-logo.svg"
               alt="SharedTask Logo"
-              className="h-20 w-auto"
+              className="h-24 md:h-20 w-auto"
             />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 max-w-3xl mx-auto leading-tight">
-            Share a link, pick a task, done.
+          <h1 className="text-4xl md:text-4xl font-bold text-gray-900 max-w-3xl mx-auto leading-tight px-2">
+            Easy Group Organization
           </h1>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium leading-relaxed mt-4">
-            The fastest way to organize any group — no logins, no learning curve.
+          <p className="text-2xl md:text-xl text-gray-700 max-w-2xl mx-auto font-medium leading-relaxed mt-5 md:mt-4 px-3">
+            Share a link. Pick a task. Done.
           </p>
 
           {/* Start for Free CTA */}
-          <div className="mt-8">
+          <div className="mt-10 md:mt-8">
             <button
               onClick={() => router.push('/auth/signup')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xl md:text-lg py-5 md:py-3 px-10 md:px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 min-h-[60px] md:min-h-0"
             >
               Start for Free
             </button>
@@ -539,133 +539,128 @@ function LandingPageContent() {
         </div>
 
         {/* Call to Action */}
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {/* Try Demo */}
-          <div className="card-form p-6 text-center hover-lift flex flex-col">
-            {/* Demo Image */}
-            <div className="flex justify-center mb-4">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-6 max-w-4xl mx-auto">
+          {/* Create Real Project */}
+          <div className="card-beautiful p-7 md:p-6 text-center hover-lift flex flex-col">
+            {/* Create Project Image */}
+            <div className="flex justify-center mb-5 md:mb-4">
               <img
-                src="/ui-interaction-demo.png"
-                alt="Interactive Demo Preview"
-                className="w-32 h-32 object-contain"
+                src="/create-project-demo.png"
+                alt="Create Project Preview"
+                className="w-36 h-36 md:w-32 md:h-32 object-contain"
               />
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Try Interactive Demo</h2>
-            <div className="max-w-prose mx-auto text-base md:text-[19px] text-gray-600 leading-relaxed flex-1 space-y-4 mb-8">
-              <p>
-                See SharedTask in action with a real potluck example — no signup needed.
+            <h2 className="text-3xl md:text-3xl font-bold text-gray-900 mb-6 leading-tight">Create Your Project</h2>
+            <div className="max-w-prose mx-auto text-xl md:text-[19px] text-gray-700 leading-relaxed flex-1 space-y-5 md:space-y-4 mb-8">
+              <p className="font-medium">
+                Perfect for potlucks, parties, and family events.
               </p>
               <p>
-                Add tasks, claim them, and watch updates appear instantly.
+                Add your tasks. Share one link. Everyone picks what they want to do.
               </p>
-              <p>
-                The fastest way to try it before starting your own project.
+              <p className="text-lg md:text-base text-gray-600">
+                Just $3/month
               </p>
             </div>
-            <div className="mt-auto">
+            <div className="mt-auto space-y-4">
               <button
-                onClick={() => router.push('/demo')}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-none cursor-pointer min-h-12"
+                onClick={handleCreateProjectClick}
+                className="w-full btn-primary text-xl md:text-lg py-5 md:py-4 shadow-lg hover:shadow-xl transition-all duration-300 min-h-[60px] md:min-h-0"
               >
-                Start Demo Now
+                Create Project
               </button>
-              <p className="text-sm text-gray-500 mt-4">Takes 30 seconds • No commitment</p>
               <button
-                onClick={() => router.push('/pricing')}
-                className="w-full md:w-auto btn-secondary px-5 py-3 text-sm md:text-base mt-4"
+                onClick={() => router.push('/admin')}
+                className="w-full btn-secondary px-5 py-4 md:py-3 text-lg md:text-base min-h-[56px] md:min-h-0"
               >
-                Pricing Plans
+                Sign In / Sign Up
               </button>
             </div>
           </div>
 
-          {/* Create Real Project */}
-          <div className="card-beautiful p-6 text-center hover-lift flex flex-col">
-            {/* Create Project Image */}
-            <div className="flex justify-center mb-4">
+          {/* Try Demo */}
+          <div className="card-form p-7 md:p-6 text-center hover-lift flex flex-col">
+            {/* Demo Image */}
+            <div className="flex justify-center mb-5 md:mb-4">
               <img
-                src="/create-project-demo.png"
-                alt="Create Project Preview"
-                className="w-32 h-32 object-contain"
+                src="/ui-interaction-demo.png"
+                alt="Interactive Demo Preview"
+                className="w-36 h-36 md:w-32 md:h-32 object-contain"
               />
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Create Your Project</h2>
-            <div className="max-w-prose mx-auto text-base md:text-[19px] text-gray-600 leading-relaxed flex-1 space-y-4 mb-8">
-              <p>
-                Start your own project in seconds — add tasks, share a link, and let everyone pick what they'll do.
+            <h2 className="text-3xl md:text-3xl font-bold text-gray-900 mb-6 leading-tight">Try a Demo</h2>
+            <div className="max-w-prose mx-auto text-xl md:text-[19px] text-gray-700 leading-relaxed flex-1 space-y-5 md:space-y-4 mb-8">
+              <p className="font-medium">
+                See how it works with a real example.
               </p>
               <p>
-                Hosts save time, avoid group chat chaos, and always know who's doing what.
+                Try adding and claiming tasks. No signup needed.
               </p>
-              <p>
-                Quick, simple, and perfect for any event or team.
-              </p>
-              <p>
-                All for just 10¢ a day.
+              <p className="text-lg md:text-base text-gray-600">
+                Takes just 30 seconds
               </p>
             </div>
-            <div className="mt-auto">
+            <div className="mt-auto space-y-4">
               <button
-                onClick={handleCreateProjectClick}
-                className="w-full btn-primary text-lg py-4 shadow-lg hover:shadow-xl transition-all duration-300"
+                onClick={() => router.push('/demo')}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xl md:text-lg py-5 md:py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 border-none cursor-pointer min-h-[60px] md:min-h-0"
               >
-                Create Project
+                Try Demo Now
               </button>
-              <p className="text-sm text-gray-500 mt-4">Share project link • Full functionality</p>
               <button
-                onClick={() => router.push('/admin')}
-                className="w-full md:w-auto btn-secondary px-5 py-3 text-sm md:text-base mt-4"
+                onClick={() => router.push('/pricing')}
+                className="w-full btn-secondary px-5 py-4 md:py-3 text-lg md:text-base min-h-[56px] md:min-h-0"
               >
-                Sign in/Sign up
+                View Pricing
               </button>
             </div>
           </div>
         </div>
 
         {/* Key Features */}
-        <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto mt-12">
-          <div className="text-center">
-            <div className="w-12 h-12 mx-auto rounded-lg flex items-center justify-center mb-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-4 max-w-3xl mx-auto mt-16 md:mt-12 px-4">
+          <div className="text-center bg-white p-6 md:p-4 rounded-lg">
+            <div className="w-16 h-16 md:w-12 md:h-12 mx-auto rounded-lg flex items-center justify-center mb-4 md:mb-3">
               <img
                 src="/easy-collaboration-icon.png"
                 alt="Easy Collaboration"
-                className="w-12 h-12"
+                className="w-16 h-16 md:w-12 md:h-12"
               />
             </div>
-            <h3 className="text-base font-semibold text-gray-900 mb-2">Easy Collaboration</h3>
-            <p className="text-base text-gray-600">Real-time task claiming and progress tracking</p>
+            <h3 className="text-xl md:text-base font-bold text-gray-900 mb-3 md:mb-2">Work Together</h3>
+            <p className="text-lg md:text-base text-gray-700 leading-relaxed">Everyone sees updates instantly</p>
           </div>
 
-          <div className="text-center">
-            <div className="w-12 h-12 mx-auto rounded-lg flex items-center justify-center mb-3">
+          <div className="text-center bg-white p-6 md:p-4 rounded-lg">
+            <div className="w-16 h-16 md:w-12 md:h-12 mx-auto rounded-lg flex items-center justify-center mb-4 md:mb-3">
               <img
                 src="/ui-interaction-demo.png"
                 alt="Simple Setup"
-                className="w-12 h-12"
+                className="w-16 h-16 md:w-12 md:h-12"
               />
             </div>
-            <h3 className="text-base font-semibold text-gray-900 mb-2">Simple Setup</h3>
-            <p className="text-base text-gray-600">Get started in seconds with zero configuration</p>
+            <h3 className="text-xl md:text-base font-bold text-gray-900 mb-3 md:mb-2">Super Simple</h3>
+            <p className="text-lg md:text-base text-gray-700 leading-relaxed">Set up in under 2 minutes</p>
           </div>
 
-          <div className="text-center">
-            <div className="w-12 h-12 mx-auto rounded-lg flex items-center justify-center mb-3">
+          <div className="text-center bg-white p-6 md:p-4 rounded-lg">
+            <div className="w-16 h-16 md:w-12 md:h-12 mx-auto rounded-lg flex items-center justify-center mb-4 md:mb-3">
               <img
                 src="/share-anywhere-icon.png"
                 alt="Share Anywhere"
-                className="w-12 h-12 object-contain brightness-75 contrast-125"
+                className="w-16 h-16 md:w-12 md:h-12 object-contain brightness-75 contrast-125"
               />
             </div>
-            <h3 className="text-base font-semibold text-gray-900 mb-2">Share Anywhere</h3>
-            <p className="text-base text-gray-600">Shareable links that work on any device</p>
+            <h3 className="text-xl md:text-base font-bold text-gray-900 mb-3 md:mb-2">Share Easily</h3>
+            <p className="text-lg md:text-base text-gray-700 leading-relaxed">Works on any phone or computer</p>
           </div>
         </div>
 
         {/* Support Link */}
-        <div className="text-center mt-8">
+        <div className="text-center mt-12 md:mt-8">
           <button
             onClick={() => router.push('/support')}
-            className="text-blue-600 hover:text-blue-800 font-medium"
+            className="text-blue-600 hover:text-blue-800 font-semibold text-xl md:text-base py-3 px-6 md:py-0 md:px-0"
           >
             💬 Need Help? Contact Support
           </button>
@@ -673,30 +668,30 @@ function LandingPageContent() {
 
         {/* Footer */}
         <footer className="mt-16 pt-8 border-t border-gray-200">
-          <div className="text-center space-y-4">
-            <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
+          <div className="text-center space-y-5 md:space-y-4">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6 text-lg md:text-sm text-gray-700 md:text-gray-600">
               <Link
                 href="/terms"
-                className="hover:text-blue-600 transition-colors"
+                className="hover:text-blue-600 transition-colors font-medium py-2 md:py-0"
               >
                 Terms of Service
               </Link>
-              <span>•</span>
+              <span className="hidden md:inline">•</span>
               <Link
                 href="/privacy"
-                className="hover:text-blue-600 transition-colors"
+                className="hover:text-blue-600 transition-colors font-medium py-2 md:py-0"
               >
                 Privacy Policy
               </Link>
-              <span>•</span>
+              <span className="hidden md:inline">•</span>
               <Link
                 href="/support"
-                className="hover:text-blue-600 transition-colors"
+                className="hover:text-blue-600 transition-colors font-medium py-2 md:py-0"
               >
                 Support
               </Link>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-base md:text-xs text-gray-600 md:text-gray-500">
               © {new Date().getFullYear()} SharedTask. All rights reserved.
             </p>
           </div>

@@ -51,6 +51,7 @@ interface TaskContextType {
   
   // Task management functions
   addTasks: (taskNames: string[], description?: string, isHostAction?: boolean) => Promise<void>
+  addTaskAndClaim: (taskName: string, claimerName: string, description?: string, isHostAction?: boolean) => Promise<string>
   updateTask: (taskId: string, updates: { name?: string; description?: string }) => Promise<void>
   deleteTask: (taskId: string) => Promise<void>
   markTaskComplete: (taskId: string) => Promise<void>
@@ -376,6 +377,68 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     }
   }
 
+  const addTaskAndClaim = async (taskName: string, claimerName: string, description?: string, isHostAction: boolean = false) => {
+    if (!currentProject) throw new Error('No project loaded')
+    if (!taskName || !claimerName) throw new Error('Task name and claimer name are required')
+
+    // Check permissions: only allow if host action or contributors are allowed to add tasks
+    if (!isHostAction && !projectSettings.allowContributorsAddTasks) {
+      throw new Error('Contributors are not allowed to add new tasks to this project')
+    }
+
+    // Check if user is adding a new name and if they're allowed to
+    const isNewContributor = !projectSettings.contributorNames.includes(claimerName.trim())
+    if (isNewContributor && !isHostAction && !projectSettings.allowContributorsAddNames) {
+      throw new Error('You are not allowed to add new names to this project. Please select an existing name.')
+    }
+
+    try {
+      // Step 1: Create the task
+      const { data: newTask, error: taskError } = await supabase
+        .from('tasks')
+        .insert({
+          project_id: currentProject.id,
+          name: taskName,
+          description: description || null,
+          status: 'claimed' // Create it as claimed directly
+        })
+        .select()
+        .single()
+
+      if (taskError) {
+        handleSupabaseError(taskError, 'adding task')
+        throw taskError
+      }
+
+      // Step 2: Create the task assignment
+      const { error: assignmentError } = await supabase
+        .from('task_assignments')
+        .insert({
+          task_id: newTask.id,
+          contributor_name: claimerName.trim()
+        })
+
+      if (assignmentError) {
+        handleSupabaseError(assignmentError, 'claiming task')
+        throw assignmentError
+      }
+
+      // Step 3: Add contributor name to project if it's new
+      if (isNewContributor) {
+        const updatedNames = [...projectSettings.contributorNames, claimerName.trim()]
+        await updateProjectSettings({ contributorNames: updatedNames })
+      }
+
+      // Step 4: Refresh tasks to get the updated state
+      await refreshTasks()
+
+      return newTask.id
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add and claim task')
+      throw err
+    }
+  }
+
   const updateTask = async (taskId: string, updates: { name?: string; description?: string }) => {
     try {
       const updateData: any = {}
@@ -515,6 +578,13 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
       if (taskError) {
         console.error('Error updating task status:', taskError)
         throw new Error(`Failed to update task status: ${taskError.message}`)
+      }
+
+      // Add contributor name to project if it's new
+      const isNewContributor = !projectSettings.contributorNames.includes(claimerName.trim())
+      if (isNewContributor) {
+        const updatedNames = [...projectSettings.contributorNames, claimerName.trim()]
+        await updateProjectSettings({ contributorNames: updatedNames })
       }
 
       await refreshTasks()
@@ -769,6 +839,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     
     // Task management functions
     addTasks,
+    addTaskAndClaim,
     updateTask,
     deleteTask,
     markTaskComplete,

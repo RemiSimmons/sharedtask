@@ -169,19 +169,19 @@ export default function TaskTable() {
   }
 
   return (
-    <div className="card-table p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="card-table p-6 md:p-8">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 md:mb-8 gap-3 md:gap-0">
         <div className="flex items-center">
-          <svg className="section-icon text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-10 h-10 md:w-8 md:h-8 text-blue-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
-          <h2 className="header-table mb-0">Active Tasks</h2>
+          <h2 className="text-3xl md:text-2xl font-bold text-gray-900 mb-0">All Tasks</h2>
         </div>
-        <div className="text-sm text-blue-600 font-medium">
+        <div className="text-lg md:text-sm text-blue-600 font-bold md:font-medium">
           {selectedTasksForClaiming.length > 0 ? (
             `${selectedTasksForClaiming.length} selected`
           ) : (
-            "Select Multiple Tasks at Once"
+            <span className="hidden md:inline">Select Multiple Tasks at Once</span>
           )}
         </div>
       </div>
@@ -406,31 +406,31 @@ export default function TaskTable() {
         </div>
 
         {/* Mobile Card View */}
-        <div className="md:hidden space-y-4 p-6">
+        <div className="md:hidden space-y-5">
           {tasks.map((task) => (
-            <div key={task.id} className="card-beautiful p-6 space-y-4">
-                <div className="space-y-3">
+            <div key={task.id} className="card-beautiful p-6 space-y-5">
+                <div className="space-y-4">
                   {editingTasks.has(task.id) ? (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <Input
                         value={editValues[task.id]?.name || ''}
                         onChange={(e) => setEditValues(prev => ({
                           ...prev,
                           [task.id]: { ...prev[task.id], name: e.target.value }
                         }))}
-                        className="text-lg font-semibold"
+                        className="text-xl font-bold py-4 px-4"
                         placeholder="Task name"
                       />
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         <Textarea
                           value={editValues[task.id]?.description || ''}
                           onChange={(e) => setEditValues(prev => ({
                             ...prev,
                             [task.id]: { ...prev[task.id], description: e.target.value }
                           }))}
-                          className="text-sm resize-none"
+                          className="text-lg resize-none py-3 px-4"
                           placeholder="Task description (optional)"
-                          rows={2}
+                          rows={3}
                         />
                         {editValues[task.id]?.description && (
                           <Button
@@ -440,71 +440,71 @@ export default function TaskTable() {
                               ...prev,
                               [task.id]: { ...prev[task.id], description: '' }
                             }))}
-                            className="text-xs text-muted-foreground hover:text-red-600 h-auto p-1 w-full justify-start"
+                            className="text-base text-muted-foreground hover:text-red-600 h-auto p-2 w-full justify-start"
                           >
                             Clear description
                           </Button>
                         )}
                       </div>
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-3">
                         <Button
                           onClick={() => saveTaskEdit(task.id)}
                           size="sm"
-                          className="w-full text-base py-2 h-auto min-h-[44px] font-medium"
+                          className="w-full text-xl py-5 h-auto min-h-[56px] font-bold"
                         >
-                          <Save className="w-4 h-4 mr-2" />
+                          <Save className="w-5 h-5 mr-2" />
                           Save Changes
                         </Button>
                         <Button
                           onClick={() => cancelEditing(task.id)}
                           variant="outline"
                           size="sm"
-                          className="w-full text-base py-2 h-auto min-h-[44px] font-medium"
+                          className="w-full text-xl py-5 h-auto min-h-[56px] font-bold border-2"
                         >
-                          <X className="w-4 h-4 mr-2" />
+                          <X className="w-5 h-5 mr-2" />
                           Cancel
                         </Button>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 text-pretty">{task.name}</h3>
+                        <h3 className="text-2xl font-bold text-gray-900 text-pretty leading-tight">{task.name}</h3>
                         {task.description && (
-                          <div className="mt-1">
-                            <p className="text-sm text-muted-foreground">{task.description}</p>
+                          <div className="mt-2">
+                            <p className="text-lg text-gray-700 leading-relaxed">{task.description}</p>
                           </div>
                         )}
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => startEditing(task.id, task.name, task.description)}
-                          className="p-2 h-auto"
+                          className="p-3 h-auto min-w-[48px] min-h-[48px]"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-6 h-6" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteTask(task.id, task.name)}
-                          className="p-2 h-auto text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="p-3 h-auto min-w-[48px] min-h-[48px] text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-6 h-6" />
                         </Button>
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between pt-2">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-1">Claimed By</p>
-                      <p className="text-base text-gray-900">
+                      <p className="text-lg font-bold text-gray-600 mb-2">Claimed By</p>
+                      <p className="text-xl text-gray-900 font-medium">
                         {formatClaimedBy(task.claimedBy, task.maxContributors)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-muted-foreground mb-2">Status</p>
+                      <p className="text-lg font-bold text-gray-600 mb-2">Status</p>
                       {getStatusBadge(task.status, task.claimedBy, task.maxContributors)}
                     </div>
                   </div>
@@ -541,22 +541,22 @@ export default function TaskTable() {
                       </div>
                     )}
 
-                    <div className="space-y-3">
-                      <label htmlFor={`mobile-comment-${task.id}`} className="text-sm font-medium text-gray-900">
+                    <div className="space-y-4">
+                      <label htmlFor={`mobile-comment-${task.id}`} className="text-xl font-bold text-gray-900">
                         Add a comment:
                       </label>
                       <textarea
                         id={`mobile-comment-${task.id}`}
                         value={newComments[task.id] || ""}
                         onChange={(e) => setNewComments((prev) => ({ ...prev, [task.id]: e.target.value }))}
-                        placeholder="Type your comment here..."
-                        className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
-                        rows={3}
+                        placeholder="Type your comment..."
+                        className="w-full px-5 py-4 text-xl border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
+                        rows={4}
                       />
                       <Button
                         onClick={() => handleAddComment(task.id)}
                         disabled={!newComments[task.id]?.trim()}
-                        className="w-full text-base py-3 h-auto min-h-[44px] font-medium"
+                        className="w-full text-xl py-5 h-auto min-h-[56px] font-bold"
                       >
                         Post Comment
                       </Button>
@@ -567,13 +567,13 @@ export default function TaskTable() {
                 {!editingTasks.has(task.id) && task.status === "available" && (
                   <Button
                     onClick={() => handleSelectTaskForClaiming(task.id)}
-                    className={`w-full text-base py-3 h-auto min-h-[44px] font-medium ${
+                    className={`w-full text-2xl py-6 h-auto min-h-[64px] font-bold ${
                       selectedTasksForClaiming.includes(task.id) 
                         ? 'btn-primary' 
                         : 'bg-blue-500 text-white hover:bg-blue-600 border-0'
                     }`}
                   >
-                    {selectedTasksForClaiming.includes(task.id) ? 'Selected' : 'Select Task'}
+                    {selectedTasksForClaiming.includes(task.id) ? '✓ Selected' : 'Select This Task'}
                   </Button>
                 )}
                 {!editingTasks.has(task.id) && task.status === "claimed" &&
