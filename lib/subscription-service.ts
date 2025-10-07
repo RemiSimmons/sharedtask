@@ -161,6 +161,7 @@ export async function upsertSubscription(
     current_period_end: number
     cancel_at_period_end: boolean
     canceled_at?: number | null
+    metadata?: Record<string, string>
     items: {
       data: Array<{
         price: {
@@ -178,10 +179,24 @@ export async function upsertSubscription(
     const priceId = stripeSubscriptionData.items.data[0]?.price.id
     const interval = stripeSubscriptionData.items.data[0]?.price.recurring?.interval as BillingInterval
     
-    // Determine plan from price ID (this should match your Stripe price IDs)
+    // IMPROVED: Determine plan from metadata first (most reliable), fallback to price ID
     let plan: PlanType = 'basic'
-    if (priceId?.includes('pro')) plan = 'pro'
-    else if (priceId?.includes('team')) plan = 'team'
+    
+    // Try to get plan from metadata (set during checkout)
+    if (stripeSubscriptionData.metadata?.plan) {
+      plan = stripeSubscriptionData.metadata.plan as PlanType
+      console.log('✅ Plan detected from metadata:', plan)
+    } 
+    // Fallback to price ID matching for backwards compatibility
+    else if (priceId?.includes('pro')) {
+      plan = 'pro'
+      console.log('⚠️ Plan detected from price ID (pro):', priceId)
+    } else if (priceId?.includes('team')) {
+      plan = 'team'
+      console.log('⚠️ Plan detected from price ID (team):', priceId)
+    } else {
+      console.log('⚠️ Plan defaulting to basic. Price ID:', priceId)
+    }
 
     const subscriptionData: InsertUserSubscription = {
       user_id: userId,
