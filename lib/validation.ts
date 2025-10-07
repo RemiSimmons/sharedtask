@@ -6,16 +6,16 @@ import { z } from 'zod'
 
 export const signupSchema = z.object({
   email: z.string()
-    .email('Invalid email format')
-    .max(255, 'Email must be less than 255 characters')
+    .email('Please enter a valid email address')
+    .max(255, 'Email address is too long')
     .toLowerCase()
     .trim(),
   password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must be less than 128 characters'),
+    .min(8, 'Password must be at least 8 characters long')
+    .max(128, 'Password is too long (maximum 128 characters)'),
   name: z.string()
-    .min(1, 'Name is required')
-    .max(100, 'Name must be less than 100 characters')
+    .min(1, 'Please enter your full name')
+    .max(100, 'Name is too long (maximum 100 characters)')
     .trim()
     .regex(/^[a-zA-Z\s'-]+$/, 'Name can only contain letters, spaces, hyphens, and apostrophes'),
 })
@@ -245,8 +245,13 @@ export const paginationSchema = z.object({
 // ============================================================================
 
 export function formatValidationError(error: z.ZodError) {
+  // Get the first error message for user-friendly display
+  const firstError = error.errors[0]
+  const userFriendlyMessage = firstError ? firstError.message : 'Validation failed'
+  
   return {
-    error: 'Validation failed',
+    error: userFriendlyMessage,
+    message: userFriendlyMessage, // Duplicate for compatibility
     details: error.errors.map(err => ({
       field: err.path.join('.'),
       message: err.message,

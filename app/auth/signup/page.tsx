@@ -49,7 +49,14 @@ export default function SignUpPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Failed to create account')
+        // Handle validation errors with detailed messages
+        if (data.details && data.details.length > 0) {
+          // Show the first validation error message
+          setError(data.details[0].message)
+        } else {
+          // Fallback to generic error message
+          setError(data.error || data.message || 'Failed to create account')
+        }
         return
       }
 
