@@ -232,27 +232,8 @@ class SystemMonitor {
    */
   private async calculateErrorRate(): Promise<number> {
     try {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-      
-      const [totalRequests, errorRequests] = await Promise.all([
-        // Total requests in last hour
-        supabaseAdmin
-          .from('application_logs')
-          .select('*', { count: 'exact' })
-          .gte('timestamp', oneHourAgo)
-          .then(({ count }) => count || 0),
-        
-        // Error requests in last hour
-        supabaseAdmin
-          .from('application_logs')
-          .select('*', { count: 'exact' })
-          .eq('level', 'error')
-          .gte('timestamp', oneHourAgo)
-          .then(({ count }) => count || 0)
-      ])
-
-      return totalRequests > 0 ? Math.round((errorRequests / totalRequests) * 100) : 0
-
+      // Temporarily return 0 until application_logs table is implemented
+      return 0
     } catch (error) {
       return 0
     }
@@ -263,15 +244,8 @@ class SystemMonitor {
    */
   private async getActiveConnections(): Promise<number> {
     try {
-      // Estimate based on recent activity
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
-      
-      const { count } = await supabaseAdmin
-        .from('application_logs')
-        .select('*', { count: 'exact' })
-        .gte('timestamp', fiveMinutesAgo)
-
-      return Math.min(count || 0, 100) // Cap at reasonable number
+      // Temporarily return 0 until application_logs table is implemented
+      return 0
     } catch (error) {
       return 0
     }
@@ -282,15 +256,8 @@ class SystemMonitor {
    */
   private async getSlowQueriesCount(): Promise<number> {
     try {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-      
-      const { count } = await supabaseAdmin
-        .from('application_logs')
-        .select('*', { count: 'exact' })
-        .contains('context', { slow_query: true })
-        .gte('timestamp', oneHourAgo)
-
-      return count || 0
+      // Temporarily return 0 until application_logs table is implemented
+      return 0
     } catch (error) {
       return 0
     }
@@ -352,78 +319,11 @@ class SystemMonitor {
    */
   async getApiPerformance(): Promise<SystemMetrics['apiPerformance']> {
     try {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-
-      // Get endpoint performance from logs
-      const { data: logs } = await supabaseAdmin
-        .from('application_logs')
-        .select('*')
-        .gte('timestamp', oneHourAgo)
-        .contains('context', { endpoint: true })
-        .order('timestamp', { ascending: false })
-        .limit(1000)
-
-      const endpointStats = new Map<string, {
-        totalRequests: number
-        errorCount: number
-        totalResponseTime: number
-        lastChecked: string
-      }>()
-
-      // Process logs to calculate endpoint stats
-      logs?.forEach(log => {
-        const context = log.context as any
-        const endpoint = context?.endpoint || 'unknown'
-        const method = context?.method || 'GET'
-        const key = `${method} ${endpoint}`
-        
-        if (!endpointStats.has(key)) {
-          endpointStats.set(key, {
-            totalRequests: 0,
-            errorCount: 0,
-            totalResponseTime: 0,
-            lastChecked: log.timestamp
-          })
-        }
-
-        const stats = endpointStats.get(key)!
-        stats.totalRequests++
-        stats.totalResponseTime += context?.responseTime || 0
-        stats.lastChecked = log.timestamp
-
-        if (log.level === 'error') {
-          stats.errorCount++
-        }
-      })
-
-      // Convert to endpoint health objects
-      const endpoints: ApiEndpointHealth[] = Array.from(endpointStats.entries()).map(([key, stats]) => {
-        const [method, endpoint] = key.split(' ', 2)
-        const avgResponseTime = stats.totalRequests > 0 ? stats.totalResponseTime / stats.totalRequests : 0
-        const successRate = stats.totalRequests > 0 ? ((stats.totalRequests - stats.errorCount) / stats.totalRequests) * 100 : 100
-
-        return {
-          endpoint,
-          method,
-          status: avgResponseTime < 200 && successRate > 95 ? 'healthy' : 
-                  avgResponseTime < 1000 && successRate > 80 ? 'slow' : 'error',
-          responseTime: Math.round(avgResponseTime),
-          successRate: Math.round(successRate),
-          errorCount: stats.errorCount,
-          lastChecked: stats.lastChecked
-        }
-      })
-
-      // Calculate summary
-      const summary = {
-        healthy: endpoints.filter(e => e.status === 'healthy').length,
-        slow: endpoints.filter(e => e.status === 'slow').length,
-        error: endpoints.filter(e => e.status === 'error').length,
-        total: endpoints.length
+      // Temporarily return empty data until application_logs table is implemented
+      return {
+        summary: { healthy: 0, slow: 0, error: 0, total: 0 },
+        endpoints: []
       }
-
-      return { summary, endpoints }
-
     } catch (error) {
       logger.error('system', 'Failed to get API performance', { error: error instanceof Error ? error.message : String(error) })
       return {
@@ -438,24 +338,8 @@ class SystemMonitor {
    */
   async getRecentAlerts(): Promise<SystemMetrics['recentAlerts']> {
     try {
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-
-      const { data: alertLogs } = await supabaseAdmin
-        .from('application_logs')
-        .select('*')
-        .in('level', ['error', 'warn'])
-        .gte('timestamp', oneHourAgo)
-        .order('timestamp', { ascending: false })
-        .limit(10)
-
-      return alertLogs?.map(log => ({
-        id: log.id,
-        type: log.level === 'error' ? 'error' : 'warning' as const,
-        message: log.message,
-        timestamp: log.timestamp,
-        resolved: false // You could add resolution tracking
-      })) || []
-
+      // Temporarily return empty array until application_logs table is implemented
+      return []
     } catch (error) {
       return []
     }

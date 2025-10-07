@@ -338,8 +338,8 @@ export async function markReminderSent(trialId: string, reminderType: 'day_5' | 
       updateData.day_5_reminder_sent = true
       updateData.day_5_reminder_sent_at = new Date().toISOString()
     } else {
-      updateData.day_14_reminder_sent = true
-      updateData.day_14_reminder_sent_at = new Date().toISOString()
+      updateData.day_7_reminder_sent = true
+      updateData.day_7_reminder_sent_at = new Date().toISOString()
     }
 
     const { error } = await supabaseAdmin
