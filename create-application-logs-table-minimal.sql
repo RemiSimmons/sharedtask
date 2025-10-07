@@ -1,4 +1,4 @@
--- Create application_logs table for system monitoring
+-- Minimal application_logs table creation (no user references)
 -- Run this SQL in your Supabase SQL Editor
 
 -- Create the application_logs table
@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS application_logs (
   level TEXT NOT NULL CHECK (level IN ('info', 'warn', 'error', 'debug')),
   message TEXT NOT NULL,
   context JSONB DEFAULT '{}',
-  user_id UUID, -- Store user ID without foreign key constraint for now
-  ip_address INET,
+  user_id UUID, -- Store user ID without foreign key constraint
+  ip_address TEXT,
   user_agent TEXT,
   endpoint TEXT,
   method TEXT,
@@ -28,20 +28,14 @@ CREATE INDEX IF NOT EXISTS idx_application_logs_status_code ON application_logs(
 -- Enable Row Level Security (RLS)
 ALTER TABLE application_logs ENABLE ROW LEVEL SECURITY;
 
--- Create RLS policies
--- Only authenticated users can insert logs (for API logging)
-CREATE POLICY "Users can insert application logs" ON application_logs
+-- Create simple RLS policies (no user table references)
+-- Allow authenticated users to insert logs
+CREATE POLICY "Authenticated users can insert application logs" ON application_logs
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- Only admins can read logs
-CREATE POLICY "Admins can read application logs" ON application_logs
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM users 
-      WHERE users.id = auth.uid() 
-      AND users.role = 'admin'
-    )
-  );
+-- Allow service role to read all logs (for admin dashboard)
+CREATE POLICY "Service role can read application logs" ON application_logs
+  FOR SELECT USING (auth.role() = 'service_role');
 
 -- Create a function to clean up old logs (optional - for maintenance)
 CREATE OR REPLACE FUNCTION cleanup_old_application_logs()

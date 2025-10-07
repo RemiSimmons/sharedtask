@@ -1,4 +1,4 @@
--- Create application_logs table for system monitoring
+-- Simple application_logs table creation (no foreign key constraints)
 -- Run this SQL in your Supabase SQL Editor
 
 -- Create the application_logs table
@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS application_logs (
   level TEXT NOT NULL CHECK (level IN ('info', 'warn', 'error', 'debug')),
   message TEXT NOT NULL,
   context JSONB DEFAULT '{}',
-  user_id UUID, -- Store user ID without foreign key constraint for now
-  ip_address INET,
+  user_id UUID, -- Store user ID without foreign key constraint
+  ip_address TEXT, -- Changed from INET to TEXT for simplicity
   user_agent TEXT,
   endpoint TEXT,
   method TEXT,
