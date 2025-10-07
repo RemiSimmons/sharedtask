@@ -34,6 +34,7 @@ export interface UserTrial {
   status: TrialStatus
   start_date: string
   end_date: string
+  ends_at: string
   created_at: string
   updated_at: string
 }
@@ -55,6 +56,7 @@ export interface InsertUserTrial {
   status: TrialStatus
   start_date: string
   end_date: string
+  ends_at: string
 }
 
 export interface UpdateUserSubscription {
@@ -70,6 +72,7 @@ export interface UpdateUserTrial {
   status?: TrialStatus
   start_date?: string
   end_date?: string
+  ends_at?: string
 }
 
 export type Database = {
