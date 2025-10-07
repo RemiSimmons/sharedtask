@@ -157,16 +157,16 @@ export default function AdminProjectPage() {
             {/* Project Summary */}
             <ProjectSummary />
 
+            {/* Project Settings - Moved before Dynamic Content */}
+            <div className="max-w-2xl">
+              <ProjectSettingsSection />
+            </div>
+
             {/* Dynamic Content Layout based on project state */}
             <DynamicContentLayout 
               projectId={projectId}
               copyContributorLink={copyContributorLink}
             />
-
-            {/* Project Settings */}
-            <div className="max-w-2xl">
-              <ProjectSettingsSection />
-            </div>
 
             {/* Danger Zone - Moved to bottom */}
             <div className="mt-16 pt-8 border-t-2 border-gray-200">

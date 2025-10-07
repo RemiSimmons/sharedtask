@@ -323,9 +323,13 @@ export default function TaskClaimForm() {
                         setCurrentContributorName(e.target.value)
                       }}
                       placeholder="Your name..."
+                      maxLength={50}
                       className="form-input text-xl md:text-base py-4 md:py-2 px-4 md:px-3"
                       autoFocus={activeContributors.length === 0}
                     />
+                    <p className="text-sm text-gray-600 mt-1">
+                      {customName.length}/50 characters
+                    </p>
                     {activeContributors.length === 0 && (
                       <p className="text-lg md:text-sm text-gray-700 md:text-gray-600 font-medium md:font-normal">
                         💡 You'll be the first person on this project
@@ -393,8 +397,12 @@ export default function TaskClaimForm() {
                       value={customTask}
                       onChange={(e) => setCustomTask(e.target.value)}
                       placeholder="Type your task..."
+                      maxLength={100}
                       className="form-input text-xl md:text-base py-4 md:py-2 px-4 md:px-3"
                     />
+                    <p className="text-sm text-gray-600 mt-1">
+                      {customTask.length}/100 characters
+                    </p>
                   </div>
                 )}
               </div>

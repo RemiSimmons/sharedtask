@@ -203,8 +203,12 @@ export default function AdminDashboard() {
                 value={projectSettings.projectName}
                 onChange={(e) => updateProjectSettings({ projectName: e.target.value })}
                 placeholder="e.g., Smith Family Potluck"
+                maxLength={50}
                 className="h-14 text-lg border-2 border-gray-300/50 focus:ring-primary/50 focus:border-primary rounded-xl bg-white/80 hover:shadow-lg hover:shadow-primary/25 transition-all duration-200"
               />
+              <p className="text-sm text-gray-600 mt-1">
+                {projectSettings.projectName.length}/50 characters
+              </p>
             </div>
 
             <div className="space-y-4">
@@ -217,8 +221,12 @@ export default function AdminDashboard() {
                 value={projectSettings.taskLabel}
                 onChange={(e) => updateProjectSettings({ taskLabel: e.target.value })}
                 placeholder="e.g., Food Dishes, Volunteer Roles, Equipment"
+                maxLength={30}
                 className="h-14 text-lg border-2 border-gray-300/50 focus:ring-primary/50 focus:border-primary rounded-xl bg-white/80 hover:shadow-lg hover:shadow-primary/25 transition-all duration-200"
               />
+              <p className="text-sm text-gray-600 mt-1">
+                {projectSettings.taskLabel.length}/30 characters
+              </p>
               <p className="text-sm text-muted-foreground font-medium">
                 Task Label will replace 'Task Name' in your table
               </p>
@@ -453,9 +461,13 @@ export default function AdminDashboard() {
                   value={taskInput}
                   onChange={(e) => setTaskInput(e.target.value)}
                   placeholder="Add one or multiple tasks (separate by new lines or commas):&#10;Apple pie&#10;Green salad, Garlic bread, Soda drinks"
+                  maxLength={2000}
                   className="w-full px-6 py-4 text-lg border-2 border-gray-300/50 rounded-2xl bg-white/80 text-gray-900 placeholder:text-muted-foreground focus:outline-none focus:ring-4 focus:ring-warning/30 focus:border-warning transition-all duration-200 resize-none shadow-lg hover:shadow-lg hover:shadow-primary/25"
                   rows={6}
                 />
+                <p className="text-sm text-gray-600 mt-1">
+                  {taskInput.length}/2000 characters
+                </p>
                 <p className="text-base text-muted-foreground font-medium">
                   💡 Enter one task per line, or separate multiple tasks with commas
                 </p>

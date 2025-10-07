@@ -206,8 +206,12 @@ function LandingPageContent() {
                 onChange={(e) => setProjectName(e.target.value)}
                 className="form-input"
                 placeholder="Enter your project name"
+                maxLength={50}
                 required
               />
+              <p className="text-sm text-gray-600 mt-1">
+                {projectName.length}/50 characters
+              </p>
               <p className="text-sm text-gray-600 mt-1">This will appear at the top of your task management page</p>
             </div>
 
@@ -223,8 +227,12 @@ function LandingPageContent() {
                 onChange={(e) => setTaskLabel(e.target.value)}
                 className="form-input"
                 placeholder="Task Name"
+                maxLength={30}
                 required
               />
+              <p className="text-sm text-gray-600 mt-1">
+                {taskLabel.length}/30 characters
+              </p>
               <p className="text-sm text-gray-600 mt-1">This label will replace "Task Name" in your table headers</p>
             </div>
 
@@ -417,19 +425,21 @@ function LandingPageContent() {
                 <div className="space-y-4">
                   {userProjects.map((project) => (
                     <div key={project.id} className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
-                            {project.isExpired ? (
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                                Expired
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                Active
-                              </span>
-                            )}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900 pr-4 break-words">{project.name}</h3>
+                            <div className="flex-shrink-0">
+                              {project.isExpired ? (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                  Expired
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                  Active
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className="text-sm text-gray-600">
                             Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old

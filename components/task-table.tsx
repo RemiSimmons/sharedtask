@@ -215,15 +215,16 @@ export default function TaskTable() {
                   <div className="col-span-3">
                     {editingTasks.has(task.id) ? (
                       <div className="space-y-2">
-                        <Input
-                          value={editValues[task.id]?.name || ''}
-                          onChange={(e) => setEditValues(prev => ({
-                            ...prev,
-                            [task.id]: { ...prev[task.id], name: e.target.value }
-                          }))}
-                          className="text-lg font-medium"
-                          placeholder="Task name"
-                        />
+                      <Input
+                        value={editValues[task.id]?.name || ''}
+                        onChange={(e) => setEditValues(prev => ({
+                          ...prev,
+                          [task.id]: { ...prev[task.id], name: e.target.value }
+                        }))}
+                        className="text-lg font-medium"
+                        placeholder="Task name"
+                        maxLength={100}
+                      />
                         <div className="space-y-1">
                           <Textarea
                             value={editValues[task.id]?.description || ''}
@@ -420,6 +421,7 @@ export default function TaskTable() {
                         }))}
                         className="text-xl font-bold py-4 px-4"
                         placeholder="Task name"
+                        maxLength={100}
                       />
                       <div className="space-y-2">
                         <Textarea
