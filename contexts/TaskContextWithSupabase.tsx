@@ -1,9 +1,10 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react"
-import { supabase, handleSupabaseError } from "@/lib/supabase"
+import { supabase, supabaseAdmin, handleSupabaseError } from "@/lib/supabase"
 import { useOptimizedPolling } from "@/lib/smart-polling"
 import { Project, Task as DatabaseTask, TaskAssignment, TaskComment } from "@/types/database"
+import { useSession } from "next-auth/react"
 
 export type TaskStatus = "available" | "claimed" | "completed"
 
@@ -89,6 +90,7 @@ interface TaskProviderProps {
 }
 
 export function TaskProvider({ children, projectId }: TaskProviderProps) {
+  const { data: session } = useSession()
   const [tasks, setTasks] = useState<Task[]>([])
   const [projectSettings, setProjectSettings] = useState<ProjectSettings>({
     projectName: "",
@@ -104,6 +106,11 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentProject, setCurrentProject] = useState<Project | null>(null)
+  
+  // Use admin client for authenticated operations, regular client for public operations
+  const getSupabaseClient = () => {
+    return session ? supabaseAdmin : supabase
+  }
   
   // Quick claiming state
   const [selectedTasksForClaiming, setSelectedTasksForClaiming] = useState<string[]>([])
@@ -222,8 +229,9 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
       let project: Project
 
       if (projectId) {
-        // Load specific project by ID
-        const { data: projectData, error: projectError } = await supabase
+        // Load specific project by ID - use admin client for authenticated users
+        const client = getSupabaseClient()
+        const { data: projectData, error: projectError } = await client
           .from('projects')
           .select('*')
           .eq('id', projectId)

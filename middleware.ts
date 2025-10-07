@@ -20,20 +20,28 @@ export default auth((req) => {
       return NextResponse.redirect(new URL("/auth/signin", req.url))
     }
     
-    // Check if authenticated user has admin privileges
-    if (!isAdminUser(session.user)) {
-      console.log('Middleware: Non-admin user blocked from admin route:', {
+    // Allow access to admin project pages for authenticated users (they manage their own projects)
+    if (req.nextUrl.pathname.startsWith("/admin/project/")) {
+      console.log('Middleware: Authenticated user accessing their project admin page:', {
+        email: session.user?.email,
+        path: req.nextUrl.pathname
+      })
+      // Allow access - users can manage their own projects
+    }
+    // Check if authenticated user has admin privileges for other admin routes
+    else if (!isAdminUser(session.user)) {
+      console.log('Middleware: Non-admin user blocked from general admin route:', {
         email: session.user?.email,
         path: req.nextUrl.pathname
       })
       // Redirect non-admin users to home page
       return NextResponse.redirect(new URL("/", req.url))
+    } else {
+      console.log('Middleware: Admin user accessing general admin route:', {
+        email: session.user?.email,
+        path: req.nextUrl.pathname
+      })
     }
-    
-    console.log('Middleware: Admin user accessing admin route:', {
-      email: session.user?.email,
-      path: req.nextUrl.pathname
-    })
   }
   
   // Create response

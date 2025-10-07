@@ -71,7 +71,7 @@ function LandingPageContent() {
   const handleDeleteProject = async (projectId: string, projectName?: string) => {
     // If called from modal, we don't need confirmation
     const needsConfirmation = !!projectName
-    
+
     if (needsConfirmation && !confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
       return
     }
@@ -88,7 +88,7 @@ function LandingPageContent() {
 
       const result = await response.json()
       alert(result.message || 'Project deleted successfully!')
-      
+
       // Close modal if open and reload projects list
       setShowProjectLimitModal(false)
       await loadUserProjects()
@@ -100,7 +100,7 @@ function LandingPageContent() {
 
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     setIsCreating(true)
 
     try {
@@ -128,21 +128,28 @@ function LandingPageContent() {
           statusText: response.statusText,
           error: errorData
         })
-        
+
         // Handle specific error codes with better UX
         if (errorData.code === 'FREE_TIER_ACTIVE_PROJECT_LIMIT' || errorData.code === 'PROJECT_LIMIT_REACHED') {
           handleProjectLimitError(errorData)
           return
         }
-        
+
         throw new Error(errorData.message || errorData.error || 'Failed to create project')
       }
 
       const project = await response.json()
       console.log('Project created successfully:', project)
-      
-      // Redirect to admin dashboard for the new project
-      router.push(`/admin/project/${project.id}`)
+
+      // Refresh the projects list immediately
+      await loadUserProjects()
+
+      // Close the create form
+      setShowCreateForm(false)
+
+      // Navigate to the project management page
+      console.log('Redirecting to:', `/admin/project/${project.id}`)
+      window.location.href = `/admin/project/${project.id}`
     } catch (error) {
       console.error('Error creating project:', error)
       alert(`Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -158,9 +165,9 @@ function LandingPageContent() {
         {/* Header */}
         <div className="text-center space-y-6 mb-12">
           <div className="flex flex-col items-center gap-4">
-            <img 
-              src="/shared-task-logo.svg" 
-              alt="SharedTask Logo" 
+            <img
+              src="/shared-task-logo.svg"
+              alt="SharedTask Logo"
               className="h-20 w-auto"
             />
           </div>
@@ -224,7 +231,7 @@ function LandingPageContent() {
             {/* Assignment Settings */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">⚙️ Assignment Settings</h3>
-              
+
               {/* Multiple Tasks */}
               <div className="flex items-start space-x-3">
                 <input
@@ -345,9 +352,9 @@ function LandingPageContent() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center space-y-6 mb-12">
             <div className="flex flex-col items-center gap-4">
-              <img 
-                src="/shared-task-logo.svg" 
-                alt="SharedTask Logo" 
+              <img
+                src="/shared-task-logo.svg"
+                alt="SharedTask Logo"
                 className="h-20 w-auto"
               />
               <h1 className="text-4xl font-bold text-gray-900">Welcome Back, {session?.user?.name}!</h1>
@@ -385,7 +392,7 @@ function LandingPageContent() {
                   </svg>
                   <h2 className="text-2xl font-bold text-gray-900">My Projects</h2>
                 </div>
-                <button 
+                <button
                   onClick={() => router.push('/account')}
                   className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                 >
@@ -506,9 +513,9 @@ function LandingPageContent() {
         {/* Hero Section */}
         <div className="text-center space-y-2 mb-6">
           <div className="flex flex-col items-center gap-2">
-            <img 
-              src="/shared-task-logo.svg" 
-              alt="SharedTask Logo" 
+            <img
+              src="/shared-task-logo.svg"
+              alt="SharedTask Logo"
               className="h-20 w-auto"
             />
           </div>
@@ -518,7 +525,7 @@ function LandingPageContent() {
           <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium leading-relaxed mt-4">
             The fastest way to organize any group — no logins, no learning curve.
           </p>
-          
+
           {/* Start for Free CTA */}
           <div className="mt-8">
             <button
@@ -528,7 +535,7 @@ function LandingPageContent() {
               Start for Free
             </button>
           </div>
-          
+
         </div>
 
         {/* Call to Action */}
@@ -537,9 +544,9 @@ function LandingPageContent() {
           <div className="card-form p-6 text-center hover-lift flex flex-col">
             {/* Demo Image */}
             <div className="flex justify-center mb-4">
-              <img 
-                src="/ui-interaction-demo.png" 
-                alt="Interactive Demo Preview" 
+              <img
+                src="/ui-interaction-demo.png"
+                alt="Interactive Demo Preview"
                 className="w-32 h-32 object-contain"
               />
             </div>
@@ -576,9 +583,9 @@ function LandingPageContent() {
           <div className="card-beautiful p-6 text-center hover-lift flex flex-col">
             {/* Create Project Image */}
             <div className="flex justify-center mb-4">
-              <img 
-                src="/create-project-demo.png" 
-                alt="Create Project Preview" 
+              <img
+                src="/create-project-demo.png"
+                alt="Create Project Preview"
                 className="w-32 h-32 object-contain"
               />
             </div>
@@ -619,34 +626,34 @@ function LandingPageContent() {
         <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto mt-12">
           <div className="text-center">
             <div className="w-12 h-12 mx-auto rounded-lg flex items-center justify-center mb-3">
-              <img 
-                src="/easy-collaboration-icon.png" 
-                alt="Easy Collaboration" 
+              <img
+                src="/easy-collaboration-icon.png"
+                alt="Easy Collaboration"
                 className="w-12 h-12"
               />
             </div>
             <h3 className="text-base font-semibold text-gray-900 mb-2">Easy Collaboration</h3>
             <p className="text-base text-gray-600">Real-time task claiming and progress tracking</p>
           </div>
-          
+
           <div className="text-center">
             <div className="w-12 h-12 mx-auto rounded-lg flex items-center justify-center mb-3">
-              <img 
-                src="/ui-interaction-demo.png" 
-                alt="Simple Setup" 
+              <img
+                src="/ui-interaction-demo.png"
+                alt="Simple Setup"
                 className="w-12 h-12"
               />
             </div>
             <h3 className="text-base font-semibold text-gray-900 mb-2">Simple Setup</h3>
             <p className="text-base text-gray-600">Get started in seconds with zero configuration</p>
           </div>
-          
+
           <div className="text-center">
             <div className="w-12 h-12 mx-auto rounded-lg flex items-center justify-center mb-3">
-              <img 
-                src="/share-anywhere-icon.png" 
-                alt="Share Anywhere" 
-                className="w-12 h-12 object-contain brightness-75 contrast-125" 
+              <img
+                src="/share-anywhere-icon.png"
+                alt="Share Anywhere"
+                className="w-12 h-12 object-contain brightness-75 contrast-125"
               />
             </div>
             <h3 className="text-base font-semibold text-gray-900 mb-2">Share Anywhere</h3>
@@ -668,22 +675,22 @@ function LandingPageContent() {
         <footer className="mt-16 pt-8 border-t border-gray-200">
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
-              <Link 
-                href="/terms" 
+              <Link
+                href="/terms"
                 className="hover:text-blue-600 transition-colors"
               >
                 Terms of Service
               </Link>
               <span>•</span>
-              <Link 
-                href="/privacy" 
+              <Link
+                href="/privacy"
                 className="hover:text-blue-600 transition-colors"
               >
                 Privacy Policy
               </Link>
               <span>•</span>
-              <Link 
-                href="/support" 
+              <Link
+                href="/support"
                 className="hover:text-blue-600 transition-colors"
               >
                 Support
@@ -721,7 +728,7 @@ function LandingPageContent() {
               <div key={index} className="border rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-1">{solution.title}</h4>
                 <p className="text-sm text-gray-600 mb-3">{solution.description}</p>
-                
+
                 {solution.action === 'upgrade_plan' && (
                   <button
                     onClick={() => router.push('/pricing')}
@@ -730,7 +737,7 @@ function LandingPageContent() {
                     Upgrade Now
                   </button>
                 )}
-                
+
                 {solution.action === 'delete_project' && solution.projectId && (
                   <button
                     onClick={() => {
@@ -743,7 +750,7 @@ function LandingPageContent() {
                     Delete Project
                   </button>
                 )}
-                
+
                 {solution.action === 'manage_projects' && (
                   <div className="space-y-2">
                     {projectLimitError.activeProjects?.map((project: any) => (
