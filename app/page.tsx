@@ -404,13 +404,7 @@ function LandingPageContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
                   <h3 className="text-xl font-medium text-gray-900 mb-2">No projects yet</h3>
-                  <p className="text-gray-600 mb-6">Create your first project to get started!</p>
-                  <button 
-                    onClick={handleCreateProjectClick}
-                    className="btn-primary px-6 py-3"
-                  >
-                    Create Your First Project
-                  </button>
+                  <p className="text-gray-600 mb-6">Use the "Create Project" button above to get started!</p>
                 </div>
               ) : (
                 <div className="space-y-4">
