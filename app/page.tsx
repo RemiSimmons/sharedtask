@@ -352,6 +352,7 @@ function LandingPageContent() {
                 className="h-20 w-auto"
               />
               <h1 className="text-4xl font-bold text-gray-900">Welcome Back, {session?.user?.name}!</h1>
+              {/* Force rebuild - deployment cache issue fix */}
             </div>
             <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
               Ready to manage your projects?
