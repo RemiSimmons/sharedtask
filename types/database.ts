@@ -722,3 +722,9 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+// Type aliases for easier imports
+export type Project = Database['public']['Tables']['projects']['Row']
+export type Task = Database['public']['Tables']['tasks']['Row']
+export type TaskAssignment = Database['public']['Tables']['task_assignments']['Row']
+export type TaskComment = Database['public']['Tables']['task_comments']['Row']
