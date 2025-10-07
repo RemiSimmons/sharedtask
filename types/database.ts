@@ -6,6 +6,72 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+// Additional types for subscription system
+export type PlanType = 'basic' | 'pro' | 'team'
+export type BillingInterval = 'month' | 'year'
+export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'trialing'
+export type TrialStatus = 'active' | 'expired' | 'canceled'
+
+// Subscription-related types
+export interface UserSubscription {
+  id: string
+  user_id: string
+  stripe_subscription_id: string
+  stripe_customer_id: string
+  plan: PlanType
+  interval: BillingInterval
+  status: SubscriptionStatus
+  current_period_start: string
+  current_period_end: string
+  created_at: string
+  updated_at: string
+}
+
+export interface UserTrial {
+  id: string
+  user_id: string
+  plan: PlanType
+  status: TrialStatus
+  start_date: string
+  end_date: string
+  created_at: string
+  updated_at: string
+}
+
+export interface InsertUserSubscription {
+  user_id: string
+  stripe_subscription_id: string
+  stripe_customer_id: string
+  plan: PlanType
+  interval: BillingInterval
+  status: SubscriptionStatus
+  current_period_start: string
+  current_period_end: string
+}
+
+export interface InsertUserTrial {
+  user_id: string
+  plan: PlanType
+  status: TrialStatus
+  start_date: string
+  end_date: string
+}
+
+export interface UpdateUserSubscription {
+  plan?: PlanType
+  interval?: BillingInterval
+  status?: SubscriptionStatus
+  current_period_start?: string
+  current_period_end?: string
+}
+
+export interface UpdateUserTrial {
+  plan?: PlanType
+  status?: TrialStatus
+  start_date?: string
+  end_date?: string
+}
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
