@@ -732,4 +732,4 @@ export type InsertEmailLog = Database['public']['Tables']['email_logs']['Insert'
 export type User = Database['public']['Tables']['users']['Row']
 
 // Email types
-export type EmailType = 'trial_welcome' | 'trial_reminder' | 'trial_expired' | 'subscription_welcome' | 'subscription_reminder' | 'subscription_canceled'
+export type EmailType = 'trial_welcome' | 'trial_reminder' | 'trial_expired' | 'trial_day_5' | 'trial_day_14' | 'subscription_welcome' | 'subscription_reminder' | 'subscription_canceled'
