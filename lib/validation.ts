@@ -98,6 +98,21 @@ export const projectSchema = z.object({
   allowContributorsAddTasks: z.boolean()
     .optional()
     .default(true),
+  eventLocation: z.string()
+    .max(100, 'Location must be less than 100 characters')
+    .trim()
+    .optional()
+    .nullable(),
+  eventTime: z.string()
+    .max(100, 'Time must be less than 100 characters')
+    .trim()
+    .optional()
+    .nullable(),
+  eventAttire: z.string()
+    .max(100, 'Attire must be less than 100 characters')
+    .trim()
+    .optional()
+    .nullable(),
   projectPassword: z.string()
     .min(6, 'Project password must be at least 6 characters')
     .max(50, 'Project password must be less than 50 characters')

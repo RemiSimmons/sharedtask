@@ -16,6 +16,9 @@ function LandingPageContent() {
   const [maxContributors, setMaxContributors] = useState("")
   const [allowContributorsAddNames, setAllowContributorsAddNames] = useState(true)
   const [allowContributorsAddTasks, setAllowContributorsAddTasks] = useState(true)
+  const [eventLocation, setEventLocation] = useState("")
+  const [eventTime, setEventTime] = useState("")
+  const [eventAttire, setEventAttire] = useState("")
   const [isCreating, setIsCreating] = useState(false)
   const [showProjectLimitModal, setShowProjectLimitModal] = useState(false)
   const [projectLimitError, setProjectLimitError] = useState<any>(null)
@@ -118,6 +121,9 @@ function LandingPageContent() {
           maxContributorsPerTask: allowMultipleContributors ? parseInt(maxContributors) || null : null,
           allowContributorsAddNames,
           allowContributorsAddTasks,
+          eventLocation: eventLocation.trim() || null,
+          eventTime: eventTime.trim() || null,
+          eventAttire: eventAttire.trim() || null,
         }),
       })
 
@@ -234,6 +240,69 @@ function LandingPageContent() {
                 {taskLabel.length}/30 characters
               </p>
               <p className="text-sm text-gray-600 mt-1">This label will replace "Task Name" in your table headers</p>
+            </div>
+
+            {/* Event Details - Optional */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">📅 Event Details (Optional)</h3>
+              <p className="text-sm text-gray-600">Add location, time, and attire info to help contributors plan better</p>
+              
+              {/* Location */}
+              <div>
+                <label htmlFor="event-location" className="block text-base font-medium text-gray-900 mb-2">
+                  📍 Location
+                </label>
+                <input
+                  id="event-location"
+                  type="text"
+                  value={eventLocation}
+                  onChange={(e) => setEventLocation(e.target.value)}
+                  className="form-input"
+                  placeholder="e.g., Community Center, 123 Main St"
+                  maxLength={100}
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  {eventLocation.length}/100 characters
+                </p>
+              </div>
+
+              {/* Time */}
+              <div>
+                <label htmlFor="event-time" className="block text-base font-medium text-gray-900 mb-2">
+                  ⏰ Time
+                </label>
+                <input
+                  id="event-time"
+                  type="text"
+                  value={eventTime}
+                  onChange={(e) => setEventTime(e.target.value)}
+                  className="form-input"
+                  placeholder="e.g., Saturday 2:00 PM, Dec 15th at 3:30 PM"
+                  maxLength={100}
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  {eventTime.length}/100 characters
+                </p>
+              </div>
+
+              {/* Attire */}
+              <div>
+                <label htmlFor="event-attire" className="block text-base font-medium text-gray-900 mb-2">
+                  👔 Attire
+                </label>
+                <input
+                  id="event-attire"
+                  type="text"
+                  value={eventAttire}
+                  onChange={(e) => setEventAttire(e.target.value)}
+                  className="form-input"
+                  placeholder="e.g., Casual, Business casual, Formal, Holiday themed"
+                  maxLength={100}
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  {eventAttire.length}/100 characters
+                </p>
+              </div>
             </div>
 
             {/* Assignment Settings */}

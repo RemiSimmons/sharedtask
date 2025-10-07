@@ -48,6 +48,9 @@ export async function POST(request: NextRequest) {
       maxContributorsPerTask,
       allowContributorsAddNames = true,
       allowContributorsAddTasks = true,
+      eventLocation,
+      eventTime,
+      eventAttire,
       projectPassword
     } = validation.data.body!
 
@@ -172,6 +175,9 @@ export async function POST(request: NextRequest) {
     const sanitizedName = sanitizeInput(name)
     const sanitizedTaskLabel = sanitizeInput(taskLabel)
     const sanitizedDescription = description ? sanitizeInput(description) : null
+    const sanitizedEventLocation = eventLocation ? sanitizeInput(eventLocation) : null
+    const sanitizedEventTime = eventTime ? sanitizeInput(eventTime) : null
+    const sanitizedEventAttire = eventAttire ? sanitizeInput(eventAttire) : null
 
     // Validate contributor limits
     if (maxContributorsPerTask && maxContributorsPerTask > 100) {
@@ -189,6 +195,9 @@ export async function POST(request: NextRequest) {
         name: sanitizedName,
         task_label: sanitizedTaskLabel,
         description: sanitizedDescription,
+        event_location: sanitizedEventLocation,
+        event_time: sanitizedEventTime,
+        event_attire: sanitizedEventAttire,
         admin_password: hashedPassword || 'no_password_set',
         allow_multiple_tasks: allowMultipleTasks,
         allow_multiple_contributors: allowMultipleContributors,
@@ -196,7 +205,7 @@ export async function POST(request: NextRequest) {
         allow_contributors_add_names: allowContributorsAddNames,
         allow_contributors_add_tasks: allowContributorsAddTasks
       })
-      .select('id, name, task_label, description, created_at, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks')
+      .select('id, name, task_label, description, event_location, event_time, event_attire, created_at, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks')
       .single()
 
     if (error) {
