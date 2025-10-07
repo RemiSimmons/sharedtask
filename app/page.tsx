@@ -340,72 +340,48 @@ function LandingPageContent() {
 
   // Render authenticated user view - Main Dashboard
   const renderAuthenticatedView = () => {
-    // Debug: Log current user info
-    console.log('Current user session:', {
-      name: session?.user?.name,
-      email: session?.user?.email,
-      isAdmin: isAdminUser(session?.user)
-    })
-
     return (
       <div className="min-h-screen p-6 md:p-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center space-y-6 mb-12">
-            <div className="flex items-center justify-center gap-4">
-              <svg className="header-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-              <h1 className="header-main">{session?.user?.name ? `Welcome Back, ${session.user.name}!` : 'Welcome Back!'}</h1>
+            <div className="flex flex-col items-center gap-4">
+              <img 
+                src="/shared-task-logo.svg" 
+                alt="SharedTask Logo" 
+                className="h-20 w-auto"
+              />
+              <h1 className="text-4xl font-bold text-gray-900">Welcome Back, {session?.user?.name}!</h1>
             </div>
             <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
-              {session?.user?.name ? `Welcome back, ${session.user.name}!` : `Hi ${session?.user?.email}!`} Ready to manage your projects?
+              Ready to manage your projects?
             </p>
-            {/* Debug info - check console for detailed logs */}
-            <div className="text-sm text-gray-500 bg-yellow-50 border border-yellow-200 p-3 rounded">
-              🔍 Debug Mode: Check browser console for authentication details
-            </div>
           </div>
 
-          {/* Main Dashboard Content */}
-          <div className="grid gap-8 lg:grid-cols-3">
-            {/* Left Column - Create New Project */}
-            <div className="lg:col-span-1">
-              <div className="card-beautiful p-8 text-center hover-lift">
-                <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
-                  <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">📋 Create New Project</h2>
-                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                  Start organizing tasks for your next event, potluck, or project.
-                </p>
-                <button
-                  onClick={handleCreateProjectClick}
-                  className="w-full btn-primary text-lg py-4 shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  Create Project
-                </button>
+          {/* Main Content - Vertical Card Layout */}
+          <div className="space-y-8 max-w-2xl mx-auto">
+            
+            {/* Create New Project Card */}
+            <div className="card-beautiful p-8 text-center hover-lift">
+              <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
               </div>
-
-              {/* Admin Dashboard Access */}
-              {isAdminUser(session?.user) && (
-                <div className="card-form p-6 text-center hover-lift mt-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">⚙️ Admin Dashboard</h3>
-                  <button
-                    onClick={() => router.push('/admin')}
-                    className="w-full btn-secondary py-3 border-2 border-blue-200 hover:border-blue-300 transition-all duration-300"
-                  >
-                    🔧 Go to Admin Dashboard
-                  </button>
-                </div>
-              )}
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">📋 Create New Project</h2>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Start organizing tasks for your next event, potluck, or project.
+              </p>
+              <button
+                onClick={handleCreateProjectClick}
+                className="w-full btn-primary text-lg py-4 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Create Project
+              </button>
             </div>
 
-            {/* Right Column - My Projects */}
-            <div className="lg:col-span-2">
-              <div className="card-beautiful p-8">
+            {/* My Projects Dashboard Card */}
+            <div className="card-beautiful p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <svg className="section-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -464,10 +440,18 @@ function LandingPageContent() {
                           </div>
                           <div className="flex items-center gap-4">
                             <button
-                              onClick={() => router.push(`/project/${project.id}`)}
+                              onClick={() => router.push(`/admin/project/${project.id}`)}
                               className="btn-primary px-4 py-2 text-sm"
+                              title="Manage project settings and admin dashboard"
                             >
-                              Open Project
+                              Manage Project
+                            </button>
+                            <button
+                              onClick={() => router.push(`/project/${project.id}`)}
+                              className="btn-secondary px-4 py-2 text-sm border border-gray-300"
+                              title="View public project page"
+                            >
+                              View Public
                             </button>
                             <button
                               onClick={() => handleDeleteProject(project.id, project.name)}
