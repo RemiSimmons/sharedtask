@@ -343,7 +343,6 @@ function LandingPageContent() {
     return (
       <div className="min-h-screen p-6 md:p-8">
         <div className="max-w-4xl mx-auto">
-          {/* Header */}
           <div className="text-center space-y-6 mb-12">
             <div className="flex flex-col items-center gap-4">
               <img 
@@ -352,16 +351,12 @@ function LandingPageContent() {
                 className="h-20 w-auto"
               />
               <h1 className="text-4xl font-bold text-gray-900">Welcome Back, {session?.user?.name}!</h1>
-              {/* Force rebuild - deployment cache issue fix */}
             </div>
             <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
               Ready to manage your projects?
             </p>
           </div>
-
-          {/* Main Content - Vertical Card Layout */}
           <div className="space-y-8 max-w-2xl mx-auto">
-            
             {/* Create New Project Card */}
             <div className="card-beautiful p-8 text-center hover-lift">
               <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
@@ -383,108 +378,103 @@ function LandingPageContent() {
 
             {/* My Projects Dashboard Card */}
             <div className="card-beautiful p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <svg className="section-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                    <h2 className="header-section">My Projects</h2>
-                  </div>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                  <h2 className="text-2xl font-bold text-gray-900">My Projects</h2>
+                </div>
+                <button 
+                  onClick={() => router.push('/account')}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                >
+                  Account Settings →
+                </button>
+              </div>
+
+              {isLoadingProjects ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="mt-2 text-gray-600">Loading projects...</p>
+                </div>
+              ) : userProjects.length === 0 ? (
+                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                  <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">No projects yet</h3>
+                  <p className="text-gray-600 mb-6">Create your first project to get started!</p>
                   <button 
-                    onClick={() => router.push('/account')}
-                    className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                    onClick={handleCreateProjectClick}
+                    className="btn-primary px-6 py-3"
                   >
-                    Account Settings →
+                    Create Your First Project
                   </button>
                 </div>
-
-                {isLoadingProjects ? (
-                  <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-2 text-gray-600">Loading projects...</p>
-                  </div>
-                ) : userProjects.length === 0 ? (
-                  <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                    </svg>
-                    <h3 className="text-xl font-medium text-gray-900 mb-2">No projects yet</h3>
-                    <p className="text-gray-600 mb-6">Create your first project to get started!</p>
-                    <button 
-                      onClick={handleCreateProjectClick}
-                      className="btn-primary px-6 py-3"
-                    >
-                      Create Your First Project
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {userProjects.map((project) => (
-                      <div key={project.id} className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
-                              {project.isExpired ? (
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                                  Expired
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                  Active
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
-                            </div>
+              ) : (
+                <div className="space-y-4">
+                  {userProjects.map((project) => (
+                    <div key={project.id} className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
+                            {project.isExpired ? (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                Expired
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                Active
+                              </span>
+                            )}
                           </div>
-                          <div className="flex items-center gap-4">
-                            <button
-                              onClick={() => router.push(`/admin/project/${project.id}`)}
-                              className="btn-primary px-4 py-2 text-sm"
-                              title="Manage project settings and admin dashboard"
-                            >
-                              Manage Project
-                            </button>
-                            <button
-                              onClick={() => router.push(`/project/${project.id}`)}
-                              className="btn-secondary px-4 py-2 text-sm border border-gray-300"
-                              title="View public project page"
-                            >
-                              View Public
-                            </button>
-                            <button
-                              onClick={() => handleDeleteProject(project.id, project.name)}
-                              className="text-red-600 hover:text-red-800 font-medium text-sm"
-                            >
-                              Delete
-                            </button>
+                          <div className="text-sm text-gray-600">
+                            Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
                           </div>
                         </div>
-                      </div>
-                    ))}
-                    
-                    {userProjects.filter(p => !p.isExpired).length > 1 && (
-                      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <div className="flex items-start gap-3">
-                          <svg className="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                          </svg>
-                          <div>
-                            <h4 className="font-medium text-yellow-800">Free Tier Limit</h4>
-                            <p className="text-sm text-yellow-700 mt-1">
-                              You have {userProjects.filter(p => !p.isExpired).length} active projects. Free users can only have 1 active project at a time. 
-                              Delete old projects or <button onClick={() => router.push('/pricing')} className="underline font-medium">upgrade your plan</button> to create more.
-                            </p>
-                          </div>
+                        <div className="flex items-center gap-4">
+                          <button
+                            onClick={() => router.push(`/admin/project/${project.id}`)}
+                            className="btn-primary px-4 py-2 text-sm"
+                            title="Manage project settings and admin dashboard"
+                          >
+                            Manage Project
+                          </button>
+                          <button
+                            onClick={() => router.push(`/project/${project.id}`)}
+                            className="btn-secondary px-4 py-2 text-sm border border-gray-300"
+                            title="View public project page"
+                          >
+                            View Public
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProject(project.id, project.name)}
+                            className="text-red-600 hover:text-red-800 font-medium text-sm"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+
+            {/* Admin Dashboard Access */}
+            {isAdminUser(session?.user) && (
+              <div className="card-form p-6 text-center hover-lift">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">⚙️ Admin Dashboard</h3>
+                <button
+                  onClick={() => router.push('/admin')}
+                  className="w-full btn-secondary py-3 border-2 border-blue-200 hover:border-blue-300 transition-all duration-300"
+                >
+                  🔧 Go to Admin Dashboard
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Bottom Navigation */}
