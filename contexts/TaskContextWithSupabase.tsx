@@ -35,6 +35,9 @@ interface ProjectSettings {
   contributorNames: string[]
   allowContributorsAddNames: boolean
   allowContributorsAddTasks: boolean
+  eventLocation?: string | null
+  eventTime?: string | null
+  eventAttire?: string | null
 }
 
 interface TaskContextType {
@@ -103,6 +106,9 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     contributorNames: [],
     allowContributorsAddNames: true,
     allowContributorsAddTasks: true,
+    eventLocation: null,
+    eventTime: null,
+    eventAttire: null,
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -215,6 +221,10 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
           // Safe defaults for new permission fields
           allowContributorsAddNames: project.allow_contributors_add_names ?? true,
           allowContributorsAddTasks: project.allow_contributors_add_tasks ?? true,
+          // Event details
+          eventLocation: project.event_location || null,
+          eventTime: project.event_time || null,
+          eventAttire: project.event_attire || null,
         })
       }
     } catch (err) {
@@ -284,6 +294,10 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         // Safe defaults for new permission fields
         allowContributorsAddNames: project.allow_contributors_add_names ?? true,
         allowContributorsAddTasks: project.allow_contributors_add_tasks ?? true,
+        // Event details
+        eventLocation: project.event_location || null,
+        eventTime: project.event_time || null,
+        eventAttire: project.event_attire || null,
       })
 
       // Load tasks for this project

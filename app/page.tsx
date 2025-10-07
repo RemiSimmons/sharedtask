@@ -285,10 +285,10 @@ function LandingPageContent() {
                 </p>
               </div>
 
-              {/* Attire */}
+              {/* Additional Details */}
               <div>
                 <label htmlFor="event-attire" className="block text-base font-medium text-gray-900 mb-2">
-                  👔 Attire
+                  📝 Additional Details
                 </label>
                 <input
                   id="event-attire"
@@ -296,7 +296,7 @@ function LandingPageContent() {
                   value={eventAttire}
                   onChange={(e) => setEventAttire(e.target.value)}
                   className="form-input"
-                  placeholder="e.g., Casual, Business casual, Formal, Holiday themed"
+                  placeholder="e.g., Casual attire, Surprise party, Bring snacks, etc."
                   maxLength={100}
                 />
                 <p className="text-sm text-gray-600 mt-1">

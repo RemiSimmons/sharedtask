@@ -206,16 +206,16 @@ function DynamicContentLayout({
           <TaskTable />
         </div>
 
-        {/* Project Settings - Moved here */}
-        <div className="max-w-2xl">
-          <ProjectSettingsSection />
-        </div>
-
         {/* Project Actions Section */}
         <ProjectActions 
           projectId={projectId}
           copyContributorLink={copyContributorLink}
         />
+
+        {/* Project Settings - Moved here */}
+        <div className="max-w-2xl">
+          <ProjectSettingsSection />
+        </div>
       </div>
     )
   } else {
@@ -233,11 +233,6 @@ function DynamicContentLayout({
           <TaskTable />
         </div>
 
-        {/* Project Settings - Moved here */}
-        <div className="max-w-2xl">
-          <ProjectSettingsSection />
-        </div>
-
         {/* Project Setup Section */}
         <BulkAddSection />
 
@@ -246,6 +241,11 @@ function DynamicContentLayout({
           projectId={projectId}
           copyContributorLink={copyContributorLink}
         />
+
+        {/* Project Settings - Moved here */}
+        <div className="max-w-2xl">
+          <ProjectSettingsSection />
+        </div>
       </div>
     )
   }
