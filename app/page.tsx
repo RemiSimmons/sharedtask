@@ -445,7 +445,7 @@ function LandingPageContent() {
                             Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 ml-6">
                           <button
                             onClick={() => router.push(`/admin/project/${project.id}`)}
                             className="btn-primary px-4 py-2 text-sm"

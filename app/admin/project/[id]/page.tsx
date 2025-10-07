@@ -157,11 +157,6 @@ export default function AdminProjectPage() {
             {/* Project Summary */}
             <ProjectSummary />
 
-            {/* Project Settings - Moved before Dynamic Content */}
-            <div className="max-w-2xl">
-              <ProjectSettingsSection />
-            </div>
-
             {/* Dynamic Content Layout based on project state */}
             <DynamicContentLayout 
               projectId={projectId}
@@ -211,6 +206,11 @@ function DynamicContentLayout({
           <TaskTable />
         </div>
 
+        {/* Project Settings - Moved here */}
+        <div className="max-w-2xl">
+          <ProjectSettingsSection />
+        </div>
+
         {/* Project Actions Section */}
         <ProjectActions 
           projectId={projectId}
@@ -231,6 +231,11 @@ function DynamicContentLayout({
             <h2 className="header-section mb-0">{projectSettings.taskLabel || "Active Tasks"}</h2>
           </div>
           <TaskTable />
+        </div>
+
+        {/* Project Settings - Moved here */}
+        <div className="max-w-2xl">
+          <ProjectSettingsSection />
         </div>
 
         {/* Project Setup Section */}
