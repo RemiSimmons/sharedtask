@@ -26,13 +26,6 @@ export function PoweredByFooter({ show, className = '' }: PoweredByFooterProps) 
           </svg>
           SharedTask
         </a>
-        <span className="text-xs text-gray-400">•</span>
-        <a 
-          href="/pricing" 
-          className="text-blue-600 hover:text-blue-800 text-xs font-medium transition-colors"
-        >
-          Upgrade to remove
-        </a>
       </div>
     </div>
   )
