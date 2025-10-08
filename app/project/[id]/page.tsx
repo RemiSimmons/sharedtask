@@ -78,34 +78,34 @@ function ProjectContent() {
                       <h3 className="text-2xl md:text-lg font-bold md:font-semibold text-green-900 mb-3 md:mb-2">Event Details</h3>
                       <div className="space-y-2">
                         {projectSettings.eventLocation && (
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
+                          <div className="space-y-1 text-center md:text-left">
+                            <div className="flex items-center justify-center md:justify-start gap-2">
                               <span className="text-lg">📍</span>
                               <span className="text-xl md:text-base text-green-800 font-medium">Location:</span>
                             </div>
-                            <div className="ml-8">
+                            <div className="ml-8 md:ml-8">
                               <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventLocation}</span>
                             </div>
                           </div>
                         )}
                         {projectSettings.eventTime && (
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
+                          <div className="space-y-1 text-center md:text-left">
+                            <div className="flex items-center justify-center md:justify-start gap-2">
                               <span className="text-lg">⏰</span>
                               <span className="text-xl md:text-base text-green-800 font-medium">Time:</span>
                             </div>
-                            <div className="ml-8">
+                            <div className="ml-8 md:ml-8">
                               <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventTime}</span>
                             </div>
                           </div>
                         )}
                         {projectSettings.eventAttire && (
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
+                          <div className="space-y-1 text-center md:text-left">
+                            <div className="flex items-center justify-center md:justify-start gap-2">
                               <span className="text-lg">📝</span>
                               <span className="text-xl md:text-base text-green-800 font-medium">Additional Details:</span>
                             </div>
-                            <div className="ml-8">
+                            <div className="ml-8 md:ml-8">
                               <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventAttire}</span>
                             </div>
                           </div>

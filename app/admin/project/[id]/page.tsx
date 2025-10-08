@@ -617,7 +617,7 @@ function ProjectSummary() {
         <h2 className="header-section mb-0">Project Overview</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total Tasks */}
         <div className="text-center p-4 bg-blue-50 rounded-lg">
           <div className="text-3xl font-bold text-blue-600">{totalTasks}</div>
@@ -634,12 +634,6 @@ function ProjectSummary() {
         <div className="text-center p-4 bg-orange-50 rounded-lg">
           <div className="text-3xl font-bold text-orange-600">{claimedTasks}</div>
           <div className="text-sm text-gray-600">Claimed</div>
-        </div>
-
-        {/* Completed Tasks */}
-        <div className="text-center p-4 bg-purple-50 rounded-lg">
-          <div className="text-3xl font-bold text-purple-600">{completedTasks}</div>
-          <div className="text-sm text-gray-600">Completed</div>
         </div>
       </div>
 
