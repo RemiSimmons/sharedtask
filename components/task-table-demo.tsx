@@ -61,7 +61,7 @@ export default function TaskTableDemo() {
     switch (task.status) {
       case "available":
         return (
-          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm">
+          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm whitespace-nowrap">
             Available
           </Badge>
         )
@@ -69,26 +69,26 @@ export default function TaskTableDemo() {
         if (projectSettings.allowMultipleContributors && maxContributors > 1) {
           if (spotsLeft > 0) {
             return (
-              <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md">
+              <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md whitespace-nowrap">
                 Claimed ({spotsLeft} spots left)
               </Badge>
             )
           }
         }
         return (
-          <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md">
+          <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md whitespace-nowrap">
             Claimed
           </Badge>
         )
       case "completed":
         return (
-          <Badge className="status-completed text-base px-4 py-1.5 font-medium rounded-full shadow-md">
+          <Badge className="status-completed text-base px-4 py-1.5 font-medium rounded-full shadow-md whitespace-nowrap">
             Completed
           </Badge>
         )
       default:
         return (
-          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm">
+          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm whitespace-nowrap">
             Available
           </Badge>
         )
@@ -223,7 +223,7 @@ export default function TaskTableDemo() {
                         </p>
                       </div>
                     </div>
-                    <div className="col-span-2 flex items-start">{getStatusBadge(task)}</div>
+                    <div className="col-span-2 flex items-start justify-start">{getStatusBadge(task)}</div>
                     <div className="col-span-2 flex items-start">
                       <Button
                         variant="ghost"

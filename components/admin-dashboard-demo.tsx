@@ -110,19 +110,19 @@ export default function AdminDashboardDemo() {
     switch (status) {
       case "available":
         return (
-          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm">Available</Badge>
+          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm whitespace-nowrap">Available</Badge>
         )
       case "claimed":
         return (
-          <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md">Claimed</Badge>
+          <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md whitespace-nowrap">Claimed</Badge>
         )
       case "completed":
         return (
-          <Badge className="status-completed text-base px-4 py-1.5 font-medium rounded-full shadow-md">Completed</Badge>
+          <Badge className="status-completed text-base px-4 py-1.5 font-medium rounded-full shadow-md whitespace-nowrap">Completed</Badge>
         )
       default:
         return (
-          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm">Available</Badge>
+          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm whitespace-nowrap">Available</Badge>
         )
     }
   }
@@ -409,7 +409,7 @@ export default function AdminDashboardDemo() {
                         {task.claimedBy ? task.claimedBy.join(", ") : "—"}
                       </p>
                     </div>
-                    <div className="col-span-2 flex items-start">{getStatusBadge(task.status)}</div>
+                    <div className="col-span-2 flex items-start justify-start">{getStatusBadge(task.status)}</div>
                     <div className="col-span-2 flex items-start">
                       <Button
                         variant="ghost"

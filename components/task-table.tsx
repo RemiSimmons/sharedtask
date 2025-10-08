@@ -139,7 +139,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
           return (
             <Badge
               variant="outline"
-              className="bg-muted text-muted-foreground border-muted-foreground/20 text-base px-4 py-1.5 font-medium"
+              className="bg-muted text-muted-foreground border-muted-foreground/20 text-base px-4 py-1.5 font-medium whitespace-nowrap"
             >
               Available ({maxContributors} spots)
             </Badge>
@@ -148,7 +148,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
         return (
           <Badge
             variant="outline"
-            className="bg-muted text-muted-foreground border-muted-foreground/20 text-base px-4 py-1.5 font-medium"
+            className="bg-muted text-muted-foreground border-muted-foreground/20 text-base px-4 py-1.5 font-medium whitespace-nowrap"
           >
             Available
           </Badge>
@@ -158,14 +158,14 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
           const spotsLeft = maxContributors - claimedBy.length
           if (spotsLeft > 0) {
             return (
-              <Badge className="bg-secondary text-secondary-foreground text-base px-4 py-1.5 font-medium">
+              <Badge className="bg-secondary text-secondary-foreground text-base px-4 py-1.5 font-medium whitespace-nowrap">
                 Claimed ({spotsLeft} spots left)
               </Badge>
             )
           }
         }
         return (
-          <Badge className="bg-secondary text-secondary-foreground text-base px-4 py-1.5 font-medium">Claimed</Badge>
+          <Badge className="bg-secondary text-secondary-foreground text-base px-4 py-1.5 font-medium whitespace-nowrap">Claimed</Badge>
         )
     }
   }
@@ -294,7 +294,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       {formatClaimedBy(task.claimedBy, task.maxContributors)}
                     </p>
                   </div>
-                  <div className="col-span-3 flex items-center">{getStatusBadge(task.status, task.claimedBy, task.maxContributors)}</div>
+                  <div className="col-span-3 flex items-center justify-start">{getStatusBadge(task.status, task.claimedBy, task.maxContributors)}</div>
                   <div className="col-span-2">
                     <Button
                       variant="ghost"

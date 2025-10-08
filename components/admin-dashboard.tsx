@@ -147,15 +147,32 @@ export default function AdminDashboard() {
   }
 
 
-  const getStatusBadge = (status: TaskStatus) => {
+  const getStatusBadge = (status: TaskStatus, claimedBy: string[] | null, maxContributors?: number) => {
     switch (status) {
       case "available":
+        if (projectSettings.allowMultipleContributors && maxContributors && maxContributors > 1) {
+          return (
+            <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm whitespace-nowrap">
+              Available ({maxContributors} spots)
+            </Badge>
+          )
+        }
         return (
-          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm">Available</Badge>
+          <Badge className="status-available text-base px-4 py-1.5 font-medium rounded-full shadow-sm whitespace-nowrap">Available</Badge>
         )
       case "claimed":
+        if (projectSettings.allowMultipleContributors && maxContributors && claimedBy) {
+          const spotsLeft = maxContributors - claimedBy.length
+          if (spotsLeft > 0) {
+            return (
+              <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md whitespace-nowrap">
+                Claimed ({spotsLeft} spots left)
+              </Badge>
+            )
+          }
+        }
         return (
-          <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md">Claimed</Badge>
+          <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md whitespace-nowrap">Claimed</Badge>
         )
     }
   }
@@ -532,7 +549,7 @@ export default function AdminDashboard() {
                         {task.claimedBy ? task.claimedBy.join(", ") : "—"}
                       </p>
                     </div>
-                    <div className="col-span-2 flex items-start">{getStatusBadge(task.status)}</div>
+                    <div className="col-span-2 flex items-start justify-start">{getStatusBadge(task.status, task.claimedBy, task.maxContributors)}</div>
                     <div className="col-span-2 flex items-start">
                       <Button
                         variant="ghost"
@@ -675,7 +692,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="text-right">
                         <p className="text-base font-bold text-muted-foreground mb-3">🎯 Status</p>
-                        {getStatusBadge(task.status)}
+                        {getStatusBadge(task.status, task.claimedBy, task.maxContributors)}
                       </div>
                     </div>
                   </div>
