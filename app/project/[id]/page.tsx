@@ -70,24 +70,30 @@ function ProjectContent() {
                       <h3 className="text-2xl md:text-lg font-bold md:font-semibold text-green-900 mb-3 md:mb-2">Event Details</h3>
                       <div className="space-y-2">
                         {projectSettings.eventLocation && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">📍</span>
-                            <span className="text-xl md:text-base text-green-800 font-medium">Location:</span>
-                            <span className="text-xl md:text-base text-green-800">{projectSettings.eventLocation}</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">📍</span>
+                              <span className="text-xl md:text-base text-green-800 font-medium">Location:</span>
+                            </div>
+                            <span className="text-xl md:text-base text-green-800 break-words pl-6 sm:pl-0">{projectSettings.eventLocation}</span>
                           </div>
                         )}
                         {projectSettings.eventTime && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">⏰</span>
-                            <span className="text-xl md:text-base text-green-800 font-medium">Time:</span>
-                            <span className="text-xl md:text-base text-green-800">{projectSettings.eventTime}</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">⏰</span>
+                              <span className="text-xl md:text-base text-green-800 font-medium">Time:</span>
+                            </div>
+                            <span className="text-xl md:text-base text-green-800 break-words pl-6 sm:pl-0">{projectSettings.eventTime}</span>
                           </div>
                         )}
                         {projectSettings.eventAttire && (
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">📝</span>
-                            <span className="text-xl md:text-base text-green-800 font-medium">Additional Details:</span>
-                            <span className="text-xl md:text-base text-green-800">{projectSettings.eventAttire}</span>
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">📝</span>
+                              <span className="text-xl md:text-base text-green-800 font-medium">Additional Details:</span>
+                            </div>
+                            <span className="text-xl md:text-base text-green-800 break-words pl-6 sm:pl-0">{projectSettings.eventAttire}</span>
                           </div>
                         )}
                       </div>

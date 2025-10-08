@@ -18,7 +18,8 @@ export function PoweredByFooter({ show, className = '' }: PoweredByFooterProps) 
           href="https://sharedtask.ai" 
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 font-medium transition-colors inline-flex items-center gap-1"
+          className="text-blue-600 hover:text-blue-800 font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
+          title="Visit SharedTask.ai homepage"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -49,7 +50,8 @@ export function PoweredByFooterCompact({ show, className = '' }: PoweredByFooter
         href="https://sharedtask.ai" 
         target="_blank"
         rel="noopener noreferrer"
-        className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+        className="text-blue-600 hover:text-blue-800 font-medium transition-colors cursor-pointer"
+        title="Visit SharedTask.ai homepage"
       >
         Powered by SharedTask
       </a>
@@ -78,7 +80,8 @@ export function PoweredByFloating({ show, className = '' }: PoweredByFooterProps
           href="https://sharedtask.ai" 
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+          className="text-blue-600 hover:text-blue-800 font-medium transition-colors cursor-pointer"
+          title="Visit SharedTask.ai homepage"
         >
           SharedTask
         </a>

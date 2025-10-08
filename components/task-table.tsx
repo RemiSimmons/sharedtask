@@ -505,16 +505,16 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200">
-                        <div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                        <div className="min-w-0">
                           <p className="text-sm font-semibold text-gray-600 mb-1">Claimed By</p>
                           <p className="text-base text-gray-900 font-medium break-words">
                             {formatClaimedBy(task.claimedBy, task.maxContributors)}
                           </p>
                         </div>
-                        <div>
+                        <div className="min-w-0">
                           <p className="text-sm font-semibold text-gray-600 mb-1">Status</p>
-                          <div className="flex justify-start">
+                          <div className="flex flex-wrap gap-1">
                             {getStatusBadge(task.status, task.claimedBy, task.maxContributors)}
                           </div>
                         </div>
