@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import TaskTable from "@/components/task-table"
 import DangerZone from "@/components/danger-zone"
+import { EventDetailsSection } from "@/components/event-details-section"
 import { TaskProvider } from "@/contexts/TaskContextWithSupabase"
 import { useTask } from "@/contexts/TaskContextWithSupabase"
 import Link from "next/link"
@@ -212,6 +213,11 @@ function DynamicContentLayout({
           copyContributorLink={copyContributorLink}
         />
 
+        {/* Event Details Section */}
+        <div className="max-w-2xl">
+          <EventDetailsSection />
+        </div>
+
         {/* Project Settings - Moved here */}
         <div className="max-w-2xl">
           <ProjectSettingsSection />
@@ -241,6 +247,11 @@ function DynamicContentLayout({
           projectId={projectId}
           copyContributorLink={copyContributorLink}
         />
+
+        {/* Event Details Section */}
+        <div className="max-w-2xl">
+          <EventDetailsSection />
+        </div>
 
         {/* Project Settings - Moved here */}
         <div className="max-w-2xl">
