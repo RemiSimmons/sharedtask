@@ -267,10 +267,77 @@
     border-radius: 12px;
     background: #ffffff;
     color: #1e293b;
-    font-size: 16px;
-    min-height: 48px;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Mobile-specific improvements */
+  @media (max-width: 768px) {
+    /* Better touch targets */
+    .btn-primary, .btn-secondary {
+      min-height: 48px;
+      padding: 12px 16px;
+    }
+    
+    /* Improved card spacing on mobile */
+    .card-beautiful {
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    /* Better text wrapping */
+    .break-words {
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    /* Improved button spacing */
+    .project-actions {
+      gap: 0.75rem;
+    }
+    
+    /* Better mobile form inputs */
+    .form-input {
+      padding: 12px 16px;
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Improved mobile table/card layout */
+    .mobile-form-container {
+      padding: 1rem;
+    }
+    
+    /* Better mobile header spacing */
+    .app-header {
+      padding: 0.75rem 1rem;
+    }
+    
+    /* Improved mobile task cards */
+    .task-card-mobile {
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    /* Better mobile button groups */
+    .button-group-mobile {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    /* Improved mobile text sizing */
+    .mobile-text-sm {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+    
+    .mobile-text-base {
+      font-size: 1rem;
+      line-height: 1.5rem;
+    }
+    
+    .mobile-text-lg {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
   }
   
   .form-input:focus {
@@ -434,6 +501,9 @@
       font-size: 20px;
       padding: 18px 24px;
       font-weight: 700;
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
     }
     
     /* Larger touch targets for all interactive elements */
@@ -455,6 +525,58 @@
       font-size: 16px;
       padding: 8px 16px;
       font-weight: 700;
+    }
+    
+    /* Fix button text wrapping and overflow issues */
+    .btn-primary,
+    .btn-secondary,
+    .btn-success,
+    .btn-accent,
+    .btn-destructive,
+    .btn-outline {
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: unset;
+      min-width: fit-content;
+    }
+    
+    /* Ensure proper spacing for mobile layouts */
+    .card-beautiful {
+      margin-bottom: 1rem;
+      overflow: visible;
+    }
+    
+    /* Fix text truncation in project cards */
+    .project-card {
+      overflow: visible;
+    }
+    
+    .project-title {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      hyphens: auto;
+    }
+    
+    /* Improve mobile form layout */
+    .mobile-form-container {
+      padding: 1rem;
+      overflow-x: hidden;
+    }
+    
+    /* Fix button container spacing */
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      align-items: stretch;
+    }
+    
+    /* Ensure buttons don't overlap content */
+    .project-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
     }
   }
 }

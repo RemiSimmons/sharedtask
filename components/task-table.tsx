@@ -407,9 +407,9 @@ export default function TaskTable() {
         </div>
 
         {/* Mobile Card View */}
-        <div className="md:hidden space-y-5">
+        <div className="md:hidden space-y-4">
           {tasks.map((task) => (
-            <div key={task.id} className="card-beautiful p-6 space-y-5">
+            <div key={task.id} className="card-beautiful p-5 space-y-4">
                 <div className="space-y-4">
                   {editingTasks.has(task.id) ? (
                     <div className="space-y-4">
@@ -469,63 +469,71 @@ export default function TaskTable() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-gray-900 text-pretty leading-tight">{task.name}</h3>
-                        {task.description && (
-                          <div className="mt-2">
-                            <p className="text-lg text-gray-700 leading-relaxed">{task.description}</p>
-                          </div>
-                        )}
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xl font-bold text-gray-900 text-pretty leading-tight break-words">{task.name}</h3>
+                          {task.description && (
+                            <div className="mt-2">
+                              <p className="text-base text-gray-700 leading-relaxed break-words">{task.description}</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEditing(task.id, task.name, task.description)}
+                            className="p-3 h-auto min-w-[48px] min-h-[48px] border border-gray-200 hover:border-gray-300 rounded-lg"
+                            title="Edit task"
+                          >
+                            <Edit2 className="w-5 h-5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteTask(task.id, task.name)}
+                            className="p-3 h-auto min-w-[48px] min-h-[48px] text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 rounded-lg"
+                            title="Delete task"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
+                      
+                      <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-600 mb-1">Claimed By</p>
+                          <p className="text-base text-gray-900 font-medium break-words">
+                            {formatClaimedBy(task.claimedBy, task.maxContributors)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-600 mb-1">Status</p>
+                          <div className="flex justify-start">
+                            {getStatusBadge(task.status, task.claimedBy, task.maxContributors)}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-2">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => startEditing(task.id, task.name, task.description)}
-                          className="p-3 h-auto min-w-[48px] min-h-[48px]"
+                          onClick={() => toggleComments(task.id)}
+                          className="text-base px-3 py-2 h-auto min-h-[44px] font-medium text-muted-foreground hover:text-gray-900 w-full justify-start border border-gray-200 hover:border-gray-300 rounded-lg"
                         >
-                          <Edit2 className="w-6 h-6" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteTask(task.id, task.name)}
-                          className="p-3 h-auto min-w-[48px] min-h-[48px] text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-6 h-6" />
+                          <MessageCircle className="w-4 h-4 mr-2" />
+                          Comments ({task.comments.length})
+                          {expandedComments.has(task.id) ? (
+                            <ChevronDown className="w-4 h-4 ml-auto" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 ml-auto" />
+                          )}
                         </Button>
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center justify-between pt-2">
-                    <div>
-                      <p className="text-lg font-bold text-gray-600 mb-2">Claimed By</p>
-                      <p className="text-xl text-gray-900 font-medium">
-                        {formatClaimedBy(task.claimedBy, task.maxContributors)}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-gray-600 mb-2">Status</p>
-                      {getStatusBadge(task.status, task.claimedBy, task.maxContributors)}
-                    </div>
-                  </div>
-                  <div className="pt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleComments(task.id)}
-                      className="text-base px-3 py-2 h-auto min-h-[44px] font-medium text-muted-foreground hover:text-gray-900 w-full justify-start"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Comments ({task.comments.length})
-                      {expandedComments.has(task.id) ? (
-                        <ChevronDown className="w-4 h-4 ml-auto" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4 ml-auto" />
-                      )}
-                    </Button>
-                  </div>
                 </div>
 
                 {expandedComments.has(task.id) && (
@@ -567,31 +575,35 @@ export default function TaskTable() {
                 )}
 
                 {!editingTasks.has(task.id) && task.status === "available" && (
-                  <Button
-                    onClick={() => handleSelectTaskForClaiming(task.id)}
-                    className={`w-full text-2xl py-6 h-auto min-h-[64px] font-bold ${
-                      selectedTasksForClaiming.includes(task.id) 
-                        ? 'btn-primary' 
-                        : 'bg-blue-500 text-white hover:bg-blue-600 border-0'
-                    }`}
-                  >
-                    {selectedTasksForClaiming.includes(task.id) ? '✓ Selected' : 'Select This Task'}
-                  </Button>
-                )}
-                {!editingTasks.has(task.id) && task.status === "claimed" &&
-                  projectSettings.allowMultipleContributors &&
-                  task.claimedBy &&
-                  (!task.maxContributors || task.claimedBy.length < task.maxContributors) && (
+                  <div className="pt-3 border-t border-gray-200">
                     <Button
                       onClick={() => handleSelectTaskForClaiming(task.id)}
-                      className={`w-full text-base py-3 h-auto min-h-[44px] font-medium ${
+                      className={`w-full text-lg py-4 h-auto min-h-[56px] font-semibold ${
                         selectedTasksForClaiming.includes(task.id) 
                           ? 'btn-primary' 
                           : 'bg-blue-500 text-white hover:bg-blue-600 border-0'
                       }`}
                     >
-                      {selectedTasksForClaiming.includes(task.id) ? 'Selected' : 'Select to Join'}
+                      {selectedTasksForClaiming.includes(task.id) ? '✓ Selected' : 'Select This Task'}
                     </Button>
+                  </div>
+                )}
+                {!editingTasks.has(task.id) && task.status === "claimed" &&
+                  projectSettings.allowMultipleContributors &&
+                  task.claimedBy &&
+                  (!task.maxContributors || task.claimedBy.length < task.maxContributors) && (
+                    <div className="pt-3 border-t border-gray-200">
+                      <Button
+                        onClick={() => handleSelectTaskForClaiming(task.id)}
+                        className={`w-full text-base py-3 h-auto min-h-[48px] font-medium ${
+                          selectedTasksForClaiming.includes(task.id) 
+                            ? 'btn-primary' 
+                            : 'bg-blue-500 text-white hover:bg-blue-600 border-0'
+                        }`}
+                      >
+                        {selectedTasksForClaiming.includes(task.id) ? 'Selected' : 'Select to Join'}
+                      </Button>
+                    </div>
                   )}
             </div>
           ))}

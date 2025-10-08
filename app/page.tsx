@@ -166,7 +166,7 @@ function LandingPageContent() {
 
   // Render create form
   const renderCreateForm = () => (
-    <div className="min-h-screen p-6 md:p-8">
+    <div className="min-h-screen p-4 md:p-8 mobile-form-container">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center space-y-6 mb-12">
@@ -183,7 +183,7 @@ function LandingPageContent() {
         </div>
 
         {/* Project Creation Form */}
-        <div className="card-beautiful p-8 max-w-2xl mx-auto">
+        <div className="card-beautiful p-6 md:p-8 max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center">
               <svg className="section-icon text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -494,47 +494,99 @@ function LandingPageContent() {
                 <div className="space-y-4">
                   {userProjects.map((project) => (
                     <div key={project.id} className="border border-gray-200 rounded-lg p-6 hover:border-gray-300 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <h3 className="text-lg font-semibold text-gray-900 pr-4 break-words">{project.name}</h3>
+                      {/* Mobile Layout */}
+                      <div className="md:hidden space-y-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-xl font-semibold text-gray-900 break-words leading-tight">{project.name}</h3>
+                              <div className="text-sm text-gray-600 mt-1">
+                                Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
+                              </div>
+                            </div>
                             <div className="flex-shrink-0">
                               {project.isExpired ? (
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                   Expired
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                   Active
                                 </span>
                               )}
                             </div>
                           </div>
-                          <div className="text-sm text-gray-600">
-                            Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
-                          </div>
                         </div>
-                        <div className="flex items-center gap-4 ml-6">
+                        <div className="space-y-3">
                           <button
                             onClick={() => router.push(`/admin/project/${project.id}`)}
-                            className="btn-primary px-4 py-2 text-sm"
+                            className="w-full btn-primary text-lg py-3"
                             title="Manage project settings and admin dashboard"
                           >
                             Manage Project
                           </button>
-                          <button
-                            onClick={() => router.push(`/project/${project.id}`)}
-                            className="btn-secondary px-4 py-2 text-sm border border-gray-300"
-                            title="View public project page"
-                          >
-                            View Public
-                          </button>
-                          <button
-                            onClick={() => handleDeleteProject(project.id, project.name)}
-                            className="text-red-600 hover:text-red-800 font-medium text-sm"
-                          >
-                            Delete
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => router.push(`/project/${project.id}`)}
+                              className="flex-1 btn-secondary text-base py-2 border border-gray-300"
+                              title="View public project page"
+                            >
+                              View Public
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProject(project.id, project.name)}
+                              className="text-red-600 hover:text-red-800 font-medium text-base px-3 py-2 min-h-[48px] border border-red-200 hover:border-red-300 rounded-md"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Desktop Layout */}
+                      <div className="hidden md:block">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900 pr-4 break-words">{project.name}</h3>
+                              <div className="flex-shrink-0">
+                                {project.isExpired ? (
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                    Expired
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    Active
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 ml-6">
+                            <button
+                              onClick={() => router.push(`/admin/project/${project.id}`)}
+                              className="btn-primary px-4 py-2 text-sm"
+                              title="Manage project settings and admin dashboard"
+                            >
+                              Manage Project
+                            </button>
+                            <button
+                              onClick={() => router.push(`/project/${project.id}`)}
+                              className="btn-secondary px-4 py-2 text-sm border border-gray-300"
+                              title="View public project page"
+                            >
+                              View Public
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProject(project.id, project.name)}
+                              className="text-red-600 hover:text-red-800 font-medium text-sm"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
