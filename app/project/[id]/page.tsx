@@ -31,11 +31,19 @@ function ProjectContent() {
           {/* Header */}
           <div className="text-center space-y-6 md:space-y-6">
             <div className="flex flex-col items-center gap-5 md:gap-4">
-              <img 
-                src="/shared-task-logo.svg" 
-                alt="SharedTask Logo" 
-                className="h-24 md:h-20 w-auto"
-              />
+              <a 
+                href="https://sharedtask.ai" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cursor-pointer hover:opacity-80 transition-opacity"
+                title="Visit SharedTask.ai homepage"
+              >
+                <img 
+                  src="/shared-task-logo.svg" 
+                  alt="SharedTask Logo" 
+                  className="h-24 md:h-20 w-auto"
+                />
+              </a>
               <h1 className="text-4xl md:text-4xl font-bold text-gray-900 px-3 leading-tight">
                 {projectSettings.projectName || "SharedTask Project"}
               </h1>
@@ -70,30 +78,36 @@ function ProjectContent() {
                       <h3 className="text-2xl md:text-lg font-bold md:font-semibold text-green-900 mb-3 md:mb-2">Event Details</h3>
                       <div className="space-y-2">
                         {projectSettings.eventLocation && (
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                          <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <span className="text-lg">📍</span>
                               <span className="text-xl md:text-base text-green-800 font-medium">Location:</span>
                             </div>
-                            <span className="text-xl md:text-base text-green-800 break-words pl-6 sm:pl-0">{projectSettings.eventLocation}</span>
+                            <div className="ml-8">
+                              <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventLocation}</span>
+                            </div>
                           </div>
                         )}
                         {projectSettings.eventTime && (
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                          <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <span className="text-lg">⏰</span>
                               <span className="text-xl md:text-base text-green-800 font-medium">Time:</span>
                             </div>
-                            <span className="text-xl md:text-base text-green-800 break-words pl-6 sm:pl-0">{projectSettings.eventTime}</span>
+                            <div className="ml-8">
+                              <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventTime}</span>
+                            </div>
                           </div>
                         )}
                         {projectSettings.eventAttire && (
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                          <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <span className="text-lg">📝</span>
                               <span className="text-xl md:text-base text-green-800 font-medium">Additional Details:</span>
                             </div>
-                            <span className="text-xl md:text-base text-green-800 break-words pl-6 sm:pl-0">{projectSettings.eventAttire}</span>
+                            <div className="ml-8">
+                              <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventAttire}</span>
+                            </div>
                           </div>
                         )}
                       </div>
