@@ -651,7 +651,7 @@ function LandingPageContent() {
             />
           </div>
           <h1 className="text-4xl md:text-4xl font-bold text-gray-900 max-w-3xl mx-auto leading-tight px-2">
-            Easy Group Organization
+            Group Planning, Finally Simplified
           </h1>
           <p className="text-2xl md:text-xl text-gray-700 max-w-2xl mx-auto font-medium leading-relaxed mt-5 md:mt-4 px-3">
             Share a link. Pick a task. Done.
@@ -690,7 +690,7 @@ function LandingPageContent() {
                 Add your tasks. Share one link. Everyone picks what they want to do.
               </p>
               <p className="text-lg md:text-base text-gray-600">
-                Just $3/month
+                Just $2.99/month
               </p>
             </div>
             <div className="mt-auto space-y-4">
