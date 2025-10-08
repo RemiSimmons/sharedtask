@@ -70,42 +70,42 @@ function ProjectContent() {
             {(projectSettings.eventLocation || projectSettings.eventTime || projectSettings.eventAttire) && (
               <div className="max-w-3xl mx-auto px-2">
                 <div className="bg-green-50 border-2 md:border border-green-200 rounded-lg p-6 md:p-6 mb-4">
-                  <div className="flex items-start gap-4 md:gap-3">
-                    <svg className="w-8 h-8 md:w-6 md:h-6 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-3">
+                    <svg className="w-10 h-10 md:w-6 md:h-6 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <div className="space-y-3">
+                    <div className="space-y-3 text-center md:text-left w-full">
                       <h3 className="text-2xl md:text-lg font-bold md:font-semibold text-green-900 mb-3 md:mb-2">Event Details</h3>
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {projectSettings.eventLocation && (
-                          <div className="space-y-1 text-center md:text-left">
+                          <div className="space-y-1.5">
                             <div className="flex items-center justify-center md:justify-start gap-2">
                               <span className="text-lg">📍</span>
                               <span className="text-xl md:text-base text-green-800 font-medium">Location:</span>
                             </div>
-                            <div className="ml-8 md:ml-8">
+                            <div className="text-center md:text-left md:ml-8">
                               <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventLocation}</span>
                             </div>
                           </div>
                         )}
                         {projectSettings.eventTime && (
-                          <div className="space-y-1 text-center md:text-left">
+                          <div className="space-y-1.5">
                             <div className="flex items-center justify-center md:justify-start gap-2">
                               <span className="text-lg">⏰</span>
                               <span className="text-xl md:text-base text-green-800 font-medium">Time:</span>
                             </div>
-                            <div className="ml-8 md:ml-8">
+                            <div className="text-center md:text-left md:ml-8">
                               <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventTime}</span>
                             </div>
                           </div>
                         )}
                         {projectSettings.eventAttire && (
-                          <div className="space-y-1 text-center md:text-left">
+                          <div className="space-y-1.5">
                             <div className="flex items-center justify-center md:justify-start gap-2">
                               <span className="text-lg">📝</span>
                               <span className="text-xl md:text-base text-green-800 font-medium">Additional Details:</span>
                             </div>
-                            <div className="ml-8 md:ml-8">
+                            <div className="text-center md:text-left md:ml-8">
                               <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventAttire}</span>
                             </div>
                           </div>

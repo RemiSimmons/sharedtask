@@ -676,22 +676,22 @@ export default function AdminDashboard() {
           </div>
 
           {/* Mobile Card View */}
-          <div className="lg:hidden space-y-6 p-6">
+          <div className="lg:hidden space-y-6 p-4">
             {tasks.map((task) => (
               <Card key={task.id} className="shadow-lg shadow-black/8 hover:shadow-xl hover:shadow-black/12 border-2 border-primary/20 hover:-translate-y-1 transition-transform duration-200">
-                <CardContent className="p-6 space-y-6">
+                <CardContent className="p-5 space-y-5">
                   <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-gray-900 break-words leading-tight">{task.name}</h3>
-                    {task.description && <p className="text-lg text-muted-foreground">{task.description}</p>}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-base font-bold text-muted-foreground mb-2">👤 Claimed By</p>
-                        <p className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-xl font-bold text-gray-900 break-words leading-tight min-h-[2rem]">{task.name}</h3>
+                    {task.description && <p className="text-base text-muted-foreground">{task.description}</p>}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-muted-foreground mb-2">👤 Claimed By</p>
+                        <p className="text-base font-semibold text-gray-900 break-words">
                           {task.claimedBy ? task.claimedBy.join(", ") : "—"}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-base font-bold text-muted-foreground mb-3">🎯 Status</p>
+                      <div className="flex-shrink-0 sm:text-right">
+                        <p className="text-sm font-bold text-muted-foreground mb-2">🎯 Status</p>
                         {getStatusBadge(task.status, task.claimedBy, task.maxContributors)}
                       </div>
                     </div>
