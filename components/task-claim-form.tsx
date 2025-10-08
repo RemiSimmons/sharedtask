@@ -289,7 +289,7 @@ export default function TaskClaimForm() {
                   <SelectTrigger className="select-trigger">
                     <SelectValue placeholder="Choose your name..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-80 overflow-y-auto">
                     {activeContributors.length > 0 ? (
                       activeContributors.map((name) => (
                         <SelectItem key={name} value={name} className="text-base py-3">
@@ -356,7 +356,7 @@ export default function TaskClaimForm() {
                   <SelectTrigger className="select-trigger">
                     <SelectValue placeholder="Select a task to claim..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-80 overflow-y-auto">
                     {availableTasks.map((task) => (
                       <SelectItem key={task.id} value={task.id} className="text-base py-3">
                         <div className="flex items-center justify-between w-full">

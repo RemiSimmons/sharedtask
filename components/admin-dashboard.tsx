@@ -594,7 +594,7 @@ export default function AdminDashboard() {
                               <SelectTrigger className="h-12 text-lg border-2 border-gray-300/50 focus:ring-secondary/50 min-w-[180px] rounded-xl bg-white/80 hover:shadow-lg hover:shadow-primary/25 transition-all duration-200">
                                 <SelectValue placeholder="Reassign to..." />
                               </SelectTrigger>
-                              <SelectContent className="rounded-xl border-2 border-gray-300/50">
+                              <SelectContent className="rounded-xl border-2 border-gray-300/50 max-h-80 overflow-y-auto">
                                 {availableContributors
                                   .filter((member) => !task.claimedBy || !task.claimedBy.includes(member))
                                   .map((member) => (
@@ -724,7 +724,7 @@ export default function AdminDashboard() {
                             <SelectTrigger className="h-14 text-lg border-2 border-gray-300/50 focus:ring-secondary/50 rounded-xl bg-white/80 hover:shadow-lg hover:shadow-primary/25 transition-all duration-200">
                               <SelectValue placeholder="Reassign to..." />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl border-2 border-gray-300/50">
+                            <SelectContent className="rounded-xl border-2 border-gray-300/50 max-h-80 overflow-y-auto">
                               {availableContributors
                                 .filter((member) => !task.claimedBy || !task.claimedBy.includes(member))
                                 .map((member) => (
