@@ -328,19 +328,27 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         handleSupabaseError(tasksError, 'fetching tasks')
       }
 
-      // Fetch all assignments
+      // Fetch assignments for tasks in this project
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('task_assignments')
-        .select('*')
+        .select(`
+          *,
+          tasks!inner(project_id)
+        `)
+        .eq('tasks.project_id', projectToUse.id)
 
       if (assignmentsError) {
         handleSupabaseError(assignmentsError, 'fetching assignments')
       }
 
-      // Fetch all comments
+      // Fetch comments for tasks in this project
       const { data: commentsData, error: commentsError } = await supabase
         .from('task_comments')
-        .select('*')
+        .select(`
+          *,
+          tasks!inner(project_id)
+        `)
+        .eq('tasks.project_id', projectToUse.id)
         .order('created_at', { ascending: true })
 
       if (commentsError) {
