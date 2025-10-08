@@ -404,12 +404,12 @@ export default function AdminDashboardDemo() {
                       <p className="text-lg font-bold text-gray-900 break-words leading-tight">{task.name}</p>
                       {task.description && <p className="text-base text-muted-foreground mt-2">{task.description}</p>}
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-2 flex items-center">
                       <p className="text-lg font-semibold text-muted-foreground">
                         {task.claimedBy ? task.claimedBy.join(", ") : "—"}
                       </p>
                     </div>
-                    <div className="col-span-2 flex items-start justify-start">{getStatusBadge(task.status)}</div>
+                    <div className="col-span-2 flex items-center justify-start">{getStatusBadge(task.status)}</div>
                     <div className="col-span-2 flex items-start">
                       <Button
                         variant="ghost"

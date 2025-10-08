@@ -223,7 +223,7 @@ export default function TaskTableDemo() {
                         </p>
                       </div>
                     </div>
-                    <div className="col-span-2 flex items-start justify-start">{getStatusBadge(task)}</div>
+                    <div className="col-span-2 flex items-center justify-start">{getStatusBadge(task)}</div>
                     <div className="col-span-2 flex items-start">
                       <Button
                         variant="ghost"

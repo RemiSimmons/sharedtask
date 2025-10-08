@@ -289,7 +289,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       </div>
                     )}
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-2 flex items-center">
                     <p className="text-lg text-muted-foreground">
                       {formatClaimedBy(task.claimedBy, task.maxContributors)}
                     </p>
