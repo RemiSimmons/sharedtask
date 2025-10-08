@@ -380,6 +380,78 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
+      <Card className="shadow-lg shadow-black/8 hover:shadow-xl hover:shadow-black/12 border-2 border-green-200">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">📅 Event Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <p className="text-lg text-muted-foreground">
+              Add event details that will be displayed to contributors. This helps them know when and where the event is taking place.
+            </p>
+            
+            <div className="grid md:grid-cols-1 gap-6">
+              <div className="space-y-4">
+                <label htmlFor="event-location" className="text-lg font-bold text-gray-900 block">
+                  📍 Event Location
+                </label>
+                <Input
+                  id="event-location"
+                  type="text"
+                  value={projectSettings.eventLocation || ""}
+                  onChange={(e) => updateProjectSettings({ eventLocation: e.target.value || undefined })}
+                  placeholder="e.g., Community Center, 123 Main St"
+                  maxLength={100}
+                  className="h-14 text-lg border-2 border-gray-300/50 focus:ring-primary/50 focus:border-primary rounded-xl bg-white/80 hover:shadow-lg hover:shadow-primary/25 transition-all duration-200"
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  {(projectSettings.eventLocation || "").length}/100 characters
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <label htmlFor="event-time" className="text-lg font-bold text-gray-900 block">
+                  ⏰ Event Time
+                </label>
+                <Input
+                  id="event-time"
+                  type="text"
+                  value={projectSettings.eventTime || ""}
+                  onChange={(e) => updateProjectSettings({ eventTime: e.target.value || undefined })}
+                  placeholder="e.g., Saturday, March 15th at 2:00 PM"
+                  maxLength={100}
+                  className="h-14 text-lg border-2 border-gray-300/50 focus:ring-primary/50 focus:border-primary rounded-xl bg-white/80 hover:shadow-lg hover:shadow-primary/25 transition-all duration-200"
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  {(projectSettings.eventTime || "").length}/100 characters
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <label htmlFor="event-attire" className="text-lg font-bold text-gray-900 block">
+                  📝 Additional Details
+                </label>
+                <Input
+                  id="event-attire"
+                  type="text"
+                  value={projectSettings.eventAttire || ""}
+                  onChange={(e) => updateProjectSettings({ eventAttire: e.target.value || undefined })}
+                  placeholder="e.g., Casual dress, Bring a dish to share"
+                  maxLength={100}
+                  className="h-14 text-lg border-2 border-gray-300/50 focus:ring-primary/50 focus:border-primary rounded-xl bg-white/80 hover:shadow-lg hover:shadow-primary/25 transition-all duration-200"
+                />
+                <p className="text-sm text-gray-600 mt-1">
+                  {(projectSettings.eventAttire || "").length}/100 characters
+                </p>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Use this for dress code, special instructions, or other important details
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="shadow-lg shadow-black/8 hover:shadow-xl hover:shadow-black/12 border-2 border-accent/20">
         <CardHeader className="pb-6">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">👥 Contributor Names</CardTitle>

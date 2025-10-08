@@ -706,6 +706,15 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
       if (settings.allowContributorsAddTasks !== undefined) {
         updateData.allow_contributors_add_tasks = settings.allowContributorsAddTasks
       }
+      if (settings.eventLocation !== undefined) {
+        updateData.event_location = settings.eventLocation
+      }
+      if (settings.eventTime !== undefined) {
+        updateData.event_time = settings.eventTime
+      }
+      if (settings.eventAttire !== undefined) {
+        updateData.event_attire = settings.eventAttire
+      }
 
       const { error } = await supabase
         .from('projects')
