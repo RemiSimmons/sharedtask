@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
 
-export type TaskStatus = "available" | "claimed"
+export type TaskStatus = "available" | "claimed" | "completed"
 
 export interface Comment {
   id: string

@@ -6,7 +6,7 @@ import { useOptimizedPolling } from "@/lib/smart-polling"
 import { Project, Task as DatabaseTask, TaskAssignment, TaskComment } from "@/types/database"
 import { useSession } from "next-auth/react"
 
-export type TaskStatus = "available" | "claimed"
+export type TaskStatus = "available" | "claimed" | "completed"
 
 export interface Comment {
   id: string
