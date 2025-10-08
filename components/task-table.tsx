@@ -194,7 +194,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
         <div className="hidden md:block">
           <div className="table-header rounded-t-lg">
             <div className="grid grid-cols-12 gap-6 px-8 py-4">
-              <div className="col-span-3">
+              <div className="col-span-4 sm:col-span-3">
                 <h3 className="text-lg font-semibold text-gray-900">Task Name</h3>
               </div>
               <div className="col-span-2">
@@ -216,7 +216,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
             {tasks.map((task) => (
               <div key={task.id}>
                 <div className="table-row grid grid-cols-12 gap-6 px-8 py-6">
-                  <div className="col-span-3">
+                  <div className="col-span-4 sm:col-span-3">
                     {editingTasks.has(task.id) ? (
                       <div className="space-y-2">
                       <Input
@@ -259,7 +259,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       <div className="group">
                         <div className="flex items-start gap-2">
                           <div className="flex-1">
-                            <p className="text-lg font-medium text-gray-900 text-pretty">{task.name}</p>
+                            <p className="text-lg font-medium text-gray-900 break-words leading-tight">{task.name}</p>
                             {task.description && (
                               <div className="mt-1">
                                 <p className="text-sm text-muted-foreground">{task.description}</p>

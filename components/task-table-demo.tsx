@@ -208,7 +208,7 @@ export default function TaskTableDemo() {
                       )}
                     </div>
                     <div className="col-span-4">
-                      <p className="text-lg font-bold text-gray-900 text-pretty">{task.name}</p>
+                      <p className="text-lg font-bold text-gray-900 break-words leading-tight">{task.name}</p>
                       {task.description && <p className="text-base text-muted-foreground mt-2">{task.description}</p>}
                     </div>
                     <div className="col-span-2">
@@ -308,7 +308,7 @@ export default function TaskTableDemo() {
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-900 text-pretty">{task.name}</h3>
+                        <h3 className="text-xl font-bold text-gray-900 break-words leading-tight">{task.name}</h3>
                         {task.description && <p className="text-lg text-muted-foreground mt-2">{task.description}</p>}
                       </div>
                       {availableTasks.some(t => t.id === task.id) && (

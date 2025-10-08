@@ -548,7 +548,7 @@ function LandingPageContent() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between mb-2">
-                              <h3 className="text-lg font-semibold text-gray-900 pr-4 break-words">{project.name}</h3>
+                              <h3 className="text-lg font-semibold text-gray-900 pr-4 break-words leading-tight">{project.name}</h3>
                               <div className="flex-shrink-0">
                                 {project.isExpired ? (
                                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">

@@ -401,7 +401,7 @@ export default function AdminDashboardDemo() {
                 <div key={task.id} className="hover:-translate-y-1 transition-transform duration-200">
                   <div className="grid grid-cols-12 gap-4 px-8 py-8 hover:bg-gradient-to-r hover:from-muted/5 hover:to-primary/5 transition-all duration-300">
                     <div className="col-span-3">
-                      <p className="text-lg font-bold text-gray-900 text-pretty">{task.name}</p>
+                      <p className="text-lg font-bold text-gray-900 break-words leading-tight">{task.name}</p>
                       {task.description && <p className="text-base text-muted-foreground mt-2">{task.description}</p>}
                     </div>
                     <div className="col-span-2">
@@ -536,7 +536,7 @@ export default function AdminDashboardDemo() {
               <Card key={task.id} className="shadow-lg shadow-black/8 hover:shadow-xl hover:shadow-black/12 border-2 border-primary/20 hover:-translate-y-1 transition-transform duration-200">
                 <CardContent className="p-6 space-y-6">
                   <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-gray-900 text-pretty">{task.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 break-words leading-tight">{task.name}</h3>
                     {task.description && <p className="text-lg text-muted-foreground">{task.description}</p>}
                     <div className="flex items-center justify-between">
                       <div>
