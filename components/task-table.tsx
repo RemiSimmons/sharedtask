@@ -8,7 +8,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { ChevronDown, ChevronRight, MessageCircle, Edit2, Save, X, Trash2 } from "lucide-react"
 import { useTask, type TaskStatus } from "@/contexts/TaskContextWithSupabase"
 
-export default function TaskTable() {
+interface TaskTableProps {
+  isAdminView?: boolean
+}
+
+export default function TaskTable({ isAdminView = false }: TaskTableProps) {
   const { 
     tasks, 
     projectSettings, 
@@ -163,8 +167,6 @@ export default function TaskTable() {
         return (
           <Badge className="bg-secondary text-secondary-foreground text-base px-4 py-1.5 font-medium">Claimed</Badge>
         )
-      case "completed":
-        return <Badge className="bg-accent text-accent-foreground text-base px-4 py-1.5 font-medium">Completed</Badge>
     }
   }
 
@@ -177,13 +179,15 @@ export default function TaskTable() {
           </svg>
           <h2 className="text-3xl md:text-2xl font-bold text-gray-900 mb-0">All Tasks</h2>
         </div>
-        <div className="text-lg md:text-sm text-blue-600 font-bold md:font-medium">
-          {selectedTasksForClaiming.length > 0 ? (
-            `${selectedTasksForClaiming.length} selected`
-          ) : (
-            <span className="hidden md:inline">Select Multiple Tasks at Once</span>
-          )}
-        </div>
+        {!isAdminView && (
+          <div className="text-lg md:text-sm text-blue-600 font-bold md:font-medium">
+            {selectedTasksForClaiming.length > 0 ? (
+              `${selectedTasksForClaiming.length} selected`
+            ) : (
+              <span className="hidden md:inline">Select Multiple Tasks at Once</span>
+            )}
+          </div>
+        )}
       </div>
       <div>
         {/* Desktop Table View */}
@@ -574,7 +578,7 @@ export default function TaskTable() {
                   </div>
                 )}
 
-                {!editingTasks.has(task.id) && task.status === "available" && (
+                {!isAdminView && !editingTasks.has(task.id) && task.status === "available" && (
                   <div className="pt-3 border-t border-gray-200">
                     <Button
                       onClick={() => handleSelectTaskForClaiming(task.id)}
@@ -588,7 +592,7 @@ export default function TaskTable() {
                     </Button>
                   </div>
                 )}
-                {!editingTasks.has(task.id) && task.status === "claimed" &&
+                {!isAdminView && !editingTasks.has(task.id) && task.status === "claimed" &&
                   projectSettings.allowMultipleContributors &&
                   task.claimedBy &&
                   (!task.maxContributors || task.claimedBy.length < task.maxContributors) && (

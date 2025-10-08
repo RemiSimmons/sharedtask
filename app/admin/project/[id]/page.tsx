@@ -110,7 +110,7 @@ export default function AdminProjectPage() {
           </div>
         </div>
 
-        <div className="p-6 md:p-8">
+        <div className="p-4 md:p-8">
           <div className="max-w-6xl mx-auto space-y-12">
             {/* Page-level Back Button and Project Header */}
             <div className="space-y-4">
@@ -203,7 +203,7 @@ function DynamicContentLayout({
             </svg>
             <h2 className="header-section mb-0">{projectSettings.taskLabel || "Active Tasks"}</h2>
           </div>
-          <TaskTable />
+          <TaskTable isAdminView={true} />
         </div>
 
         {/* Project Actions Section */}
@@ -230,7 +230,7 @@ function DynamicContentLayout({
             </svg>
             <h2 className="header-section mb-0">{projectSettings.taskLabel || "Active Tasks"}</h2>
           </div>
-          <TaskTable />
+          <TaskTable isAdminView={true} />
         </div>
 
         {/* Project Setup Section */}
@@ -330,12 +330,12 @@ function BulkAddSection() {
   const hasContent = taskCount > 0 || contributorCount > 0  // Allow either tasks or contributors or both
 
   return (
-    <div className="card-beautiful p-8">
+    <div className="card-beautiful p-6 md:p-8">
       <div className="mb-6">
         <h2 className="header-section mb-0">Project Setup</h2>
       </div>
 
-      <p className="text-lg text-gray-700 mb-8">
+      <p className="text-lg md:text-lg text-gray-700 mb-8">
         Set up your project quickly by adding all tasks and contributors at once.
       </p>
 
@@ -358,14 +358,14 @@ function BulkAddSection() {
       <div className="space-y-6 mb-8">
         {/* Tasks Input - Primary position */}
         <div>
-          <label htmlFor="bulk-tasks" className="block text-xl font-semibold text-gray-900 mb-3">
+          <label htmlFor="bulk-tasks" className="block text-xl md:text-xl font-semibold text-gray-900 mb-3">
             What needs to be done?
           </label>
           <textarea
             id="bulk-tasks"
             value={bulkTasks}
             onChange={(e) => setBulkTasks(e.target.value)}
-            className="form-input h-40 resize-none text-base"
+            className="form-input h-32 md:h-40 resize-none text-base"
             placeholder="Enter all task names (one per line or separated by commas)&#10;Examples:&#10;Pancakes, Orange juice, Coffee, Eggs&#10;Set up decorations&#10;Clean up afterward"
             disabled={isAdding}
           />
@@ -377,7 +377,7 @@ function BulkAddSection() {
 
         {/* Contributors Input - Secondary position */}
         <div>
-          <label htmlFor="bulk-contributors-main" className="block text-lg font-semibold text-gray-900 mb-2">
+          <label htmlFor="bulk-contributors-main" className="block text-lg md:text-lg font-semibold text-gray-900 mb-2">
             Who might help? (Optional)
           </label>
           <input
@@ -392,7 +392,7 @@ function BulkAddSection() {
           {contributorCount > 0 && (
             <p className="text-sm text-blue-600 mt-1">{contributorCount} contributor{contributorCount !== 1 ? 's' : ''} for reference</p>
           )}
-          <p className="text-xs text-gray-600 mt-1">
+          <p className="text-xs md:text-xs text-gray-600 mt-1">
             Optional: Add expected contributors for planning. People can also enter their names when claiming tasks.
           </p>
         </div>

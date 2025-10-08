@@ -410,7 +410,7 @@ export default function TaskClaimForm() {
               <button
                 type="submit"
                 disabled={!isFormValid() || isSubmitting}
-                className={`w-full btn-primary text-2xl md:text-base py-6 md:py-3 font-bold md:font-medium min-h-[64px] md:min-h-0 ${(!isFormValid() || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full btn-primary text-2xl md:text-base py-6 md:py-3 font-bold md:font-medium min-h-[64px] md:min-h-0 whitespace-nowrap ${(!isFormValid() || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {isSubmitting ? "Claiming..." : "Claim This Task"}
               </button>

@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { validateRequest } from '@/lib/validation-middleware-v2'
 import { z } from 'zod'
 import { Resend } from 'resend'
+import crypto from 'crypto'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 

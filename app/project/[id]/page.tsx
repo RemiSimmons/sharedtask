@@ -26,7 +26,7 @@ function ProjectContent() {
 
   return (
     <LoadingErrorWrapper>
-      <div className="min-h-screen p-5 md:p-8">
+      <div className="min-h-screen p-4 md:p-8">
         <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
           {/* Header */}
           <div className="text-center space-y-6 md:space-y-6">

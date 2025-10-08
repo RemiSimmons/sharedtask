@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronDown, ChevronRight, MessageCircle, Trash2, Settings, Plus, CheckCircle2, Users, X } from "lucide-react"
+import { ChevronDown, ChevronRight, MessageCircle, Trash2, Settings, Plus, Users, X } from "lucide-react"
 import { useTask, type TaskStatus } from "@/contexts/TaskContextWithSupabase"
 import { useSession } from "next-auth/react"
 
@@ -19,7 +19,6 @@ export default function AdminDashboard() {
     projectSettings, 
     addTasks, 
     deleteTask, 
-    markTaskComplete, 
     reassignTask, 
     addComment, 
     updateProjectSettings,
@@ -76,9 +75,6 @@ export default function AdminDashboard() {
     setTimeout(() => setShowAddSuccess(false), 3000)
   }
 
-  const handleMarkComplete = (taskId: string) => {
-    markTaskComplete(taskId)
-  }
 
   const handleReassignTask = (taskId: string) => {
     const newAssignee = reassignSelections[taskId]
@@ -160,10 +156,6 @@ export default function AdminDashboard() {
       case "claimed":
         return (
           <Badge className="status-claimed text-base px-4 py-1.5 font-medium rounded-full shadow-md">Claimed</Badge>
-        )
-      case "completed":
-        return (
-          <Badge className="status-completed text-base px-4 py-1.5 font-medium rounded-full shadow-md">Completed</Badge>
         )
     }
   }
@@ -573,15 +565,6 @@ export default function AdminDashboard() {
                           </Button>
                         )}
                         
-                        {task.status === "claimed" && (
-                          <Button
-                            onClick={() => handleMarkComplete(task.id)}
-                            className="bg-gradient-to-r from-accent to-accent/80 text-accent-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-lg px-6 py-3 h-auto min-h-[48px]"
-                          >
-                            <CheckCircle2 className="w-5 h-5 mr-2" />
-                            Mark Complete
-                          </Button>
-                        )}
 
                         {task.status === "claimed" && (
                           <div className="flex items-center gap-3">
@@ -715,13 +698,6 @@ export default function AdminDashboard() {
                     
                     {task.status === "claimed" && (
                       <div className="space-y-4">
-                        <Button
-                          onClick={() => handleMarkComplete(task.id)}
-                          className="bg-gradient-to-r from-accent to-accent/80 text-accent-foreground font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 w-full text-lg py-4 h-auto min-h-[52px]"
-                        >
-                          <CheckCircle2 className="w-6 h-6 mr-3" />
-                          Mark Complete
-                        </Button>
 
                         <div className="space-y-3">
                           <Select

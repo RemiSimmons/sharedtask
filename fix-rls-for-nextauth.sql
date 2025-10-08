@@ -34,3 +34,5 @@ CREATE POLICY "Allow users to update their own data" ON users FOR UPDATE USING (
 -- ALTER TABLE task_assignments DISABLE ROW LEVEL SECURITY;
 -- ALTER TABLE task_comments DISABLE ROW LEVEL SECURITY;
 
+
+

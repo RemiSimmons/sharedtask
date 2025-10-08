@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
 
-export type TaskStatus = "available" | "claimed" | "completed"
+export type TaskStatus = "available" | "claimed"
 
 export interface Comment {
   id: string
@@ -41,7 +41,6 @@ interface TaskContextType {
   // Task management functions
   addTasks: (taskNames: string[], description?: string, isHostAction?: boolean) => void
   deleteTask: (taskId: string) => void
-  markTaskComplete: (taskId: string) => void
   reassignTask: (taskId: string, newAssignee: string) => void
   
   // Task claiming functions
@@ -180,13 +179,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
     setTasks((prev) => prev.filter((task) => task.id !== taskId))
   }
 
-  const markTaskComplete = (taskId: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, status: "completed" as TaskStatus } : task
-      )
-    )
-  }
 
   const reassignTask = (taskId: string, newAssignee: string) => {
     setTasks((prev) =>
@@ -295,7 +287,6 @@ export function TaskProvider({ children }: TaskProviderProps) {
     // Task management functions
     addTasks,
     deleteTask,
-    markTaskComplete,
     reassignTask,
     
     // Task claiming functions

@@ -41,3 +41,5 @@ ALTER TABLE task_comments DISABLE ROW LEVEL SECURITY;
 
 **Warning**: Only use this in development. In production, always use proper RLS policies with the service key.
 
+
+
