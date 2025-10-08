@@ -472,7 +472,7 @@ export default function TaskTable() {
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-bold text-gray-900 text-pretty leading-tight break-words">{task.name}</h3>
+                          <h3 className="text-xl font-bold text-gray-900 leading-tight" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>{task.name}</h3>
                           {task.description && (
                             <div className="mt-2">
                               <p className="text-base text-gray-700 leading-relaxed break-words">{task.description}</p>
