@@ -4,6 +4,7 @@ import React from "react"
 import { useParams } from "next/navigation"
 import TaskTable from "@/components/task-table"
 import TaskClaimForm from "@/components/task-claim-form"
+import AddTaskButton from "@/components/add-task-button"
 import { TaskProvider, useTask } from "@/contexts/TaskContextWithSupabase"
 import { LoadingErrorWrapper } from "@/components/loading-error-wrapper"
 import { PoweredByFooter } from "@/components/powered-by-footer"
@@ -128,6 +129,11 @@ function ProjectContent() {
 
           {/* Task Table */}
           <TaskTable />
+
+          {/* Add Task Button (Owner Only) */}
+          <div className="max-w-2xl mx-auto px-3">
+            <AddTaskButton />
+          </div>
 
           {/* Become a Host Section */}
           <div className="max-w-2xl mx-auto px-3">

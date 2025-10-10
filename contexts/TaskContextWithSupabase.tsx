@@ -47,6 +47,7 @@ interface TaskContextType {
   loading: boolean
   error: string | null
   activeContributors: string[]
+  currentProject: Project | null
   
   // Quick claiming state
   selectedTasksForClaiming: string[]
@@ -863,6 +864,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     loading,
     error,
     activeContributors,
+    currentProject,
     
     // Quick claiming state
     selectedTasksForClaiming,
