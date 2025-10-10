@@ -1,7 +1,8 @@
 "use client"
 
 import React from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import TaskTable from "@/components/task-table"
 import TaskClaimForm from "@/components/task-claim-form"
 import AddTaskButton from "@/components/add-task-button"
@@ -9,6 +10,7 @@ import { TaskProvider, useTask } from "@/contexts/TaskContextWithSupabase"
 import { LoadingErrorWrapper } from "@/components/loading-error-wrapper"
 import { PoweredByFooter } from "@/components/powered-by-footer"
 import { useFeatureFlags } from "@/hooks/use-subscription"
+import { Button } from "@/components/ui/button"
 
 export default function ProjectPage() {
   const params = useParams()
@@ -22,8 +24,19 @@ export default function ProjectPage() {
 }
 
 function ProjectContent() {
-  const { projectSettings } = useTask()
+  const { projectSettings, currentProject } = useTask()
   const { featureFlags } = useFeatureFlags()
+  const { data: session } = useSession()
+  const router = useRouter()
+  const params = useParams()
+  const projectId = params.id as string
+  
+  // Check if current user is the project owner
+  const isOwner = session?.user?.id && currentProject?.user_id === session.user.id
+  
+  const goToHostDashboard = () => {
+    router.push(`/admin/project/${projectId}`)
+  }
 
   return (
     <LoadingErrorWrapper>
@@ -45,9 +58,24 @@ function ProjectContent() {
                   className="h-24 md:h-20 w-auto"
                 />
               </a>
-              <h1 className="text-4xl md:text-4xl font-bold text-gray-900 px-3 leading-tight">
-                {projectSettings.projectName || "SharedTask Project"}
-              </h1>
+              <div className="space-y-3">
+                <h1 className="text-4xl md:text-4xl font-bold text-gray-900 px-3 leading-tight">
+                  {projectSettings.projectName || "SharedTask Project"}
+                </h1>
+                {/* Host Dashboard Button - Only visible to owner */}
+                {isOwner && (
+                  <Button
+                    onClick={goToHostDashboard}
+                    className="text-lg md:text-sm px-6 py-5 md:px-4 md:py-2 h-auto font-semibold md:font-medium bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all"
+                  >
+                    <svg className="w-5 h-5 md:w-4 md:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Host Dashboard
+                  </Button>
+                )}
+              </div>
             </div>
             {projectSettings.projectDescription && (
               <div className="max-w-3xl mx-auto px-2">
