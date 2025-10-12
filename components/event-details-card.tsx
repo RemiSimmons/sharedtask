@@ -15,7 +15,8 @@ interface EventDetailsCardProps {
   eventName: string
   eventDescription?: string
   eventLocation?: string
-  eventDateTime?: Date
+  eventDate?: Date
+  eventTime?: Date
   eventAttire?: string
   maxContributors?: number
   onUpdate: (updates: {
