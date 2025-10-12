@@ -87,7 +87,7 @@ export function EventDetailsSection() {
   return (
     <EventDetailsCard
       eventName={projectSettings.projectName || ""}
-      eventDescription={projectSettings.eventDescription || undefined}
+      eventDescription={projectSettings.projectDescription || undefined}
       eventLocation={projectSettings.eventLocation || undefined}
       eventDate={eventDate}
       eventTime={eventTime}
