@@ -8,7 +8,7 @@ export function EventDetailsSection() {
   const { projectSettings, updateProjectSettings } = useTask()
 
   // Parse eventTime from ISO string to separate date and time
-  const parseEventTime = (eventTime?: string) => {
+  const parseEventTime = (eventTime?: string | null) => {
     if (!eventTime) return { date: undefined, time: undefined }
     
     try {
@@ -87,11 +87,11 @@ export function EventDetailsSection() {
   return (
     <EventDetailsCard
       eventName={projectSettings.projectName || ""}
-      eventDescription={projectSettings.eventDescription}
-      eventLocation={projectSettings.eventLocation}
+      eventDescription={projectSettings.eventDescription || undefined}
+      eventLocation={projectSettings.eventLocation || undefined}
       eventDate={eventDate}
       eventTime={eventTime}
-      eventAttire={projectSettings.eventAttire}
+      eventAttire={projectSettings.eventAttire || undefined}
       maxContributors={projectSettings.maxContributorsPerTask}
       onUpdate={handleEventUpdate}
       isOwner={true}
