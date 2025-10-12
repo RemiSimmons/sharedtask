@@ -136,7 +136,7 @@ export function EventDetailsCard({
                 </label>
                 <DatePicker
                   date={editedData.eventDate}
-                  setDate={(date) => setEditedData(prev => ({ ...prev, eventDate: date }))}
+                  setDate={(date) => setEditedData(prev => ({ ...prev, eventDate: date || new Date() }))}
                   minDate={new Date()}
                   variant="quick"
                   className="w-full"
@@ -149,7 +149,7 @@ export function EventDetailsCard({
                 </label>
                 <TimePicker
                   time={editedData.eventTime}
-                  setTime={(time) => setEditedData(prev => ({ ...prev, eventTime: time }))}
+                  setTime={(time) => setEditedData(prev => ({ ...prev, eventTime: time || new Date() }))}
                   className="w-full"
                 />
               </div>
