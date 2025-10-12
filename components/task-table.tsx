@@ -5,25 +5,34 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDown, ChevronRight, MessageCircle, Edit2, Save, X, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronRight, MessageCircle, Edit2, Save, X, Trash2, UserX } from "lucide-react"
 import { useTask, type TaskStatus } from "@/contexts/TaskContextWithSupabase"
+import { useSession } from "next-auth/react"
+import { CalendarExportButton } from "@/components/calendar-export-button"
+import { ClickableLocation } from "@/components/clickable-location"
 
 interface TaskTableProps {
   isAdminView?: boolean
 }
 
 export default function TaskTable({ isAdminView = false }: TaskTableProps) {
+  const { data: session } = useSession()
   const { 
     tasks, 
     projectSettings, 
     claimTask, 
+    unclaimTask,
     addComment, 
     updateTask,
     deleteTask,
     selectedTasksForClaiming,
     addTaskToClaimingSelection,
-    removeTaskFromClaimingSelection
+    removeTaskFromClaimingSelection,
+    currentProject
   } = useTask()
+  
+  // Check if current user is the project owner
+  const isOwner = session?.user?.id && currentProject?.user_id === session.user.id
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [newComments, setNewComments] = useState<Record<string, string>>({})
   const [editingTasks, setEditingTasks] = useState<Set<string>>(new Set())
@@ -53,7 +62,23 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
     const commentText = newComments[taskId]?.trim()
     if (!commentText) return
 
-    addComment(taskId, commentText, "You")
+    // Determine author name
+    let authorName = "Anonymous"
+    
+    if (session?.user?.email) {
+      // Use authenticated user's email or name
+      authorName = session.user.name || session.user.email
+    } else {
+      // Prompt anonymous user for their name
+      const inputName = prompt("What's your name? (This will be shown with your comment)")
+      if (!inputName?.trim()) {
+        alert("Please enter your name to post a comment")
+        return
+      }
+      authorName = inputName.trim()
+    }
+
+    addComment(taskId, commentText, authorName)
     setNewComments((prev) => ({ ...prev, [taskId]: "" }))
     
     // Close the comment section after posting
@@ -64,8 +89,13 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
     })
   }
 
-  const handleDeleteTask = async (taskId: string, taskName: string) => {
-    if (confirm(`Are you sure you want to delete the task "${taskName}"? This action cannot be undone.`)) {
+  const handleDeleteTask = async (taskId: string, taskName: string, claimedBy: string[] | null) => {
+    const participantCount = claimedBy?.length || 0
+    const affectedMessage = participantCount > 0 
+      ? ` This will affect ${participantCount} participant${participantCount === 1 ? '' : 's'}.`
+      : ''
+    
+    if (confirm(`Delete "${taskName}" permanently?${affectedMessage}`)) {
       try {
         await deleteTask(taskId)
       } catch (error) {
@@ -133,40 +163,82 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
   }
 
   const getStatusBadge = (status: TaskStatus, claimedBy: string[] | null, maxContributors?: number) => {
+    // Check if task is full
+    const isFull = maxContributors && claimedBy && claimedBy.length >= maxContributors
+    const isPartiallyFilled = claimedBy && claimedBy.length > 0
+    
     switch (status) {
       case "available":
+        if (!isPartiallyFilled) {
+          // Unclaimed task - show as "Draft" if owner, "Available" if participant
+          return (
+            <Badge
+              variant="outline"
+              className={`text-base px-4 py-1.5 font-medium whitespace-nowrap ${
+                isOwner 
+                  ? "bg-orange-50 text-orange-700 border-orange-200" 
+                  : "bg-muted text-muted-foreground border-muted-foreground/20"
+              }`}
+            >
+              {isOwner ? "Draft" : "Available"}
+            </Badge>
+          )
+        }
+        
         if (projectSettings.allowMultipleContributors && maxContributors && maxContributors > 1) {
           return (
             <Badge
               variant="outline"
-              className="bg-muted text-muted-foreground border-muted-foreground/20 text-base px-4 py-1.5 font-medium whitespace-nowrap"
+              className="bg-blue-50 text-blue-700 border-blue-200 text-base px-4 py-1.5 font-medium whitespace-nowrap"
             >
-              Available ({maxContributors} spots)
+              In Progress ({claimedBy?.length || 0}/{maxContributors})
             </Badge>
           )
         }
         return (
           <Badge
             variant="outline"
-            className="bg-muted text-muted-foreground border-muted-foreground/20 text-base px-4 py-1.5 font-medium whitespace-nowrap"
+            className="bg-blue-50 text-blue-700 border-blue-200 text-base px-4 py-1.5 font-medium whitespace-nowrap"
           >
-            Available
+            In Progress
           </Badge>
         )
+        
       case "claimed":
+        if (isFull) {
+          return (
+            <Badge className="bg-green-500 text-white text-base px-4 py-1.5 font-medium whitespace-nowrap flex items-center gap-1">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              Complete
+            </Badge>
+          )
+        }
         if (projectSettings.allowMultipleContributors && maxContributors && claimedBy) {
           const spotsLeft = maxContributors - claimedBy.length
           if (spotsLeft > 0) {
             return (
-              <Badge className="bg-secondary text-secondary-foreground text-base px-4 py-1.5 font-medium whitespace-nowrap">
-                Claimed ({spotsLeft} spots left)
+              <Badge className="bg-blue-500 text-white text-base px-4 py-1.5 font-medium whitespace-nowrap">
+                In Progress ({spotsLeft} spots left)
               </Badge>
             )
           }
         }
         return (
-          <Badge className="bg-secondary text-secondary-foreground text-base px-4 py-1.5 font-medium whitespace-nowrap">Claimed</Badge>
+          <Badge className="bg-blue-500 text-white text-base px-4 py-1.5 font-medium whitespace-nowrap">In Progress</Badge>
         )
+    }
+  }
+  
+  const handleUnclaimTask = async (taskId: string, contributorName: string, taskName: string) => {
+    if (confirm(`Leave this task? You will be removed from "${taskName}".`)) {
+      try {
+        await unclaimTask(taskId, contributorName)
+      } catch (error) {
+        console.error('Failed to unclaim task:', error)
+        alert('Failed to leave this task. Please try again.')
+      }
     }
   }
 
@@ -213,9 +285,24 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
           </div>
 
           <div className="divide-y divide-border">
-            {tasks.map((task) => (
+            {tasks.map((task) => {
+              const isUnclaimed = !task.claimedBy || task.claimedBy.length === 0
+              const isFull = task.maxContributors && task.claimedBy && task.claimedBy.length >= task.maxContributors
+              const isPartiallyFilled = task.claimedBy && task.claimedBy.length > 0
+              
+              // Determine row styling based on task state
+              let rowClass = "table-row grid grid-cols-12 gap-6 px-8 py-6"
+              if (isUnclaimed && isOwner) {
+                rowClass += " bg-orange-50 border-l-4 border-orange-200" // Draft state
+              } else if (isFull) {
+                rowClass += " bg-green-50 border-l-4 border-green-200" // Complete state
+              } else if (isPartiallyFilled) {
+                rowClass += " bg-blue-50 border-l-4 border-blue-200" // In Progress state
+              }
+              
+              return (
               <div key={task.id}>
-                <div className="table-row grid grid-cols-12 gap-6 px-8 py-6">
+                <div className={rowClass}>
                   <div className="col-span-4 sm:col-span-3">
                     {editingTasks.has(task.id) ? (
                       <div className="space-y-2">
@@ -267,32 +354,72 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                             )}
                           </div>
                           <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => startEditing(task.id, task.name, task.description)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteTask(task.id, task.name)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto text-red-600 hover:text-red-700 hover:bg-red-50"
-                              title="Delete task"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            {/* Calendar Export Button */}
+                            {projectSettings.eventTime && (
+                              <CalendarExportButton
+                                taskTitle={task.name}
+                                taskDescription={task.description}
+                                eventDateTime={projectSettings.eventTime}
+                                eventLocation={projectSettings.eventLocation}
+                                projectName={projectSettings.projectName || "Event"}
+                                variant="ghost"
+                                size="sm"
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                              />
+                            )}
+                            {isOwner && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => startEditing(task.id, task.name, task.description)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                                title={!task.claimedBy || task.claimedBy.length === 0 ? "Add details" : "Edit task"}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                            {isOwner && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteTask(task.id, task.name, task.claimedBy)}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto text-red-600 hover:text-red-700 hover:bg-red-50"
+                                title="Delete task"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
                     )}
                   </div>
                   <div className="col-span-2 flex items-center">
-                    <p className="text-lg text-muted-foreground">
-                      {formatClaimedBy(task.claimedBy, task.maxContributors)}
-                    </p>
+                    {task.claimedBy && task.claimedBy.length > 0 ? (
+                      <div className="space-y-1">
+                        {task.claimedBy.map((name, idx) => (
+                          <div key={idx} className="flex items-center gap-2 group/contributor">
+                            <span className="text-base text-gray-700">{name}</span>
+                            {!isAdminView && (
+                              <button
+                                onClick={() => handleUnclaimTask(task.id, name, task.name)}
+                                className="opacity-0 group-hover/contributor:opacity-100 text-xs text-red-600 hover:text-red-700 hover:underline transition-opacity"
+                                title="Remove yourself"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        {task.maxContributors && (
+                          <span className="text-sm text-muted-foreground">
+                            ({task.claimedBy.length}/{task.maxContributors})
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-lg text-muted-foreground">—</p>
+                    )}
                   </div>
                   <div className="col-span-3 flex items-center justify-start">{getStatusBadge(task.status, task.claimedBy, task.maxContributors)}</div>
                   <div className="col-span-2">
@@ -383,9 +510,14 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       )}
 
                       <div className="space-y-3">
-                        <label htmlFor={`comment-${task.id}`} className="text-sm font-medium text-gray-900">
-                          Add a comment:
-                        </label>
+                        <div className="flex items-center justify-between">
+                          <label htmlFor={`comment-${task.id}`} className="text-sm font-medium text-gray-900">
+                            Add a comment:
+                          </label>
+                          <span className="text-xs text-muted-foreground">
+                            Posting as: {session?.user?.name || session?.user?.email || "You'll be asked for your name"}
+                          </span>
+                        </div>
                         <textarea
                           id={`comment-${task.id}`}
                           value={newComments[task.id] || ""}
@@ -406,14 +538,30 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                   </div>
                 )}
               </div>
-            ))}
+            )}
+          )}
           </div>
         </div>
 
         {/* Mobile Card View */}
         <div className="md:hidden space-y-4">
-          {tasks.map((task) => (
-            <div key={task.id} className="card-beautiful p-5 space-y-4">
+          {tasks.map((task) => {
+            const isUnclaimed = !task.claimedBy || task.claimedBy.length === 0
+            const isFull = task.maxContributors && task.claimedBy && task.claimedBy.length >= task.maxContributors
+            const isPartiallyFilled = task.claimedBy && task.claimedBy.length > 0
+            
+            // Determine card styling based on task state
+            let cardClass = "card-beautiful p-5 space-y-4"
+            if (isUnclaimed && isOwner) {
+              cardClass += " bg-orange-50 border-l-4 border-orange-200" // Draft state
+            } else if (isFull) {
+              cardClass += " bg-green-50 border-l-4 border-green-200" // Complete state
+            } else if (isPartiallyFilled) {
+              cardClass += " bg-blue-50 border-l-4 border-blue-200" // In Progress state
+            }
+            
+            return (
+            <div key={task.id} className={cardClass}>
                 <div className="space-y-4">
                   {editingTasks.has(task.id) ? (
                     <div className="space-y-4">
@@ -484,36 +632,75 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                           )}
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => startEditing(task.id, task.name, task.description)}
-                            className="p-3 h-auto min-w-[48px] min-h-[48px] border border-gray-200 hover:border-gray-300 rounded-lg"
-                            title="Edit task"
-                          >
-                            <Edit2 className="w-5 h-5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteTask(task.id, task.name)}
-                            className="p-3 h-auto min-w-[48px] min-h-[48px] text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 rounded-lg"
-                            title="Delete task"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </Button>
+                          {/* Calendar Export Button */}
+                          {projectSettings.eventTime && (
+                            <CalendarExportButton
+                              taskTitle={task.name}
+                              taskDescription={task.description}
+                              eventDateTime={projectSettings.eventTime}
+                              eventLocation={projectSettings.eventLocation}
+                              projectName={projectSettings.projectName || "Event"}
+                              variant="ghost"
+                              size="sm"
+                              className="p-3 h-auto min-w-[48px] min-h-[48px] border border-gray-200 hover:border-gray-300 rounded-lg"
+                            />
+                          )}
+                          {isOwner && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => startEditing(task.id, task.name, task.description)}
+                              className="p-3 h-auto min-w-[48px] min-h-[48px] border border-gray-200 hover:border-gray-300 rounded-lg"
+                              title={!task.claimedBy || task.claimedBy.length === 0 ? "Add details" : "Edit task"}
+                            >
+                              <Edit2 className="w-5 h-5" />
+                            </Button>
+                          )}
+                          {isOwner && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteTask(task.id, task.name, task.claimedBy)}
+                              className="p-3 h-auto min-w-[48px] min-h-[48px] text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 rounded-lg"
+                              title="Delete task"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-200">
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-600 mb-1">Claimed By</p>
-                          <p className="text-base text-gray-900 font-medium break-words">
-                            {formatClaimedBy(task.claimedBy, task.maxContributors)}
-                          </p>
+                          <p className="text-sm font-semibold text-gray-600 mb-2">Claimed By</p>
+                          {task.claimedBy && task.claimedBy.length > 0 ? (
+                            <div className="space-y-2">
+                              {task.claimedBy.map((name, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-gray-50 rounded-lg p-2 group/contributor">
+                                  <span className="text-base text-gray-900 font-medium">{name}</span>
+                                  {!isAdminView && (
+                                    <button
+                                      onClick={() => handleUnclaimTask(task.id, name, task.name)}
+                                      className="text-sm text-red-600 hover:text-red-700 hover:underline font-medium px-2 py-1"
+                                      title="Remove yourself"
+                                    >
+                                      Remove
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                              {task.maxContributors && (
+                                <span className="text-sm text-muted-foreground">
+                                  {task.claimedBy.length}/{task.maxContributors} filled
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-base text-muted-foreground">—</p>
+                          )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-600 mb-1">Status</p>
+                          <p className="text-sm font-semibold text-gray-600 mb-2">Status</p>
                           <div className="flex flex-wrap gap-1">
                             {getStatusBadge(task.status, task.claimedBy, task.maxContributors)}
                           </div>
@@ -556,9 +743,14 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                     )}
 
                     <div className="space-y-4">
-                      <label htmlFor={`mobile-comment-${task.id}`} className="text-xl font-bold text-gray-900">
-                        Add a comment:
-                      </label>
+                      <div className="flex flex-col gap-1">
+                        <label htmlFor={`mobile-comment-${task.id}`} className="text-xl font-bold text-gray-900">
+                          Add a comment:
+                        </label>
+                        <span className="text-sm text-muted-foreground">
+                          Posting as: {session?.user?.name || session?.user?.email || "You'll be asked for your name"}
+                        </span>
+                      </div>
                       <textarea
                         id={`mobile-comment-${task.id}`}
                         value={newComments[task.id] || ""}
@@ -609,8 +801,9 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       </Button>
                     </div>
                   )}
-            </div>
-          ))}
+              </div>
+            )}
+          )}
         </div>
       </div>
     </div>

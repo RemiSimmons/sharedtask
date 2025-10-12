@@ -42,13 +42,22 @@ export default function TaskClaimForm() {
       return task.claimedBy && task.claimedBy.length < task.maxContributors
     }
     return false
-  }).map(task => ({
-    id: task.id,
-    name: task.name,
-    status: task.status,
-    claimedBy: task.claimedBy,
-    maxContributors: task.maxContributors
-  }))
+  }).map(task => {
+    const currentCount = task.claimedBy?.length || 0
+    const isFull = task.maxContributors ? currentCount >= task.maxContributors : false
+    const alreadyJoined = currentContributorName && task.claimedBy?.includes(currentContributorName)
+    
+    return {
+      id: task.id,
+      name: task.name,
+      status: task.status,
+      claimedBy: task.claimedBy,
+      maxContributors: task.maxContributors,
+      currentCount,
+      isFull,
+      alreadyJoined
+    }
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -358,14 +367,27 @@ export default function TaskClaimForm() {
                   </SelectTrigger>
                   <SelectContent className="max-h-80 overflow-y-auto">
                     {availableTasks.map((task) => (
-                      <SelectItem key={task.id} value={task.id} className="text-base py-3">
-                        <div className="flex items-center justify-between w-full">
-                          <span>{task.name}</span>
-                          {task.status === "claimed" && (
-                            <span className="text-xs text-muted-foreground ml-2">
-                              ({task.claimedBy?.length || 0} contributor{(task.claimedBy?.length || 0) !== 1 ? 's' : ''})
-                            </span>
-                          )}
+                      <SelectItem key={task.id} value={task.id} className="text-base py-3" disabled={task.isFull || task.alreadyJoined}>
+                        <div className="flex items-center justify-between w-full gap-2">
+                          <span className={task.alreadyJoined ? "font-semibold" : ""}>{task.name}</span>
+                          <div className="flex items-center gap-2">
+                            {task.alreadyJoined && (
+                              <span className="text-xs text-green-600 font-semibold">✓ Joined</span>
+                            )}
+                            {task.isFull && !task.alreadyJoined && (
+                              <span className="text-xs text-red-600 font-semibold">FULL</span>
+                            )}
+                            {task.maxContributors && (
+                              <span className="text-xs text-muted-foreground">
+                                ({task.currentCount}/{task.maxContributors})
+                              </span>
+                            )}
+                            {!task.maxContributors && task.status === "claimed" && (
+                              <span className="text-xs text-muted-foreground">
+                                ({task.currentCount} joined)
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </SelectItem>
                     ))}

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react"
 import { supabase, supabaseAdmin, handleSupabaseError } from "@/lib/supabase"
-import { useOptimizedPolling } from "@/lib/smart-polling"
+import { useRealtimeSubscription } from "@/hooks/use-realtime-subscription"
 import { Project, Task as DatabaseTask, TaskAssignment, TaskComment } from "@/types/database"
 import { useSession } from "next-auth/react"
 
@@ -48,6 +48,8 @@ interface TaskContextType {
   error: string | null
   activeContributors: string[]
   currentProject: Project | null
+  realtimeConnected: boolean
+  lastRealtimeUpdate: Date | null
   
   // Quick claiming state
   selectedTasksForClaiming: string[]
@@ -155,29 +157,6 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
   useEffect(() => {
     loadInitialData()
   }, [projectId])
-
-  // Optimized polling for real-time updates
-  const handlePolling = useCallback(async () => {
-    if (!currentProject) return
-    
-    try {
-      await Promise.all([
-        refreshTasks(),
-        refreshProjectSettings()
-      ])
-    } catch (error) {
-      console.warn('Polling update failed:', error)
-    }
-  }, [currentProject])
-
-  // Re-enabled with much longer intervals for real-time collaboration
-  const { currentInterval, isPolling } = useOptimizedPolling(handlePolling, {
-    baseInterval: 5 * 60 * 1000, // 5 minutes instead of 15 seconds
-    maxInterval: 15 * 60 * 1000, // 15 minutes max
-    backoffMultiplier: 1.5,
-    resetOnActivity: true,
-    enabled: !!currentProject
-  })
 
   const refreshProjectSettings = async () => {
     if (!currentProject?.id) {
@@ -566,16 +545,16 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
 
       // Check if user already claimed this task
       if (task.claimedBy?.includes(claimerName)) {
-        return // Already claimed by this user
+        throw new Error("You've already joined this task ✓")
       }
 
       // Check if task can accept more contributors
       if (task.status === 'claimed' && task.claimedBy) {
         if (!projectSettings.allowMultipleContributors) {
-          throw new Error('Task is already claimed')
+          throw new Error('This task is already claimed by someone else')
         }
         if (task.maxContributors && task.claimedBy.length >= task.maxContributors) {
-          throw new Error('Task has reached maximum contributors')
+          throw new Error('This task is full - all spots are taken')
         }
       }
 
@@ -857,6 +836,14 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     ])
   ).sort()
 
+  // Supabase Realtime for instant updates (after all functions are defined)
+  const { isConnected: realtimeConnected, lastUpdate } = useRealtimeSubscription({
+    projectId: currentProject?.id,
+    onTasksChange: refreshTasks,
+    onProjectChange: refreshProjectSettings,
+    enabled: !!currentProject
+  })
+
   const value: TaskContextType = {
     // State
     tasks,
@@ -865,6 +852,8 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     error,
     activeContributors,
     currentProject,
+    realtimeConnected,
+    lastRealtimeUpdate: lastUpdate,
     
     // Quick claiming state
     selectedTasksForClaiming,

@@ -113,6 +113,10 @@ export const projectSchema = z.object({
     .trim()
     .optional()
     .nullable(),
+  contributors: z.array(z.string().trim().min(1, 'Contributor name cannot be empty'))
+    .max(50, 'Cannot add more than 50 contributors')
+    .optional()
+    .default([]),
   projectPassword: z.string()
     .min(6, 'Project password must be at least 6 characters')
     .max(50, 'Project password must be less than 50 characters')

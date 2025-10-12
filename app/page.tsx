@@ -5,6 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { isAdminUser } from "@/lib/admin"
+import { DatePicker } from "@/components/ui/date-picker"
+import { TimePicker } from "@/components/ui/time-picker"
+import { ParticipantAutocomplete } from "@/components/participant-autocomplete"
+import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 // Force rebuild - syntax errors fixed
 
 function LandingPageContent() {
@@ -13,20 +17,56 @@ function LandingPageContent() {
   const [taskLabel, setTaskLabel] = useState("Task Name")
   const [allowMultipleTasks, setAllowMultipleTasks] = useState(false)
   const [allowMultipleContributors, setAllowMultipleContributors] = useState(false)
-  const [maxContributors, setMaxContributors] = useState("")
+  const [maxContributors, setMaxContributors] = useState("1")
   const [allowContributorsAddNames, setAllowContributorsAddNames] = useState(true)
   const [allowContributorsAddTasks, setAllowContributorsAddTasks] = useState(true)
   const [eventLocation, setEventLocation] = useState("")
-  const [eventTime, setEventTime] = useState("")
+  const [eventDate, setEventDate] = useState<Date | undefined>(() => {
+    const date = new Date()
+    date.setDate(date.getDate() + 7)
+    return date
+  })
+  
+  const [eventTime, setEventTime] = useState<Date | undefined>(() => {
+    const time = new Date()
+    time.setHours(18, 0, 0, 0)
+    return time
+  })
   const [eventAttire, setEventAttire] = useState("")
+  const [contributorInput, setContributorInput] = useState("")
+  const [contributors, setContributors] = useState<string[]>([])
   const [isCreating, setIsCreating] = useState(false)
   const [showProjectLimitModal, setShowProjectLimitModal] = useState(false)
   const [projectLimitError, setProjectLimitError] = useState<any>(null)
   const [userProjects, setUserProjects] = useState<any[]>([])
   const [isLoadingProjects, setIsLoadingProjects] = useState(false)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [confirmDialogData, setConfirmDialogData] = useState<{
+    title: string
+    description: string
+    onConfirm: () => void
+    variant?: "default" | "destructive"
+  }>({
+    title: "",
+    description: "",
+    onConfirm: () => {},
+  })
   const router = useRouter()
   const searchParams = useSearchParams()
   const { data: session, status } = useSession()
+
+  // Contributor management functions
+  const addContributor = (name: string) => {
+    const trimmedName = name.trim()
+    if (trimmedName && !contributors.includes(trimmedName)) {
+      setContributors(prev => [...prev, trimmedName])
+      setContributorInput("")
+    }
+  }
+
+  const removeContributor = (name: string) => {
+    setContributors(prev => prev.filter(c => c !== name))
+  }
 
   // Check for create=true query parameter and load projects
   useEffect(() => {
@@ -75,29 +115,65 @@ function LandingPageContent() {
     // If called from modal, we don't need confirmation
     const needsConfirmation = !!projectName
 
-    if (needsConfirmation && !confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
-      return
+    const performDelete = async () => {
+      try {
+        const response = await fetch(`/api/projects/${projectId}/delete`, {
+          method: 'DELETE',
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Failed to delete project' }))
+          throw new Error(errorData.message || 'Failed to delete project')
+        }
+
+        const result = await response.json()
+
+        // Close current dialog first
+        setConfirmDialogOpen(false)
+        
+        // Close modal if open and reload projects list
+        setShowProjectLimitModal(false)
+        await loadUserProjects()
+
+        // Small delay to ensure previous dialog closes before showing success
+        setTimeout(() => {
+          setConfirmDialogData({
+            title: "Success",
+            description: result.message || 'Project deleted successfully!',
+            onConfirm: () => setConfirmDialogOpen(false),
+            variant: "default"
+          })
+          setConfirmDialogOpen(true)
+        }, 100)
+      } catch (error) {
+        console.error('Error deleting project:', error)
+        
+        // Close current dialog first
+        setConfirmDialogOpen(false)
+        
+        // Small delay to ensure previous dialog closes before showing error
+        setTimeout(() => {
+          setConfirmDialogData({
+            title: "Error",
+            description: `Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            onConfirm: () => setConfirmDialogOpen(false),
+            variant: "default"
+          })
+          setConfirmDialogOpen(true)
+        }, 100)
+      }
     }
 
-    try {
-      const response = await fetch(`/api/projects/${projectId}/delete`, {
-        method: 'DELETE',
+    if (needsConfirmation) {
+      setConfirmDialogData({
+        title: "Delete Project",
+        description: `Are you sure you want to delete "${projectName}"? This action cannot be undone.`,
+        onConfirm: performDelete,
+        variant: "destructive"
       })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to delete project' }))
-        throw new Error(errorData.message || 'Failed to delete project')
-      }
-
-      const result = await response.json()
-      alert(result.message || 'Project deleted successfully!')
-
-      // Close modal if open and reload projects list
-      setShowProjectLimitModal(false)
-      await loadUserProjects()
-    } catch (error) {
-      console.error('Error deleting project:', error)
-      alert(`Failed to delete project: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      setConfirmDialogOpen(true)
+    } else {
+      await performDelete()
     }
   }
 
@@ -122,7 +198,10 @@ function LandingPageContent() {
           allowContributorsAddNames,
           allowContributorsAddTasks,
           eventLocation: eventLocation.trim() || null,
-          eventTime: eventTime.trim() || null,
+          contributors: contributors,
+               eventTime: eventDate && eventTime ? 
+                 new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), 
+                         eventTime.getHours(), eventTime.getMinutes(), 0, 0).toISOString() : null,
           eventAttire: eventAttire.trim() || null,
         }),
       })
@@ -266,23 +345,37 @@ function LandingPageContent() {
                 </p>
               </div>
 
-              {/* Time */}
-              <div>
-                <label htmlFor="event-time" className="block text-base font-medium text-gray-900 mb-2">
-                  ⏰ Time
-                </label>
-                <input
-                  id="event-time"
-                  type="text"
-                  value={eventTime}
-                  onChange={(e) => setEventTime(e.target.value)}
-                  className="form-input"
-                  placeholder="e.g., Saturday 2:00 PM, Dec 15th at 3:30 PM"
-                  maxLength={100}
-                />
-                <p className="text-sm text-gray-600 mt-1">
-                  {eventTime.length}/100 characters
-                </p>
+              {/* Date and Time - Same Line */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="event-date" className="block text-base font-medium text-gray-900 mb-2">
+                    📅 Event Date
+                  </label>
+                  <DatePicker
+                    date={eventDate}
+                    setDate={setEventDate}
+                    minDate={new Date()} // Prevent past dates
+                    variant="quick"
+                    className="w-full"
+                  />
+                  <p className="text-sm text-gray-600 mt-1">
+                    When is your event?
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="event-time" className="block text-base font-medium text-gray-900 mb-2">
+                    ⏰ Event Time
+                  </label>
+                  <TimePicker
+                    time={eventTime}
+                    setTime={setEventTime}
+                    className="w-full"
+                  />
+                  <p className="text-sm text-gray-600 mt-1">
+                    What time does it start?
+                  </p>
+                </div>
               </div>
 
               {/* Additional Details */}
@@ -301,6 +394,52 @@ function LandingPageContent() {
                 />
                 <p className="text-sm text-gray-600 mt-1">
                   {eventAttire.length}/100 characters
+                </p>
+              </div>
+
+              {/* Contributors */}
+              <div>
+                <label className="block text-base font-medium text-gray-900 mb-2">
+                  👥 Who might help? (Optional)
+                </label>
+                <ParticipantAutocomplete
+                  value={contributorInput}
+                  onChange={setContributorInput}
+                  onAddParticipant={addContributor}
+                  existingParticipants={contributors}
+                  className="w-full"
+                />
+                
+                {/* Selected Contributors */}
+                {contributors.length > 0 && (
+                  <div className="mt-3">
+                    <div className="flex flex-wrap gap-2">
+                      {contributors.map((contributor) => (
+                        <div
+                          key={contributor}
+                          className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                        >
+                          <span>{contributor}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeContributor(contributor)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {contributors.length} expected participant{contributors.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                )}
+                
+                <p className="text-sm text-gray-600 mt-1">
+                  Add people who might help. They can also enter their names when claiming tasks.
                 </p>
               </div>
             </div>
@@ -352,13 +491,24 @@ function LandingPageContent() {
                   <input
                     id="max-contributors"
                     type="number"
-                    min="2"
-                    max="10"
+                    min="1"
+                    max="20"
                     value={maxContributors}
-                    onChange={(e) => setMaxContributors(e.target.value)}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value)
+                      if (val >= 1 && val <= 20) {
+                        setMaxContributors(e.target.value)
+                      }
+                    }}
                     className="form-input max-w-xs"
                     placeholder="e.g., 3"
                   />
+                  <p className="text-sm text-gray-600 mt-1">
+                    {maxContributors && (parseInt(maxContributors) < 1 || parseInt(maxContributors) > 20) 
+                      ? <span className="text-red-600">Must be between 1 and 20</span>
+                      : "Maximum number of people who can claim each task (1-20)"
+                    }
+                  </p>
                 </div>
               )}
 
@@ -866,11 +1016,7 @@ function LandingPageContent() {
 
                 {solution.action === 'delete_project' && solution.projectId && (
                   <button
-                    onClick={() => {
-                      if (confirm(`Are you sure you want to delete "${projectLimitError.activeProject?.name}"? This action cannot be undone.`)) {
-                        handleDeleteProject(solution.projectId)
-                      }
-                    }}
+                    onClick={() => handleDeleteProject(solution.projectId, projectLimitError.activeProject?.name)}
                     className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors"
                   >
                     Delete Project
@@ -888,11 +1034,7 @@ function LandingPageContent() {
                           </div>
                         </div>
                         <button
-                          onClick={() => {
-                            if (confirm(`Are you sure you want to delete "${project.name}"? This action cannot be undone.`)) {
-                              handleDeleteProject(project.id)
-                            }
-                          }}
+                          onClick={() => handleDeleteProject(project.id, project.name)}
                           className="text-red-600 hover:text-red-800 text-sm font-medium"
                         >
                           Delete
@@ -935,6 +1077,16 @@ function LandingPageContent() {
     <>
       {content}
       {renderProjectLimitModal()}
+      <ConfirmDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        title={confirmDialogData.title}
+        description={confirmDialogData.description}
+        confirmText={confirmDialogData.variant === "destructive" ? "Delete" : "OK"}
+        cancelText={confirmDialogData.variant === "destructive" ? "Cancel" : undefined}
+        onConfirm={confirmDialogData.onConfirm}
+        variant={confirmDialogData.variant}
+      />
     </>
   )
 }

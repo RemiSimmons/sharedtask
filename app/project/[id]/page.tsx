@@ -11,6 +11,9 @@ import { LoadingErrorWrapper } from "@/components/loading-error-wrapper"
 import { PoweredByFooter } from "@/components/powered-by-footer"
 import { useFeatureFlags } from "@/hooks/use-subscription"
 import { Button } from "@/components/ui/button"
+import { RealtimeIndicator } from "@/components/realtime-indicator"
+import { CalendarExportButton } from "@/components/calendar-export-button"
+import { ClickableLocation } from "@/components/clickable-location"
 
 export default function ProjectPage() {
   const params = useParams()
@@ -24,7 +27,7 @@ export default function ProjectPage() {
 }
 
 function ProjectContent() {
-  const { projectSettings, currentProject } = useTask()
+  const { projectSettings, currentProject, realtimeConnected, lastRealtimeUpdate } = useTask()
   const { featureFlags } = useFeatureFlags()
   const { data: session } = useSession()
   const router = useRouter()
@@ -36,6 +39,25 @@ function ProjectContent() {
   
   const goToHostDashboard = () => {
     router.push(`/admin/project/${projectId}`)
+  }
+
+  // Format event time for display
+  const formatEventTime = (isoString: string) => {
+    try {
+      const date = new Date(isoString)
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }
+      return date.toLocaleString('en-US', options)
+    } catch (error) {
+      return isoString
+    }
   }
 
   return (
@@ -113,7 +135,10 @@ function ProjectContent() {
                               <span className="text-xl md:text-base text-green-800 font-medium">Location:</span>
                             </div>
                             <div className="text-center md:text-left md:ml-8">
-                              <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventLocation}</span>
+                              <ClickableLocation 
+                                location={projectSettings.eventLocation}
+                                className="text-xl md:text-base text-green-800 break-words"
+                              />
                             </div>
                           </div>
                         )}
@@ -124,7 +149,7 @@ function ProjectContent() {
                               <span className="text-xl md:text-base text-green-800 font-medium">Time:</span>
                             </div>
                             <div className="text-center md:text-left md:ml-8">
-                              <span className="text-xl md:text-base text-green-800 break-words">{projectSettings.eventTime}</span>
+                              <span className="text-xl md:text-base text-green-800 break-words">{formatEventTime(projectSettings.eventTime)}</span>
                             </div>
                           </div>
                         )}
@@ -140,6 +165,20 @@ function ProjectContent() {
                           </div>
                         )}
                       </div>
+                      
+                      {/* Calendar Export Button */}
+                      {projectSettings.eventTime && (
+                        <div className="mt-4 flex justify-center md:justify-start">
+                          <CalendarExportButton
+                            taskTitle={projectSettings.projectName || "Event"}
+                            taskDescription={projectSettings.projectDescription}
+                            eventDateTime={projectSettings.eventTime}
+                            eventLocation={projectSettings.eventLocation}
+                            projectName={projectSettings.projectName || "Event"}
+                            className="text-base"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -159,7 +198,7 @@ function ProjectContent() {
           <TaskTable />
 
           {/* Add Task Button (Owner Only) */}
-          <div className="max-w-2xl mx-auto px-3">
+          <div className="max-w-2xl mx-auto px-3 flex justify-center">
             <AddTaskButton />
           </div>
 
@@ -202,6 +241,9 @@ function ProjectContent() {
       
       {/* Powered by SharedTask Footer - Only show if user can't remove branding */}
       <PoweredByFooter show={!featureFlags?.canRemoveBranding} />
+      
+      {/* Realtime connection indicator */}
+      <RealtimeIndicator isConnected={realtimeConnected} lastUpdate={lastRealtimeUpdate} />
     </LoadingErrorWrapper>
   )
 }

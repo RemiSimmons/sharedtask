@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       eventLocation,
       eventTime,
       eventAttire,
+      contributors = [],
       projectPassword
     } = validation.data.body!
 

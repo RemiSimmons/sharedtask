@@ -427,7 +427,6 @@ export default function AccountManagementPage() {
       {/* App Header with Back Button */}
       <AppHeader 
         showBackButton={true}
-        currentPage="Account Management"
       />
 
       <div className="p-6 md:p-8">
