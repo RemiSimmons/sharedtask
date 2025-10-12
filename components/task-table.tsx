@@ -358,9 +358,9 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                             {projectSettings.eventTime && (
                               <CalendarExportButton
                                 taskTitle={task.name}
-                                taskDescription={task.description}
+                                taskDescription={task.description || undefined}
                                 eventDateTime={projectSettings.eventTime}
-                                eventLocation={projectSettings.eventLocation}
+                                eventLocation={projectSettings.eventLocation || undefined}
                                 projectName={projectSettings.projectName || "Event"}
                                 variant="ghost"
                                 size="sm"
@@ -636,9 +636,9 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                           {projectSettings.eventTime && (
                             <CalendarExportButton
                               taskTitle={task.name}
-                              taskDescription={task.description}
+                              taskDescription={task.description || undefined}
                               eventDateTime={projectSettings.eventTime}
-                              eventLocation={projectSettings.eventLocation}
+                              eventLocation={projectSettings.eventLocation || undefined}
                               projectName={projectSettings.projectName || "Event"}
                               variant="ghost"
                               size="sm"
