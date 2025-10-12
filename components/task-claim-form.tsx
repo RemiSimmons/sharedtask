@@ -367,7 +367,7 @@ export default function TaskClaimForm() {
                   </SelectTrigger>
                   <SelectContent className="max-h-80 overflow-y-auto">
                     {availableTasks.map((task) => (
-                      <SelectItem key={task.id} value={task.id} className="text-base py-3" disabled={task.isFull || task.alreadyJoined}>
+                      <SelectItem key={task.id} value={task.id} className="text-base py-3" disabled={Boolean(task.isFull || task.alreadyJoined)}>
                         <div className="flex items-center justify-between w-full gap-2">
                           <span className={task.alreadyJoined ? "font-semibold" : ""}>{task.name}</span>
                           <div className="flex items-center gap-2">
