@@ -171,9 +171,9 @@ function ProjectContent() {
                         <div className="mt-4 flex justify-center md:justify-start">
                           <CalendarExportButton
                             taskTitle={projectSettings.projectName || "Event"}
-                            taskDescription={projectSettings.projectDescription}
+                            taskDescription={projectSettings.projectDescription || undefined}
                             eventDateTime={projectSettings.eventTime}
-                            eventLocation={projectSettings.eventLocation}
+                            eventLocation={projectSettings.eventLocation || undefined}
                             projectName={projectSettings.projectName || "Event"}
                             className="text-base"
                           />
