@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get task count from all user's projects
-    const projectIds = projects?.map(p => p.id) || []
+    const projectIds = projects?.map((p: any) => p.id) || []
     let taskCount = 0
     
     if (projectIds.length > 0) {
