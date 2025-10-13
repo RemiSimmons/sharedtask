@@ -3,26 +3,52 @@
 import React, { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import AppHeader from "@/components/app-header"
 import { isAdminUser } from "@/lib/admin"
+import AdminUserCard from "@/components/admin-user-card"
 
-interface Project {
+interface UserOverview {
   id: string
   name: string
-  task_label: string
-  created_at: string
-  _count?: {
-    tasks: number
+  email: string
+  emailVerified: boolean
+  tier: string
+  tierLabel: string
+  tierColor: string
+  projectCount: number
+  projectLimit: number
+  projectUsagePercent: number
+  taskCount: number
+  lastActivity: string
+  isActive: boolean
+  storageUsed: number
+  storageLimit: number
+}
+
+interface Stats {
+  total: number
+  byTier: {
+    free: number
+    basic: number
+    pro: number
+    team: number
   }
+  active: number
+  inactive: number
 }
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [projects, setProjects] = useState<Project[]>([])
+  const [users, setUsers] = useState<UserOverview[]>([])
+  const [stats, setStats] = useState<Stats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
+  
+  // Filters
+  const [tierFilter, setTierFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -31,37 +57,37 @@ export default function AdminDashboard() {
     }
 
     if (status === "authenticated") {
-      // Debug: Log user info
-      console.log('Admin page access attempt:', {
-        email: session?.user?.email,
-        isAdmin: isAdminUser(session?.user),
-        user: session?.user
-      })
-      
-      // Check if user has admin access
       if (!isAdminUser(session?.user)) {
-        console.log('Non-admin user redirected from admin page:', session?.user?.email)
         router.push('/')
         return
       }
-      loadProjects()
+      loadUserOverview()
     }
-  }, [status, router, session])
+  }, [status, router, session, tierFilter, statusFilter, searchQuery])
 
-  const loadProjects = async () => {
+  const loadUserOverview = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch('/api/admin/projects')
+      setError('')
+      
+      const params = new URLSearchParams({
+        tier: tierFilter,
+        status: statusFilter,
+        search: searchQuery
+      })
+      
+      const response = await fetch(`/api/admin/users-overview?${params}`)
       
       if (!response.ok) {
-        throw new Error('Failed to load projects')
+        throw new Error('Failed to load user overview')
       }
 
       const data = await response.json()
-      setProjects(data.projects)
+      setUsers(data.users)
+      setStats(data.stats)
     } catch (error) {
-      console.error('Error loading projects:', error)
-      setError('Failed to load projects')
+      console.error('Error loading user overview:', error)
+      setError('Failed to load user overview')
     } finally {
       setIsLoading(false)
     }
@@ -69,18 +95,21 @@ export default function AdminDashboard() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="min-h-screen p-6 md:p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="card-beautiful p-12">
-            <div className="flex flex-col items-center justify-center space-y-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </div>
-              <div className="text-center space-y-2">
-                <h2 className="text-2xl font-semibold text-gray-900">Loading Dashboard</h2>
-                <p className="text-lg text-gray-600">Please wait...</p>
+      <div className="min-h-screen bg-gray-50">
+        <AppHeader />
+        <div className="p-6 md:p-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="card-beautiful p-12">
+              <div className="flex flex-col items-center justify-center space-y-6">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg className="w-8 h-8 text-blue-600 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </div>
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-semibold text-gray-900">Loading Dashboard</h2>
+                  <p className="text-lg text-gray-600">Please wait...</p>
+                </div>
               </div>
             </div>
           </div>
@@ -89,146 +118,156 @@ export default function AdminDashboard() {
     )
   }
 
-  if (status === "unauthenticated") {
-    return null // Will redirect
-  }
-
-  // Redirect non-admin users
-  if (status === "authenticated" && !isAdminUser(session?.user)) {
-    return null // Will redirect
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* App Header */}
       <AppHeader />
 
       <div className="p-6 md:p-8">
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="text-center mb-4">
-              <h1 className="header-main">Admin Dashboard</h1>
-            </div>
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
             <p className="text-lg text-gray-600">
-              {session?.user?.name ? `Welcome back, ${session.user.name}!` : 'Welcome back!'} Manage all your projects in one place.
+              User-centric platform management
             </p>
           </div>
 
-        {/* Create New Project */}
-        <div className="card-beautiful p-8 text-center">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <svg className="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <h2 className="text-2xl font-bold text-gray-900">Create New Project</h2>
-          </div>
-          <p className="text-lg text-gray-700 mb-6">
-            Start organizing tasks with your team
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => router.push('/?create=true')}
-              className="btn-primary text-lg py-3 px-6"
-            >
-              🚀 Create Project
-            </button>
-            {/* Support Center button removed - users should use /support for tickets */}
-            {/* Old admin email composer was replaced with proper user-facing support system */}
-            {/* Operations Dashboard - Available to all admin users */}
-            {isAdminUser(session?.user) && (
+          {/* Quick Actions */}
+          <div className="card-beautiful p-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={() => router.push('/admin/operations')}
-                className="btn-secondary text-lg py-3 px-6 border-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+                className="btn-primary px-6 py-3"
               >
                 📊 Operations Dashboard
               </button>
-            )}
-          </div>
-        </div>
-
-        {/* Projects List */}
-        <div className="card-beautiful p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <svg className="section-icon text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              <h2 className="header-section mb-0">Your Projects</h2>
-            </div>
-            <button
-              onClick={loadProjects}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <svg 
-                className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
+              <button
+                onClick={() => router.push('/admin/support')}
+                className="btn-secondary px-6 py-3 border-2 border-purple-600 text-purple-600 hover:bg-purple-50"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              {isLoading ? 'Refreshing...' : 'Refresh'}
-            </button>
+                💬 Support Tickets
+              </button>
+              <button
+                onClick={() => router.push('/admin/projects')}
+                className="btn-secondary px-6 py-3 border-2 border-green-600 text-green-600 hover:bg-green-50"
+              >
+                📁 All Projects
+              </button>
+            </div>
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800 text-center">
+                <strong>Note:</strong> This is an operations admin account. Project creation is handled through user accounts.
+              </p>
+            </div>
           </div>
 
+          {/* Stats Bar */}
+          {stats && (
+            <div className="card-beautiful p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">Platform Overview</h3>
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-gray-900">{stats.total}</div>
+                  <div className="text-sm text-gray-600">Total Users</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-gray-600">{stats.byTier.free}</div>
+                  <div className="text-sm text-gray-600">🟤 Free</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-600">{stats.byTier.basic}</div>
+                  <div className="text-sm text-gray-600">🔵 Basic</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-600">{stats.byTier.pro}</div>
+                  <div className="text-sm text-gray-600">🟣 Pro</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600">{stats.byTier.team}</div>
+                  <div className="text-sm text-gray-600">🟢 Team</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-500">{stats.active}</div>
+                  <div className="text-sm text-gray-600">Active (7d)</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Filters */}
+          <div className="card-beautiful p-6">
+            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">👥 Users</h2>
+
+              <div className="flex flex-wrap gap-3">
+                {/* Search */}
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+
+                {/* Tier Filter */}
+                <select
+                  value={tierFilter}
+                  onChange={(e) => setTierFilter(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Tiers</option>
+                  <option value="free">🟤 Free</option>
+                  <option value="basic">🔵 Basic</option>
+                  <option value="pro">🟣 Pro</option>
+                  <option value="team">🟢 Team</option>
+                </select>
+
+                {/* Status Filter */}
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active (7d)</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+
+                {/* Refresh */}
+                <button
+                  onClick={loadUserOverview}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                >
+                  🔄
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Error Display */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-red-700">{error}</p>
             </div>
           )}
 
-          {projects.length === 0 ? (
-            <div className="text-center py-12">
+          {/* User Cards Grid */}
+          {users.length === 0 ? (
+            <div className="card-beautiful p-12 text-center">
               <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
               </svg>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Projects Yet</h3>
-              <p className="text-gray-600 mb-6">Create your first project to get started!</p>
-              <button
-                onClick={() => router.push('/?create=true')}
-                className="btn-primary"
-              >
-                🚀 Create Your First Project
-              </button>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Users Found</h3>
+              <p className="text-gray-600">No users match your current filters.</p>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {projects.map((project) => (
-                <div key={project.id} className="card-form p-6 hover-lift">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{project.name}</h3>
-                      <p className="text-gray-600">{project.task_label}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-3">
-                    <Link 
-                      href={`/admin/project/${project.id}`}
-                      className="flex-1 btn-primary text-center py-2"
-                    >
-                      ⚙️ Manage
-                    </Link>
-                    <Link 
-                      href={`/project/${project.id}`}
-                      className="flex-1 btn-secondary text-center py-2"
-                    >
-                      👥 Share Link
-                    </Link>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-xs text-gray-500">
-                      Created {new Date(project.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {users.map((user) => (
+                <AdminUserCard key={user.id} user={user} />
               ))}
             </div>
           )}
-        </div>
         </div>
       </div>
     </div>

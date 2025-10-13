@@ -68,6 +68,14 @@ function LandingPageContent() {
     setContributors(prev => prev.filter(c => c !== name))
   }
 
+  // Redirect admin users to admin dashboard
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user && isAdminUser(session.user)) {
+      router.push('/admin')
+      return
+    }
+  }, [status, session, router])
+
   // Check for create=true query parameter and load projects
   useEffect(() => {
     try {

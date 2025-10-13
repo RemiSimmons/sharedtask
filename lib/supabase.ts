@@ -24,15 +24,31 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
 })
 
 // Admin client for server-side operations (bypasses RLS)
-export const supabaseAdmin = createClient<Database>(
-  supabaseUrl, 
-  supabaseServiceKey || supabaseAnonKey, // Fallback to anon key in development
-  {
-    auth: {
-      persistSession: false,
-    }
+// SECURITY: Only create admin client on server-side with service key
+// This will be undefined on client-side, which is correct for security
+export const supabaseAdmin = supabaseServiceKey 
+  ? createClient<Database>(
+      supabaseUrl, 
+      supabaseServiceKey,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        }
+      }
+    )
+  : null as any // Will be null on client-side, throw error when used server-side
+
+// Helper to ensure admin client is available (server-side only)
+export function ensureAdminClient() {
+  if (!supabaseAdmin) {
+    throw new Error(
+      'CRITICAL SECURITY ERROR: SUPABASE_SERVICE_ROLE_KEY is required for admin operations. ' +
+      'This key must be set in environment variables for the application to function properly.'
+    )
   }
-)
+  return supabaseAdmin
+}
 
 // Helper to check if we have proper admin access
 export const hasAdminAccess = () => !!supabaseServiceKey

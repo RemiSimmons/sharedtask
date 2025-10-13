@@ -266,10 +266,19 @@ export async function logAdminAccess(
   request?: NextRequest
 ): Promise<void> {
   try {
+    // Get user email for logging
+    const user = await getAdminUser(userId)
+    if (!user) {
+      console.warn('Cannot log admin access: user not found')
+      return
+    }
+
     const logEntry = {
-      user_id: userId,
+      admin_email: user.email,
       action: logData.action,
       resource: logData.resource,
+      resource_id: logData.metadata?.resourceId || null,
+      target_user_email: logData.metadata?.targetEmail || null,
       success: logData.success,
       error_message: logData.errorMessage || null,
       ip_address: request?.headers.get('x-forwarded-for') || request?.headers.get('x-real-ip') || null,
@@ -277,10 +286,10 @@ export async function logAdminAccess(
       metadata: logData.metadata || {}
     }
 
-    // Comment out admin logging for now - table doesn't exist in current schema
-    // await supabaseAdmin
-    //   .from('admin_access_logs')
-    //   .insert(logEntry)
+    // Log to admin_access_logs table (created via security-audit-admin-logs-migration.sql)
+    await supabaseAdmin
+      .from('admin_access_logs')
+      .insert(logEntry)
 
   } catch (error) {
     // Never let audit logging break the application
@@ -483,18 +492,44 @@ export async function getAdminAccessLogs(
   total: number
 }> {
   try {
-    // Comment out admin access logs query - table doesn't exist in current schema
-    // let query = supabaseAdmin
-    //   .from('admin_access_logs')
-    //   .select(`
-    //     *,
-    //     users!admin_access_logs_user_id_fkey(name, email)
-    //   `, { count: 'exact' })
+    let query = supabaseAdmin
+      .from('admin_access_logs')
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false })
     
-    // Return empty array for now - admin access logs table doesn't exist
+    if (filters?.action) {
+      query = query.eq('action', filters.action)
+    }
+
+    if (filters?.success !== undefined) {
+      query = query.eq('success', filters.success)
+    }
+
+    if (filters?.dateFrom) {
+      query = query.gte('created_at', filters.dateFrom)
+    }
+
+    if (filters?.dateTo) {
+      query = query.lte('created_at', filters.dateTo)
+    }
+
+    if (limit) {
+      query = query.limit(limit)
+    }
+
+    if (offset) {
+      query = query.range(offset, offset + limit - 1)
+    }
+
+    const { data, error, count } = await query
+
+    if (error) {
+      throw error
+    }
+
     return {
-      logs: [],
-      total: 0
+      logs: data || [],
+      total: count || 0
     }
 
   } catch (error) {

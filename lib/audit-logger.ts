@@ -19,25 +19,26 @@ export class AuditLogger {
    */
   static async log(entry: AuditLogEntry): Promise<void> {
     try {
-      // Comment out audit logging - table doesn't exist in current schema
-      // const { error } = await supabaseAdmin
-      //   .from('audit_logs')
-      //   .insert({
-      //     admin_email: entry.adminEmail,
-      //     action: entry.action,
-      //     resource_type: entry.resourceType,
-      //     resource_id: entry.resourceId || null,
-      //     target_user_email: entry.targetUserEmail || null,
-      //     details: entry.details || null,
-      //     ip_address: entry.ipAddress || null,
-      //     user_agent: entry.userAgent || null,
-      //     status: entry.status || 'success'
-      //   })
+      // Log to admin_access_logs table (created via security-audit-admin-logs-migration.sql)
+      const { error } = await supabaseAdmin
+        .from('admin_access_logs')
+        .insert({
+          admin_email: entry.adminEmail,
+          action: entry.action,
+          resource: entry.resourceType,
+          resource_id: entry.resourceId || null,
+          target_user_email: entry.targetUserEmail || null,
+          metadata: entry.details || {},
+          ip_address: entry.ipAddress || null,
+          user_agent: entry.userAgent || null,
+          success: entry.status !== 'failed' && entry.status !== 'error',
+          error_message: entry.status === 'failed' || entry.status === 'error' ? JSON.stringify(entry.details) : null
+        })
 
-      // if (error) {
-      //   console.error('Failed to log audit entry:', error)
-      //   // Don't throw error to avoid breaking the main operation
-      // }
+      if (error) {
+        console.error('Failed to log audit entry:', error)
+        // Don't throw error to avoid breaking the main operation
+      }
     } catch (error) {
       console.error('Audit logging error:', error)
       // Don't throw error to avoid breaking the main operation
@@ -159,16 +160,51 @@ export class AuditLogger {
     total: number
   }> {
     try {
-      // Comment out audit logs query - table doesn't exist in current schema
-      // let query = supabaseAdmin
-      //   .from('audit_logs')
-      //   .select('*', { count: 'exact' })
-      //   .order('timestamp', { ascending: false })
+      // Query admin_access_logs table
+      let query = supabaseAdmin
+        .from('admin_access_logs')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
       
-      // Return empty array for now
-      return { logs: [], total: 0 }
+      if (filters.adminEmail) {
+        query = query.eq('admin_email', filters.adminEmail)
+      }
 
-      // All audit log queries commented out - table doesn't exist in current schema
+      if (filters.action) {
+        query = query.eq('action', filters.action)
+      }
+
+      if (filters.resourceType) {
+        query = query.eq('resource', filters.resourceType)
+      }
+
+      if (filters.startDate) {
+        query = query.gte('created_at', filters.startDate)
+      }
+
+      if (filters.endDate) {
+        query = query.lte('created_at', filters.endDate)
+      }
+
+      if (filters.limit) {
+        query = query.limit(filters.limit)
+      }
+
+      if (filters.offset) {
+        query = query.range(filters.offset, filters.offset + (filters.limit || 50) - 1)
+      }
+
+      const { data, error, count } = await query
+
+      if (error) {
+        console.error('Error querying admin_access_logs:', error)
+        return { logs: [], total: 0 }
+      }
+
+      return { 
+        logs: data || [], 
+        total: count || 0 
+      }
     } catch (error) {
       console.error('Error in getLogs:', error)
       return { logs: [], total: 0 }
@@ -188,19 +224,47 @@ export class AuditLogger {
       const hours = timeframe === '24h' ? 24 : timeframe === '7d' ? 168 : 720
       const startTime = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
 
-      // Comment out audit logs query - table doesn't exist in current schema
-      // const { data, error } = await supabaseAdmin
-      //   .from('audit_logs')
-      //   .select('*')
-      //   .gte('timestamp', startTime)
-      //   .order('timestamp', { ascending: false })
+      // Query admin_access_logs table
+      const { data, error } = await supabaseAdmin
+        .from('admin_access_logs')
+        .select('*')
+        .gte('created_at', startTime)
+        .order('created_at', { ascending: false })
       
-      // Return empty stats for now - audit logs table doesn't exist in current schema
+      if (error) {
+        console.error('Error querying admin_access_logs for stats:', error)
+        return {
+          totalActions: 0,
+          actionsByType: {},
+          adminActivity: {},
+          recentActivity: []
+        }
+      }
+
+      const logs = data || []
+
+      // Calculate statistics
+      const actionsByType: Record<string, number> = {}
+      const adminActivity: Record<string, number> = {}
+
+      logs.forEach(log => {
+        // Count by action type
+        actionsByType[log.action] = (actionsByType[log.action] || 0) + 1
+        
+        // Count by admin
+        adminActivity[log.admin_email] = (adminActivity[log.admin_email] || 0) + 1
+      })
+
       return {
-        totalActions: 0,
-        actionsByType: {},
-        adminActivity: {},
-        recentActivity: []
+        totalActions: logs.length,
+        actionsByType,
+        adminActivity,
+        recentActivity: logs.slice(0, 10).map(log => ({
+          action: log.action,
+          admin: log.admin_email,
+          success: log.success,
+          timestamp: log.created_at
+        }))
       }
     } catch (error) {
       console.error('Error in getStats:', error)

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react"
-import { supabase, supabaseAdmin, handleSupabaseError } from "@/lib/supabase"
+import { supabase, handleSupabaseError } from "@/lib/supabase"
 import { useRealtimeSubscription } from "@/hooks/use-realtime-subscription"
 import { Project, Task as DatabaseTask, TaskAssignment, TaskComment } from "@/types/database"
 import { useSession } from "next-auth/react"
@@ -117,9 +117,10 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
   const [error, setError] = useState<string | null>(null)
   const [currentProject, setCurrentProject] = useState<Project | null>(null)
   
-  // Use admin client for authenticated operations, regular client for public operations
+  // Always use regular client in browser context (client component)
+  // supabaseAdmin is server-side only and will be null here
   const getSupabaseClient = () => {
-    return session ? supabaseAdmin : supabase
+    return supabase
   }
   
   // Quick claiming state
