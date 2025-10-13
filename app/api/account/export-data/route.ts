@@ -41,7 +41,7 @@ export async function GET() {
     // Get tasks for user's projects
     let tasks: any[] = []
     if (projects && projects.length > 0) {
-      const projectIds = projects.map(p => p.id)
+      const projectIds = projects.map((p: any) => p.id)
       const { data: tasksData, error: tasksError } = await supabaseAdmin
         .from('tasks')
         .select('*')
