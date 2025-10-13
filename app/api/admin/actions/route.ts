@@ -77,7 +77,7 @@ async function exportUsers(adminEmail: string, request: NextRequest) {
 
     // Convert to CSV format
     const csvHeader = 'ID,Name,Email,Email Verified,Created At\n'
-    const csvData = users?.map(user => 
+    const csvData = users?.map((user: any) => 
       `${user.id},"${user.name}",${user.email},${user.email_verified},${user.created_at}`
     ).join('\n') || ''
     
