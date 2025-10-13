@@ -2,11 +2,21 @@ import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
 import { addCorsHeaders, handlePreflight } from "@/lib/cors-middleware"
 import { isAdminUser } from "@/lib/admin"
+import { csrfMiddleware } from "@/lib/csrf-protection"
+import { applySecurityHeaders } from "@/lib/security-headers"
 
 export default auth((req) => {
   // Handle CORS preflight requests for API routes
   if (req.method === 'OPTIONS' && req.nextUrl.pathname.startsWith('/api/')) {
     return handlePreflight(req)
+  }
+  
+  // CSRF Protection for API routes
+  if (req.nextUrl.pathname.startsWith('/api/')) {
+    const csrfResult = csrfMiddleware(req)
+    if (csrfResult) {
+      return csrfResult // CSRF validation failed
+    }
   }
   
   // In NextAuth v5, the session is directly available as req.auth
@@ -45,20 +55,28 @@ export default auth((req) => {
   }
   
   // Create response
-  const response = NextResponse.next()
+  let response = NextResponse.next()
   
   // Add CORS headers to API responses
   if (req.nextUrl.pathname.startsWith('/api/')) {
-    return addCorsHeaders(response, req)
+    response = addCorsHeaders(response, req)
   }
+  
+  // Apply security headers to all responses
+  response = applySecurityHeaders(response, req)
   
   return response
 })
 
 export const config = {
   matcher: [
-    "/admin/:path*",
-    "/api/:path*" // Include API routes for CORS handling
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ]
 }
 

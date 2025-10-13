@@ -108,7 +108,20 @@ async function handleGetUsers(searchParams: URLSearchParams, adminUser: any) {
 }
 
 async function handleUserAction(request: NextRequest, action: string, adminUser: any) {
-  const body = await request.json()
+  const { z } = await import('zod')
+  const { validateRequest } = await import('@/lib/validation-middleware')
+  const { adminUserActionSchema } = await import('@/lib/validation')
+  
+  const validation = await validateRequest(request, {
+    bodySchema: adminUserActionSchema,
+    maxBodySize: 2048,
+  })
+
+  if (!validation.success) {
+    return validation.response
+  }
+  
+  const body = validation.data.body!
   
   switch (action) {
     case 'promote':
@@ -116,10 +129,6 @@ async function handleUserAction(request: NextRequest, action: string, adminUser:
       
       if (!userId || !role) {
         return NextResponse.json({ error: 'User ID and role required' }, { status: 400 })
-      }
-      
-      if (!['admin', 'super_admin'].includes(role)) {
-        return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
       }
       
       const promoteResult = await promoteToAdmin(userId, role, adminUser.id)
@@ -155,11 +164,27 @@ async function handleUserAction(request: NextRequest, action: string, adminUser:
 }
 
 async function handleUpdateUser(request: NextRequest, adminUser: any) {
-  const body = await request.json()
+  const { validateRequest } = await import('@/lib/validation-middleware')
+  const { adminUserActionSchema } = await import('@/lib/validation')
+  
+  const validation = await validateRequest(request, {
+    bodySchema: adminUserActionSchema,
+    maxBodySize: 2048,
+  })
+
+  if (!validation.success) {
+    return validation.response
+  }
+  
+  const body = validation.data.body!
   const { userId, updates } = body
   
   if (!userId) {
     return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+  }
+  
+  if (!updates) {
+    return NextResponse.json({ error: 'Updates object required' }, { status: 400 })
   }
   
   // Only allow updating certain fields

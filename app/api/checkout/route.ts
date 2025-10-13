@@ -3,42 +3,43 @@ import { stripe, getPriceId } from '@/lib/stripe'
 import { auth } from '@/lib/auth'
 import { getUserSubscriptionState, startTrial } from '@/lib/subscription-service'
 import { PlanType } from '@/types/database'
+import { z } from 'zod'
+import { validateRequest } from '@/lib/validation-middleware'
+
+// Checkout-specific schema
+const checkoutSchema = z.object({
+  plan: z.enum(['basic', 'pro', 'team'], {
+    errorMap: () => ({ message: 'Invalid plan. Must be basic, pro, or team' })
+  }),
+  start: z.enum(['trial', 'paid'], {
+    errorMap: () => ({ message: 'Invalid start type. Must be trial or paid' })
+  }),
+  billing: z.enum(['monthly', 'yearly'], {
+    errorMap: () => ({ message: 'Invalid billing cycle. Must be monthly or yearly' })
+  }),
+})
 
 export async function POST(request: NextRequest) {
   try {
     console.log('🔍 Checkout API called')
-    const body = await request.json()
-    console.log('📝 Request body:', body)
-    const { plan, start, billing } = body
+    
+    // Validate request with rate limiting
+    const validation = await validateRequest(request, {
+      bodySchema: checkoutSchema,
+      rateLimit: {
+        identifier: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous',
+        maxRequests: 10, // 10 checkout attempts per 15 minutes
+        windowMs: 15 * 60 * 1000
+      },
+      maxBodySize: 1024,
+    })
 
-    // Validate input
-    if (!plan || !start || !billing) {
-      return NextResponse.json(
-        { error: 'Missing required parameters: plan, start, billing' },
-        { status: 400 }
-      )
+    if (!validation.success) {
+      return validation.response
     }
 
-    if (!['basic', 'pro', 'team'].includes(plan)) {
-      return NextResponse.json(
-        { error: 'Invalid plan. Must be basic, pro, or team' },
-        { status: 400 }
-      )
-    }
-
-    if (!['trial', 'paid'].includes(start)) {
-      return NextResponse.json(
-        { error: 'Invalid start type. Must be trial or paid' },
-        { status: 400 }
-      )
-    }
-
-    if (!['monthly', 'yearly'].includes(billing)) {
-      return NextResponse.json(
-        { error: 'Invalid billing cycle. Must be monthly or yearly' },
-        { status: 400 }
-      )
-    }
+    const { plan, start, billing } = validation.data.body!
+    console.log('📝 Validated request:', { plan, start, billing })
 
     // Get user session - required for both trial and paid flows
     const session = await auth()

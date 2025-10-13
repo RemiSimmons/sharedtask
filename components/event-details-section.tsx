@@ -13,6 +13,13 @@ export function EventDetailsSection() {
     
     try {
       const dateTime = new Date(eventTime)
+      
+      // Check if the date is valid
+      if (isNaN(dateTime.getTime())) {
+        console.error('Invalid event time value:', eventTime)
+        return { date: undefined, time: undefined }
+      }
+      
       const date = new Date(dateTime.getFullYear(), dateTime.getMonth(), dateTime.getDate())
       const time = new Date()
       time.setHours(dateTime.getHours(), dateTime.getMinutes(), 0, 0)

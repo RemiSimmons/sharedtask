@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { stripe } from '@/lib/stripe'
 import { supabaseAdmin } from '@/lib/supabase'
+import { subscriptionCancelSchema } from '@/lib/validation'
+import { validateRequest } from '@/lib/validation-middleware'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,14 +16,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { subscriptionId } = await request.json()
+    // Validate request with rate limiting
+    const validation = await validateRequest(request, {
+      bodySchema: subscriptionCancelSchema,
+      rateLimit: {
+        identifier: session.user.id,
+        maxRequests: 5, // 5 cancellation attempts per 15 minutes
+        windowMs: 15 * 60 * 1000
+      },
+      maxBodySize: 512,
+    })
 
-    if (!subscriptionId) {
-      return NextResponse.json(
-        { error: 'Subscription ID is required' },
-        { status: 400 }
-      )
+    if (!validation.success) {
+      return validation.response
     }
+
+    const { subscriptionId } = validation.data.body!
 
     // Verify the subscription belongs to the user
     const { data: subscription, error: dbError } = await supabaseAdmin

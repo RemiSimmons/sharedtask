@@ -14,21 +14,11 @@ const ADMIN_EMAILS = [
  */
 export function isAdmin(email: string | null | undefined): boolean {
   if (!email) {
-    console.log('isAdmin: No email provided')
     return false
   }
   
   const normalizedEmail = email.toLowerCase().trim()
-  const isAdminResult = ADMIN_EMAILS.includes(normalizedEmail)
-  
-  console.log('Admin check:', {
-    originalEmail: email,
-    normalizedEmail,
-    adminEmails: ADMIN_EMAILS,
-    isAdmin: isAdminResult
-  })
-  
-  return isAdminResult
+  return ADMIN_EMAILS.includes(normalizedEmail)
 }
 
 /**

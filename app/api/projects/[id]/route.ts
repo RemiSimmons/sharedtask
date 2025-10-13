@@ -16,7 +16,7 @@ export async function GET(
 
     const { data: project, error } = await supabase
       .from('projects')
-      .select('*')
+      .select('id, user_id, name, task_label, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, created_at')
       .eq('id', id)
       .eq('user_id', session.user.id)
       .single()
@@ -48,7 +48,7 @@ export async function DELETE(
     // Verify project ownership
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('*')
+      .select('id, name, user_id')
       .eq('id', id)
       .eq('user_id', session.user.id)
       .single()

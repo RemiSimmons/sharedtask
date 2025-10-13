@@ -168,7 +168,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     try {
       const { data: project, error } = await supabase
         .from('projects')
-        .select('*')
+        .select('id, user_id, name, task_label, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, created_at')
         .eq('id', currentProject.id)
         .maybeSingle() // Use maybeSingle() instead of single() to handle cases where no rows are found
 
@@ -179,7 +179,8 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
       }
 
       if (project) {
-        setCurrentProject(project)
+        // Add admin_password placeholder since we don't fetch it for security reasons
+        setCurrentProject({ ...project, admin_password: 'no_password_set' })
         setProjectSettings({
           projectName: project.name || "My Project",
           projectDescription: project.description || undefined,
@@ -225,7 +226,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         const client = getSupabaseClient()
         const { data: projectData, error: projectError } = await client
           .from('projects')
-          .select('*')
+          .select('id, user_id, name, task_label, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, created_at')
           .eq('id', projectId)
           .maybeSingle() // Use maybeSingle() to handle cases where project doesn't exist
 
@@ -242,7 +243,8 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
           return
         }
 
-        project = projectData
+        // Add admin_password placeholder since we don't fetch it for security reasons
+        project = { ...projectData, admin_password: 'no_password_set' }
       } else {
         // No project ID provided - user needs to create a project through proper UI
         setError('No project specified. Please create a project first.')

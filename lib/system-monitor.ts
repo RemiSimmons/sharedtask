@@ -1,5 +1,6 @@
 import { supabaseAdmin } from './supabase'
 import { logger } from './logger'
+import os from 'os'
 
 // ============================================================================
 // PRODUCTION SYSTEM MONITORING

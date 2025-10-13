@@ -3,6 +3,8 @@ import { supabaseAdmin } from '@/lib/supabase'
 import { auth } from '@/lib/auth'
 import { AuditLogger } from '@/lib/audit-logger'
 import { isAdminUser } from '@/lib/admin'
+import { adminActionSchema } from '@/lib/validation'
+import { validateRequest } from '@/lib/validation-middleware'
 
 export async function POST(request: NextRequest) {
   // Check if user is authenticated and is admin
@@ -21,7 +23,22 @@ export async function POST(request: NextRequest) {
     )
   }
   try {
-    const { action, params } = await request.json()
+    // Validate request with rate limiting
+    const validation = await validateRequest(request, {
+      bodySchema: adminActionSchema,
+      rateLimit: {
+        identifier: session.user.email,
+        maxRequests: 20, // 20 admin actions per 15 minutes
+        windowMs: 15 * 60 * 1000
+      },
+      maxBodySize: 1024,
+    })
+
+    if (!validation.success) {
+      return validation.response
+    }
+
+    const { action, params } = validation.data.body!
 
     switch (action) {
       case 'export_users':
@@ -37,19 +54,34 @@ export async function POST(request: NextRequest) {
         return await getSystemHealth(session.user!.email!, request)
       
       case 'verify_user':
-        return await verifyUser(params?.userId, session.user!.email!, request)
+        if (!params?.userId) {
+          return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+        }
+        return await verifyUser(params.userId, session.user!.email!, request)
       
       case 'suspend_user':
-        return await suspendUser(params?.userId, session.user!.email!, request)
+        if (!params?.userId) {
+          return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+        }
+        return await suspendUser(params.userId, session.user!.email!, request)
       
       case 'activate_user':
-        return await activateUser(params?.userId, session.user!.email!, request)
+        if (!params?.userId) {
+          return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+        }
+        return await activateUser(params.userId, session.user!.email!, request)
       
       case 'reset_user_password':
-        return await resetUserPassword(params?.userId, session.user!.email!, request)
+        if (!params?.userId) {
+          return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+        }
+        return await resetUserPassword(params.userId, session.user!.email!, request)
       
       case 'delete_user':
-        return await deleteUser(params?.userId, session.user!.email!, request)
+        if (!params?.userId) {
+          return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+        }
+        return await deleteUser(params.userId, session.user!.email!, request)
       
       default:
         return NextResponse.json(

@@ -44,7 +44,18 @@ function ProjectContent() {
   // Format event time for display
   const formatEventTime = (isoString: string) => {
     try {
+      // Validate the date string before creating Date object
+      if (!isoString || isoString === 'null' || isoString === 'undefined') {
+        return 'Date not set'
+      }
+      
       const date = new Date(isoString)
+      
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return 'Date not set'
+      }
+      
       const options: Intl.DateTimeFormatOptions = {
         weekday: 'short',
         year: 'numeric',
@@ -56,7 +67,7 @@ function ProjectContent() {
       }
       return date.toLocaleString('en-US', options)
     } catch (error) {
-      return isoString
+      return 'Date not set'
     }
   }
 

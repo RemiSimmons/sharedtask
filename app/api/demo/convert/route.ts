@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { demoConvertSchema, sanitizeInput } from '@/lib/validation'
+import { validateRequest } from '@/lib/validation-middleware'
+import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { 
+    // Validate request with rate limiting
+    const validation = await validateRequest(request, {
+      bodySchema: demoConvertSchema,
+      rateLimit: {
+        identifier: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous',
+        maxRequests: 5, // 5 demo conversions per 15 minutes
+        windowMs: 15 * 60 * 1000
+      },
+      maxBodySize: 102400, // 100KB max for demo data
+    })
+
+    if (!validation.success) {
+      return validation.response
+    }
+
+    let { 
       projectName, 
       taskLabel,
       adminPassword, 
@@ -14,17 +31,18 @@ export async function POST(request: NextRequest) {
       allowContributorsAddNames,
       allowContributorsAddTasks,
       demoData 
-    } = body
+    } = validation.data.body!
 
-    // Validate required fields
-    if (!projectName || !adminPassword || !demoData) {
-      return NextResponse.json(
-        { error: 'Project name, admin password, and demo data are required' },
-        { status: 400 }
-      )
+    // Sanitize text inputs
+    projectName = sanitizeInput(projectName)
+    if (taskLabel) {
+      taskLabel = sanitizeInput(taskLabel)
     }
 
     const { tasks, projectSettings } = demoData
+
+    // Hash the password securely
+    const hashedPassword = await bcrypt.hash(adminPassword, 12)
 
     // Create project in database with all settings
     const { data: project, error: projectError } = await supabase
@@ -32,7 +50,7 @@ export async function POST(request: NextRequest) {
       .insert({
         name: projectName,
         task_label: taskLabel || projectSettings?.taskLabel || 'Task',
-        admin_password: adminPassword,
+        admin_password: hashedPassword,
         allow_multiple_tasks: allowMultipleTasks ?? projectSettings?.allowMultipleTasks ?? false,
         allow_multiple_contributors: allowMultipleContributors ?? projectSettings?.allowMultipleContributors ?? false,
         max_contributors_per_task: maxContributorsPerTask ?? projectSettings?.maxContributorsPerTask ?? null,

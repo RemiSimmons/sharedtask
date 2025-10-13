@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { auth } from '@/lib/auth'
 import { isAdminUser } from '@/lib/admin'
+import { supportReplySchema, sanitizeInput, sanitizeHtml } from '@/lib/validation'
+import { validateRequest } from '@/lib/validation-middleware'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -22,7 +24,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { to, subject, message, ticketId } = await request.json()
+    // Validate request with rate limiting
+    const validation = await validateRequest(request, {
+      bodySchema: supportReplySchema,
+      rateLimit: {
+        identifier: session.user.email,
+        maxRequests: 30, // 30 support emails per 15 minutes
+        windowMs: 15 * 60 * 1000
+      },
+      maxBodySize: 10240, // 10KB max for email content
+    })
+
+    if (!validation.success) {
+      return validation.response
+    }
+
+    let { to, subject, message, ticketId } = validation.data.body!
+
+    // Sanitize inputs
+    subject = sanitizeInput(subject)
+    message = sanitizeInput(message)
+    if (ticketId) {
+      ticketId = sanitizeInput(ticketId)
+    }
 
     // Send reply via Resend
     const response = await resend.emails.send({

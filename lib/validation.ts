@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import DOMPurify from 'isomorphic-dompurify'
+import validator from 'validator'
 
 // ============================================================================
 // AUTHENTICATION SCHEMAS
@@ -239,6 +241,114 @@ export const contactSchema = z.object({
 })
 
 // ============================================================================
+// ADMIN SCHEMAS
+// ============================================================================
+
+export const adminAuthSchema = z.object({
+  projectId: z.string()
+    .uuid('Invalid project ID format'),
+  password: z.string()
+    .min(1, 'Password is required')
+    .max(50, 'Password must be less than 50 characters'),
+})
+
+export const adminActionSchema = z.object({
+  action: z.enum([
+    'export_users',
+    'export_projects',
+    'clear_cache',
+    'system_health',
+    'verify_user',
+    'suspend_user',
+    'activate_user',
+    'reset_user_password',
+    'delete_user'
+  ], {
+    errorMap: () => ({ message: 'Invalid admin action' })
+  }),
+  params: z.object({
+    userId: z.string()
+      .uuid('Invalid user ID format')
+      .optional(),
+  }).optional(),
+})
+
+export const supportReplySchema = z.object({
+  to: z.string()
+    .email('Invalid recipient email format')
+    .max(255, 'Email must be less than 255 characters'),
+  subject: z.string()
+    .min(1, 'Subject is required')
+    .max(200, 'Subject must be less than 200 characters')
+    .trim(),
+  message: z.string()
+    .min(1, 'Message is required')
+    .max(5000, 'Message must be less than 5000 characters')
+    .trim(),
+  ticketId: z.string()
+    .max(100, 'Ticket ID is too long')
+    .optional(),
+})
+
+export const verifyEmailSchema = z.object({
+  token: z.string()
+    .min(1, 'Token is required')
+    .max(255, 'Invalid token format'),
+})
+
+export const subscriptionCancelSchema = z.object({
+  subscriptionId: z.string()
+    .min(1, 'Subscription ID is required')
+    .max(255, 'Invalid subscription ID format'),
+})
+
+export const checkoutSchema = z.object({
+  priceId: z.string()
+    .min(1, 'Price ID is required')
+    .max(255, 'Invalid price ID format'),
+  successUrl: z.string()
+    .url('Invalid success URL')
+    .max(2000, 'URL is too long')
+    .optional(),
+  cancelUrl: z.string()
+    .url('Invalid cancel URL')
+    .max(2000, 'URL is too long')
+    .optional(),
+})
+
+export const adminUserActionSchema = z.object({
+  userId: z.string()
+    .uuid('Invalid user ID format'),
+  role: z.enum(['admin', 'super_admin'], {
+    errorMap: () => ({ message: 'Role must be admin or super_admin' })
+  }).optional(),
+  updates: z.record(z.any()).optional(),
+})
+
+export const demoConvertSchema = z.object({
+  projectName: z.string()
+    .min(1, 'Project name is required')
+    .max(200, 'Project name must be less than 200 characters')
+    .trim(),
+  taskLabel: z.string()
+    .max(100, 'Task label must be less than 100 characters')
+    .trim()
+    .optional(),
+  adminPassword: z.string()
+    .min(6, 'Password must be at least 6 characters')
+    .max(50, 'Password must be less than 50 characters'),
+  allowMultipleTasks: z.boolean().optional(),
+  allowMultipleContributors: z.boolean().optional(),
+  maxContributorsPerTask: z.number().int().min(1).max(100).optional().nullable(),
+  allowContributorsAddNames: z.boolean().optional(),
+  allowContributorsAddTasks: z.boolean().optional(),
+  demoData: z.object({
+    tasks: z.array(z.any()).max(50, 'Cannot convert more than 50 tasks'),
+    projectSettings: z.any().optional(),
+  }),
+})
+
+// ============================================================================
 // COMMON VALIDATION HELPERS
 // ============================================================================
 
@@ -283,20 +393,131 @@ export function formatValidationError(error: z.ZodError) {
 // SANITIZATION HELPERS
 // ============================================================================
 
+/**
+ * Sanitize HTML content using DOMPurify
+ * This removes all potentially dangerous HTML/JS while keeping safe formatting
+ */
 export function sanitizeHtml(input: string): string {
-  // Basic HTML sanitization - remove potentially dangerous tags
-  return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
-    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/on\w+\s*=/gi, '')
+  if (!input || typeof input !== 'string') return ''
+  
+  // Configure DOMPurify for safe HTML
+  const clean = DOMPurify.sanitize(input, {
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li'],
+    ALLOWED_ATTR: ['href', 'title'],
+    ALLOW_DATA_ATTR: false,
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+  })
+  
+  return clean.trim()
 }
 
+/**
+ * Sanitize plain text input (no HTML allowed)
+ * This aggressively removes all HTML and special characters
+ */
 export function sanitizeInput(input: string): string {
-  return input
+  if (!input || typeof input !== 'string') return ''
+  
+  // Remove all HTML tags
+  let sanitized = validator.stripLow(input, true)
+  
+  // Use DOMPurify to remove any remaining HTML
+  sanitized = DOMPurify.sanitize(sanitized, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  })
+  
+  // Normalize whitespace
+  sanitized = sanitized
     .trim()
     .replace(/\s+/g, ' ') // Replace multiple spaces with single space
     .slice(0, 10000) // Prevent extremely long inputs
+  
+  return sanitized
+}
+
+/**
+ * Sanitize user name input
+ * Only allows letters, spaces, hyphens, and apostrophes
+ */
+export function sanitizeName(input: string): string {
+  if (!input || typeof input !== 'string') return ''
+  
+  let sanitized = validator.stripLow(input, true)
+  sanitized = DOMPurify.sanitize(sanitized, {
+    ALLOWED_TAGS: [],
+    ALLOWED_ATTR: [],
+  })
+  
+  // Remove any non-name characters
+  sanitized = sanitized.replace(/[^a-zA-Z\s'-]/g, '')
+  
+  return sanitized.trim().slice(0, 100)
+}
+
+/**
+ * Sanitize email input
+ */
+export function sanitizeEmail(input: string): string {
+  if (!input || typeof input !== 'string') return ''
+  
+  const sanitized = validator.normalizeEmail(input.toLowerCase().trim(), {
+    gmail_remove_dots: false,
+    gmail_remove_subaddress: false,
+    outlookdotcom_remove_subaddress: false,
+    yahoo_remove_subaddress: false,
+    icloud_remove_subaddress: false,
+  })
+  
+  return sanitized || input.toLowerCase().trim()
+}
+
+/**
+ * Validate and sanitize URL input
+ */
+export function sanitizeUrl(input: string): string | null {
+  if (!input || typeof input !== 'string') return null
+  
+  const trimmed = input.trim()
+  
+  if (!validator.isURL(trimmed, {
+    protocols: ['http', 'https'],
+    require_protocol: true,
+    require_valid_protocol: true,
+  })) {
+    return null
+  }
+  
+  return trimmed
+}
+
+/**
+ * Validate UUID format
+ */
+export function isValidUuid(input: string): boolean {
+  return validator.isUUID(input)
+}
+
+/**
+ * Sanitize JSON input to prevent NoSQL injection
+ */
+export function sanitizeJsonInput<T>(input: any): T | null {
+  try {
+    // If it's already parsed JSON, re-stringify and parse to ensure it's clean
+    if (typeof input === 'object' && input !== null) {
+      const stringified = JSON.stringify(input)
+      return JSON.parse(stringified) as T
+    }
+    
+    // If it's a string, parse it
+    if (typeof input === 'string') {
+      return JSON.parse(input) as T
+    }
+    
+    return null
+  } catch (error) {
+    console.error('JSON sanitization error:', error)
+    return null
+  }
 }

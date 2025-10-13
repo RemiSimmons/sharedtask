@@ -37,7 +37,14 @@ export function CalendarExportButton({
     setIsExporting(true)
 
     try {
+      // Validate the date string before creating Date object
       const startDate = new Date(eventDateTime)
+      
+      // Check if the date is valid
+      if (isNaN(startDate.getTime())) {
+        console.error("Invalid event date/time:", eventDateTime)
+        return
+      }
       
       // Create calendar event
       const event: CalendarEvent = {

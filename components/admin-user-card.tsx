@@ -45,6 +45,12 @@ export default function AdminUserCard({ user }: UserCardProps) {
   const formatLastActivity = (date: string) => {
     const now = new Date()
     const activityDate = new Date(date)
+    
+    // Check if the date is valid
+    if (isNaN(activityDate.getTime())) {
+      return 'Unknown'
+    }
+    
     const diffMs = now.getTime() - activityDate.getTime()
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)

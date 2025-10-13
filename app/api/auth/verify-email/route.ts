@@ -1,17 +1,26 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { verifyEmailSchema } from '@/lib/validation'
+import { validateRequest } from '@/lib/validation-middleware'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { token } = await request.json()
+    // Validate request with rate limiting
+    const validation = await validateRequest(request, {
+      bodySchema: verifyEmailSchema,
+      rateLimit: {
+        identifier: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous',
+        maxRequests: 10, // 10 verification attempts per 15 minutes
+        windowMs: 15 * 60 * 1000
+      },
+      maxBodySize: 512,
+    })
 
-    // Validate input
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Verification token is required' },
-        { status: 400 }
-      )
+    if (!validation.success) {
+      return validation.response
     }
+
+    const { token } = validation.data.body!
 
     // Find user with valid verification token
     const { data: user, error: userError } = await supabaseAdmin
