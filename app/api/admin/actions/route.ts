@@ -125,7 +125,7 @@ async function exportProjects(adminEmail: string, request: NextRequest) {
 
     // Convert to CSV format
     const csvHeader = 'ID,Project Name,Owner Name,Owner Email,Created At\n'
-    const csvData = projects?.map(project => 
+    const csvData = projects?.map((project: any) => 
       `${project.id},"${project.name}","${project.users?.name}",${project.users?.email},${project.created_at}`
     ).join('\n') || ''
     
