@@ -60,14 +60,28 @@ export default function AdminProjectPage() {
         <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
           <div className="max-w-6xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
-              {/* Left side - Shared Task Logo */}
-              <Link href="/admin" className="flex items-center hover:opacity-80 transition-opacity">
-                <img 
-                  src="/shared-task-logo.svg" 
-                  alt="SharedTask Logo" 
-                  className="h-20 w-auto"
-                />
-              </Link>
+              {/* Left side - Logo and Back Button */}
+              <div className="flex items-center gap-4">
+                <Link href="/admin" className="flex items-center hover:opacity-80 transition-opacity">
+                  <img 
+                    src="/shared-task-logo.svg" 
+                    alt="SharedTask Logo" 
+                    className="h-8 w-auto"
+                  />
+                </Link>
+                
+                {/* Back Button */}
+                <Link 
+                  href="/admin"
+                  className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium transition-colors border border-blue-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="hidden sm:inline">Back to Dashboard</span>
+                  <span className="sm:hidden">Back</span>
+                </Link>
+              </div>
 
               {/* Right side - User info and actions */}
               <div className="flex items-center gap-4">
@@ -113,22 +127,8 @@ export default function AdminProjectPage() {
 
         <div className="p-4 md:p-8">
           <div className="max-w-6xl mx-auto space-y-12">
-            {/* Page-level Back Button and Project Header */}
+            {/* Project Header and Actions */}
             <div className="space-y-4">
-              {/* Back to Dashboard Button - Prominent positioning */}
-              <div className="flex items-center">
-                <Link 
-                  href="/admin"
-                  className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-6 py-3 rounded-lg font-semibold transition-colors border border-blue-200 shadow-sm hover:shadow-md"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Back to Dashboard
-                </Link>
-              </div>
-
-              {/* Project Header and Actions */}
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <ProjectHeader projectId={projectId} />
               

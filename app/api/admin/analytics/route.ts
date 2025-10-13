@@ -52,7 +52,7 @@ async function getUserGrowthData() {
   if (error) throw error
 
   // Group by day
-  const dailyGrowth = data.reduce((acc: any, user) => {
+  const dailyGrowth = data.reduce((acc: any, user: any) => {
     const date = new Date(user.created_at || new Date()).toISOString().split('T')[0]
     if (!acc[date]) {
       acc[date] = { total: 0, verified: 0, unverified: 0 }
