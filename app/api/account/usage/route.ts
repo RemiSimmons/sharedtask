@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate active projects (not expired)
-    const activeProjects = projects?.filter(p => {
+    const activeProjects = projects?.filter((p: any) => {
       const createdDate = new Date(p.created_at || new Date())
       const expiryDate = new Date(createdDate)
       expiryDate.setDate(expiryDate.getDate() + planLimits.projectActiveWindow)
