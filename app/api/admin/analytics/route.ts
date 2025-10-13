@@ -96,7 +96,7 @@ async function getProjectGrowthData() {
   if (error) throw error
 
   // Group by day
-  const dailyProjects = data.reduce((acc: any, project) => {
+  const dailyProjects = data.reduce((acc: any, project: any) => {
     const date = new Date(project.created_at || new Date()).toISOString().split('T')[0]
     if (!acc[date]) {
       acc[date] = { count: 0, uniqueUsers: new Set() }
@@ -127,7 +127,7 @@ async function getTaskActivityData() {
   if (error) throw error
 
   // Group by day and status
-  const dailyActivity = data.reduce((acc: any, task) => {
+  const dailyActivity = data.reduce((acc: any, task: any) => {
     const createdDate = new Date(task.created_at || new Date()).toISOString().split('T')[0]
 
     // Initialize date
@@ -167,7 +167,7 @@ async function getUserEngagementData() {
       .select('user_id')
       .then(({ data, error }) => {
         if (error) throw error
-        const userCounts = data.reduce((acc: any, project) => {
+        const userCounts = data.reduce((acc: any, project: any) => {
           if (project.user_id) {
             acc[project.user_id] = (acc[project.user_id] || 0) + 1
           }
@@ -182,7 +182,7 @@ async function getUserEngagementData() {
       .select('project_id, projects!inner(user_id)')
       .then(({ data, error }) => {
         if (error) throw error
-        const userCounts = data.reduce((acc: any, task) => {
+        const userCounts = data.reduce((acc: any, task: any) => {
           const userId = task.projects?.user_id
           if (userId) {
             acc[userId] = (acc[userId] || 0) + 1
@@ -264,7 +264,7 @@ async function getPlatformMetrics() {
       .select('project_id')
       .then(({ data, error }) => {
         if (error) throw error
-        const projectCounts = data.reduce((acc: any, task) => {
+        const projectCounts = data.reduce((acc: any, task: any) => {
           if (task.project_id) {
             acc[task.project_id] = (acc[task.project_id] || 0) + 1
           }
