@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
           currentCount: currentProjectCount,
           maxProjects: planLimits.maxProjects,
           planName,
-          activeProjects: activeProjects.map(p => ({
+          activeProjects: activeProjects.map((p: any) => ({
             id: p.id,
             name: p.name,
             created_at: p.created_at

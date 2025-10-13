@@ -146,18 +146,18 @@ export async function getAdminLogStats(timeframe: '24h' | '7d' | '30d' = '24h') 
     // Calculate statistics
     const stats = {
       totalActions: data.length,
-      successfulActions: data.filter(log => log.success).length,
-      failedActions: data.filter(log => !log.success).length,
-      uniqueAdmins: new Set(data.map(log => log.admin_email)).size,
-      actionsByType: data.reduce((acc, log) => {
+      successfulActions: data.filter((log: any) => log.success).length,
+      failedActions: data.filter((log: any) => !log.success).length,
+      uniqueAdmins: new Set(data.map((log: any) => log.admin_email)).size,
+      actionsByType: data.reduce((acc: any, log: any) => {
         acc[log.action] = (acc[log.action] || 0) + 1
         return acc
       }, {} as Record<string, number>),
-      adminActivity: data.reduce((acc, log) => {
+      adminActivity: data.reduce((acc: any, log: any) => {
         acc[log.admin_email] = (acc[log.admin_email] || 0) + 1
         return acc
       }, {} as Record<string, number>),
-      recentActivity: data.slice(0, 10).map(log => ({
+      recentActivity: data.slice(0, 10).map((log: any) => ({
         action: log.action,
         admin: log.admin_email,
         success: log.success,
