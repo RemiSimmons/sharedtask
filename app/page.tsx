@@ -572,7 +572,7 @@ function LandingPageContent() {
               onClick={() => setShowCreateForm(false)}
               className="btn-secondary"
             >
-              ← Back to Dashboard
+              Back to Dashboard
             </button>
           </div>
         </div>

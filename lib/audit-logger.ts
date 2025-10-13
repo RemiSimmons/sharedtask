@@ -247,7 +247,7 @@ export class AuditLogger {
       const actionsByType: Record<string, number> = {}
       const adminActivity: Record<string, number> = {}
 
-      logs.forEach(log => {
+      logs.forEach((log: any) => {
         // Count by action type
         actionsByType[log.action] = (actionsByType[log.action] || 0) + 1
         
@@ -259,7 +259,7 @@ export class AuditLogger {
         totalActions: logs.length,
         actionsByType,
         adminActivity,
-        recentActivity: logs.slice(0, 10).map(log => ({
+        recentActivity: logs.slice(0, 10).map((log: any) => ({
           action: log.action,
           admin: log.admin_email,
           success: log.success,

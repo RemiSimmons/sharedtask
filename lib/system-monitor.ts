@@ -240,7 +240,7 @@ class SystemMonitor {
           .from('application_logs')
           .select('*', { count: 'exact' })
           .gte('timestamp', oneHourAgo)
-          .then(({ count }) => count || 0),
+          .then(({ count }: { count: any }) => count || 0),
         
         // Error requests in last hour
         supabaseAdmin
@@ -248,7 +248,7 @@ class SystemMonitor {
           .select('*', { count: 'exact' })
           .eq('level', 'error')
           .gte('timestamp', oneHourAgo)
-          .then(({ count }) => count || 0)
+          .then(({ count }: { count: any }) => count || 0)
       ])
 
       return totalRequests > 0 ? Math.round((errorRequests / totalRequests) * 100) : 0
@@ -305,7 +305,7 @@ class SystemMonitor {
       const activeUsers = await supabaseAdmin
         .from('users')
         .select('id', { count: 'exact' })
-        .then(({ count }) => count || 0)
+        .then(({ count }: { count: any }) => count || 0)
 
       // Estimate 10% of users are active at any time
       return Math.max(Math.round(activeUsers * 0.1), 1)
@@ -371,7 +371,7 @@ class SystemMonitor {
       }>()
 
       // Process logs to calculate endpoint stats
-      logs?.forEach(log => {
+      logs?.forEach((log: any) => {
         const endpoint = log.endpoint || 'unknown'
         const method = log.method || 'GET'
         const key = `${method} ${endpoint}`
@@ -447,7 +447,7 @@ class SystemMonitor {
         .order('timestamp', { ascending: false })
         .limit(10)
 
-      return alertLogs?.map(log => ({
+      return alertLogs?.map((log: any) => ({
         id: log.id,
         type: log.level === 'error' ? 'error' : 'warning' as const,
         message: log.message,
