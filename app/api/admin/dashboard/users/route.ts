@@ -30,7 +30,7 @@ export async function GET() {
     if (fallbackError) throw fallbackError
     
     // Add project_count: 0 for all users as fallback
-    const usersWithFallback = (users || []).map(user => ({
+    const usersWithFallback = (users || []).map((user: any) => ({
       ...user,
       project_count: 0
     }))

@@ -37,7 +37,7 @@ export async function GET(
     }
 
     // Transform projects to include task counts
-    const projectsWithCounts = (projects || []).map(project => ({
+    const projectsWithCounts = (projects || []).map((project: any) => ({
       ...project,
       task_count: project.tasks?.length || 0
     }))

@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Special handling for free tier - only 1 active project at a time
     if (subscriptionState.accessLevel === 'free') {
-      const activeProject = existingProjects?.find(p => 
+      const activeProject = existingProjects?.find((p: any) => 
         !isProjectExpired(p.created_at || new Date().toISOString(), planLimits.projectActiveWindow)
       )
       
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     // Check project limits (unless unlimited)
     if (planLimits.maxProjects !== -1 && currentProjectCount >= planLimits.maxProjects) {
       const planName = subscriptionState.plan || 'free'
-      const activeProjects = existingProjects?.filter(p => 
+      const activeProjects = existingProjects?.filter((p: any) => 
         !isProjectExpired(p.created_at || new Date().toISOString(), planLimits.projectActiveWindow)
       ) || []
       

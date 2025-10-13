@@ -30,13 +30,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Check which projects are active vs expired
-    const projectsWithStatus = projects?.map(project => ({
+    const projectsWithStatus = projects?.map((project: any) => ({
       ...project,
       isExpired: isProjectExpired(project.created_at || new Date().toISOString(), planLimits.projectActiveWindow),
       daysOld: Math.floor((new Date().getTime() - new Date(project.created_at || new Date()).getTime()) / (1000 * 60 * 60 * 24))
     })) || []
 
-    const activeProjects = projectsWithStatus.filter(p => !p.isExpired)
+    const activeProjects = projectsWithStatus.filter((p: any) => !p.isExpired)
 
     return NextResponse.json({
       user: {

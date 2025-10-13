@@ -165,7 +165,7 @@ async function getUserEngagementData() {
     supabaseAdmin
       .from('projects')
       .select('user_id')
-      .then(({ data, error }) => {
+      .then(({ data, error }: { data: any, error: any }) => {
         if (error) throw error
         const userCounts = data.reduce((acc: any, project: any) => {
           if (project.user_id) {
@@ -180,7 +180,7 @@ async function getUserEngagementData() {
     supabaseAdmin
       .from('tasks')
       .select('project_id, projects!inner(user_id)')
-      .then(({ data, error }) => {
+      .then(({ data, error }: { data: any, error: any }) => {
         if (error) throw error
         const userCounts = data.reduce((acc: any, task: any) => {
           const userId = task.projects?.user_id
@@ -197,20 +197,20 @@ async function getUserEngagementData() {
       .from('projects')
       .select('user_id, created_at')
       .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-      .then(({ data, error }) => {
+      .then(({ data, error }: { data: any, error: any }) => {
         if (error) throw error
-        return new Set(data.map(p => p.user_id)).size
+        return new Set(data.map((p: any) => p.user_id)).size
       })
   ])
 
   return {
     projectsPerUser: {
-      average: projectsPerUser.length > 0 ? projectsPerUser.reduce((a, b) => a + b, 0) / projectsPerUser.length : 0,
+      average: projectsPerUser.length > 0 ? projectsPerUser.reduce((a: number, b: number) => a + b, 0) / projectsPerUser.length : 0,
       max: projectsPerUser.length > 0 ? Math.max(...projectsPerUser) : 0,
       distribution: projectsPerUser
     },
     tasksPerUser: {
-      average: tasksPerUser.length > 0 ? tasksPerUser.reduce((a, b) => a + b, 0) / tasksPerUser.length : 0,
+      average: tasksPerUser.length > 0 ? tasksPerUser.reduce((a: number, b: number) => a + b, 0) / tasksPerUser.length : 0,
       max: tasksPerUser.length > 0 ? Math.max(...tasksPerUser) : 0,
       distribution: tasksPerUser
     },
@@ -225,7 +225,7 @@ async function getPlatformMetrics() {
     supabaseAdmin
       .from('users')
       .select('id', { count: 'exact' })
-      .then(({ count, error }) => {
+      .then(({ count, error }: { count: any, error: any }) => {
         if (error) throw error
         return count || 0
       }),
@@ -234,7 +234,7 @@ async function getPlatformMetrics() {
     supabaseAdmin
       .from('projects')
       .select('id', { count: 'exact' })
-      .then(({ count, error }) => {
+      .then(({ count, error }: { count: any, error: any }) => {
         if (error) throw error
         return count || 0
       }),
@@ -243,7 +243,7 @@ async function getPlatformMetrics() {
     supabaseAdmin
       .from('tasks')
       .select('id', { count: 'exact' })
-      .then(({ count, error }) => {
+      .then(({ count, error }: { count: any, error: any }) => {
         if (error) throw error
         return count || 0
       }),
@@ -252,9 +252,9 @@ async function getPlatformMetrics() {
     supabaseAdmin
       .from('tasks')
       .select('status')
-      .then(({ data, error }) => {
+      .then(({ data, error }: { data: any, error: any }) => {
         if (error) throw error
-        const completed = data.filter(task => task.status === 'completed').length
+        const completed = data.filter((task: any) => task.status === 'completed').length
         return data.length > 0 ? (completed / data.length) * 100 : 0
       }),
 
@@ -262,7 +262,7 @@ async function getPlatformMetrics() {
     supabaseAdmin
       .from('tasks')
       .select('project_id')
-      .then(({ data, error }) => {
+      .then(({ data, error }: { data: any, error: any }) => {
         if (error) throw error
         const projectCounts = data.reduce((acc: any, task: any) => {
           if (task.project_id) {
@@ -271,7 +271,7 @@ async function getPlatformMetrics() {
           return acc
         }, {})
         const counts = Object.values(projectCounts) as number[]
-        return counts.length > 0 ? counts.reduce((a, b) => a + b, 0) / counts.length : 0
+        return counts.length > 0 ? counts.reduce((a: number, b: number) => a + b, 0) / counts.length : 0
       })
   ])
 

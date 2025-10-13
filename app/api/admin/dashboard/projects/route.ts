@@ -33,7 +33,7 @@ export async function GET() {
       if (fallbackError) throw fallbackError
       
       // Add default values as fallback
-      const projectsWithFallback = (projects || []).map(project => ({
+      const projectsWithFallback = (projects || []).map((project: any) => ({
         id: project.id,
         name: project.name,
         user_name: project.users?.name || 'Unknown',

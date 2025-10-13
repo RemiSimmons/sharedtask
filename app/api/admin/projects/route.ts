@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform the data to include task counts
-    const projectsWithCounts = (projects || []).map(project => ({
+    const projectsWithCounts = (projects || []).map((project: any) => ({
       ...project,
       _count: {
         tasks: project.tasks?.length || 0
@@ -52,15 +52,15 @@ export async function GET(request: NextRequest) {
 
     // For admin users, also fetch user information for each project
     if (isAdmin && projectsWithCounts.length > 0) {
-      const userIds = [...new Set(projectsWithCounts.map(p => p.user_id))]
+      const userIds = [...new Set(projectsWithCounts.map((p: any) => p.user_id))]
       const { data: users } = await supabaseAdmin
         .from('users')
         .select('id, name, email')
         .in('id', userIds)
       
-      const userMap = new Map(users?.map(u => [u.id, u]) || [])
+      const userMap = new Map(users?.map((u: any) => [u.id, u]) || [])
       
-      const projectsWithUserInfo = projectsWithCounts.map(project => ({
+      const projectsWithUserInfo = projectsWithCounts.map((project: any) => ({
         ...project,
         user: userMap.get(project.user_id) || null
       }))

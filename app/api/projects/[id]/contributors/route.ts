@@ -47,7 +47,7 @@ export async function GET(
 
     // Count unique contributors
     const uniqueContributors = new Set(
-      assignments?.map(a => a.contributor_name) || []
+      assignments?.map((a: any) => a.contributor_name) || []
     )
 
     return NextResponse.json({

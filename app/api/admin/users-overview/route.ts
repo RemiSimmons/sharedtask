@@ -44,26 +44,26 @@ export async function GET(request: NextRequest) {
     const { data: subscriptions } = await supabaseAdmin
       .from('user_subscriptions')
       .select('*')
-      .in('user_id', users?.map(u => u.id) || [])
+      .in('user_id', users?.map((u: any) => u.id) || [])
 
-    const subscriptionMap = new Map(subscriptions?.map(s => [s.user_id, s]) || [])
+    const subscriptionMap = new Map(subscriptions?.map((s: any) => [s.user_id, s]) || [])
 
     // Fetch trials
     const { data: trials } = await supabaseAdmin
       .from('user_trials')
       .select('*')
-      .in('user_id', users?.map(u => u.id) || [])
+      .in('user_id', users?.map((u: any) => u.id) || [])
 
-    const trialMap = new Map(trials?.map(t => [t.user_id, t]) || [])
+    const trialMap = new Map(trials?.map((t: any) => [t.user_id, t]) || [])
 
     // Fetch project counts for all users
     const { data: projects } = await supabaseAdmin
       .from('projects')
       .select('user_id')
-      .in('user_id', users?.map(u => u.id) || [])
+      .in('user_id', users?.map((u: any) => u.id) || [])
 
     const projectCountMap = new Map<string, number>()
-    projects?.forEach(p => {
+    projects?.forEach((p: any) => {
       projectCountMap.set(p.user_id, (projectCountMap.get(p.user_id) || 0) + 1)
     })
 
@@ -75,17 +75,17 @@ export async function GET(request: NextRequest) {
         project_id
       `)
 
-    const projectIds = projects?.map(p => p.user_id) || []
+    const projectIds = projects?.map((p: any) => p.user_id) || []
     const { data: projectDetails } = await supabaseAdmin
       .from('projects')
       .select('id, user_id')
       .in('user_id', projectIds)
 
-    const projectUserMap = new Map(projectDetails?.map(p => [p.id, p.user_id]) || [])
+    const projectUserMap = new Map(projectDetails?.map((p: any) => [p.id, p.user_id]) || [])
     const taskCountMap = new Map<string, number>()
     
-    tasksData?.forEach(t => {
-      const userId = projectUserMap.get(t.project_id)
+    tasksData?.forEach((t: any) => {
+      const userId = projectUserMap.get(t.project_id) as string
       if (userId) {
         taskCountMap.set(userId, (taskCountMap.get(userId) || 0) + 1)
       }
@@ -103,12 +103,12 @@ export async function GET(request: NextRequest) {
     }
 
     const getUserTier = (userId: string) => {
-      const subscription = subscriptionMap.get(userId)
+      const subscription: any = subscriptionMap.get(userId)
       if (subscription && (subscription.status === 'active' || subscription.status === 'trialing')) {
         return subscription.plan
       }
       
-      const trial = trialMap.get(userId)
+      const trial: any = trialMap.get(userId)
       if (trial && trial.status === 'active') {
         return trial.plan
       }
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build enriched user data
-    const enrichedUsers = users?.map(user => {
+    const enrichedUsers = users?.map((user: any) => {
       const tier = getUserTier(user.id)
       const limits = getPlanLimits(tier)
       const projectCount = projectCountMap.get(user.id) || 0
@@ -165,26 +165,26 @@ export async function GET(request: NextRequest) {
     let filteredUsers = enrichedUsers
 
     if (tierFilter && tierFilter !== 'all') {
-      filteredUsers = filteredUsers.filter(u => u.tier === tierFilter)
+      filteredUsers = filteredUsers.filter((u: any) => u.tier === tierFilter)
     }
 
     if (statusFilter === 'active') {
-      filteredUsers = filteredUsers.filter(u => u.isActive)
+      filteredUsers = filteredUsers.filter((u: any) => u.isActive)
     } else if (statusFilter === 'inactive') {
-      filteredUsers = filteredUsers.filter(u => !u.isActive)
+      filteredUsers = filteredUsers.filter((u: any) => !u.isActive)
     }
 
     // Calculate summary stats
     const stats = {
       total: enrichedUsers.length,
       byTier: {
-        free: enrichedUsers.filter(u => u.tier === 'free').length,
-        basic: enrichedUsers.filter(u => u.tier === 'basic').length,
-        pro: enrichedUsers.filter(u => u.tier === 'pro').length,
-        team: enrichedUsers.filter(u => u.tier === 'team').length,
+        free: enrichedUsers.filter((u: any) => u.tier === 'free').length,
+        basic: enrichedUsers.filter((u: any) => u.tier === 'basic').length,
+        pro: enrichedUsers.filter((u: any) => u.tier === 'pro').length,
+        team: enrichedUsers.filter((u: any) => u.tier === 'team').length,
       },
-      active: enrichedUsers.filter(u => u.isActive).length,
-      inactive: enrichedUsers.filter(u => !u.isActive).length,
+      active: enrichedUsers.filter((u: any) => u.isActive).length,
+      inactive: enrichedUsers.filter((u: any) => !u.isActive).length,
     }
 
     return NextResponse.json({

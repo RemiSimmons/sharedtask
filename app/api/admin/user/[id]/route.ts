@@ -54,7 +54,7 @@ export async function GET(
       .eq('user_id', userId)
 
     // Fetch task count (through projects)
-    const projectIds = projects?.map(p => p.id) || []
+    const projectIds = projects?.map((p: any) => p.id) || []
     let taskCount = 0
     if (projectIds.length > 0) {
       const { count } = await supabaseAdmin
