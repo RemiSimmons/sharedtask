@@ -200,9 +200,9 @@ export default function SignUpPage() {
 
         {/* Back to Home */}
         <div className="text-center mt-6">
-          <Link href="/" className="text-blue-600 hover:text-blue-800 font-medium">
+          <a href="https://app.sharedtask.ai" className="text-blue-600 hover:text-blue-800 font-medium">
             ← Back to Home
-          </Link>
+          </a>
         </div>
       </div>
     </div>

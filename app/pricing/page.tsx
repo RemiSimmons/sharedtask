@@ -159,6 +159,7 @@ function PricingContent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
         },
         body: JSON.stringify({
           plan: planId,
@@ -217,7 +218,7 @@ function PricingContent() {
             </button>
             
             <div className="flex-1 flex flex-col items-center justify-center">
-              <img src="/shared-task-logo.svg" alt="SharedTask" className="h-20 w-auto" />
+              <img src="/logo.png" alt="SharedTask" className="h-40 w-auto" />
               <h1 className="text-[35px] font-bold text-gray-900 mt-2">Pricing Plans</h1>
             </div>
             

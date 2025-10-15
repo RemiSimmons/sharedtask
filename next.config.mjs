@@ -21,7 +21,7 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    domains: ['sharedtask.ai', 'www.sharedtask.ai'], // Add your domains
+    domains: ['app.sharedtask.ai', 'sharedtask.ai', 'www.sharedtask.ai'], // Add your domains
   },
   // Enable compression for better performance
   compress: true,

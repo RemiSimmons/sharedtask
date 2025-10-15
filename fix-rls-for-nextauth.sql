@@ -37,3 +37,5 @@ CREATE POLICY "Allow users to update their own data" ON users FOR UPDATE USING (
 
 
 
+
+

@@ -41,6 +41,7 @@ const DEFAULT_CORS_OPTIONS: CorsOptions = {
 // Production CORS configuration
 const PRODUCTION_CORS_OPTIONS: CorsOptions = {
   origin: [
+    'https://app.sharedtask.ai',
     'https://sharedtask.ai',
     'https://www.sharedtask.ai',
     'https://sharedtask.vercel.app',

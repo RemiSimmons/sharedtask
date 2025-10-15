@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { useCustomAlert } from "@/components/ui/custom-toast"
 import { isAdminUser } from "@/lib/admin"
 import { DatePicker } from "@/components/ui/date-picker"
 import { TimePicker } from "@/components/ui/time-picker"
@@ -12,6 +13,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog"
 // Force rebuild - syntax errors fixed
 
 function LandingPageContent() {
+  const { alert } = useCustomAlert()
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [projectName, setProjectName] = useState("My Task Management Project")
   const [taskLabel, setTaskLabel] = useState("Task Name")
@@ -127,6 +129,10 @@ function LandingPageContent() {
       try {
         const response = await fetch(`/api/projects/${projectId}/delete`, {
           method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'fetch',
+          },
         })
 
         if (!response.ok) {
@@ -196,6 +202,7 @@ function LandingPageContent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
         },
         body: JSON.stringify({
           name: projectName,
@@ -245,6 +252,7 @@ function LandingPageContent() {
       window.location.href = `/admin/project/${project.id}`
     } catch (error) {
       console.error('Error creating project:', error)
+      // Use custom toast instead of browser alert
       alert(`Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsCreating(false)
@@ -259,9 +267,9 @@ function LandingPageContent() {
         <div className="text-center space-y-6 mb-12">
           <div className="flex flex-col items-center gap-4">
             <img
-              src="/shared-task-logo.svg"
+              src="/logo.png"
               alt="SharedTask Logo"
-              className="h-20 w-auto"
+              className="h-40 w-auto"
             />
           </div>
           <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
@@ -588,9 +596,9 @@ function LandingPageContent() {
           <div className="text-center space-y-6 mb-12">
             <div className="flex flex-col items-center gap-4">
               <img
-                src="/shared-task-logo.svg"
+                src="/logo.png"
                 alt="SharedTask Logo"
-                className="h-20 w-auto"
+                className="h-40 w-auto"
               />
               <h1 className="text-4xl font-bold text-gray-900">Welcome Back, {session?.user?.name}!</h1>
             </div>
@@ -803,9 +811,9 @@ function LandingPageContent() {
         <div className="text-center space-y-4 md:space-y-2 mb-8 md:mb-6">
           <div className="flex flex-col items-center gap-3 md:gap-2">
             <img
-              src="/shared-task-logo.svg"
+              src="/logo.png"
               alt="SharedTask Logo"
-              className="h-24 md:h-20 w-auto"
+              className="h-48 md:h-40 w-auto"
             />
           </div>
           <h1 className="text-4xl md:text-4xl font-bold text-gray-900 max-w-3xl mx-auto leading-tight px-2">

@@ -86,9 +86,9 @@ function ProjectContent() {
                 title="Visit SharedTask.ai homepage"
               >
                 <img 
-                  src="/shared-task-logo.svg" 
+                  src="/logo.png" 
                   alt="SharedTask Logo" 
-                  className="h-24 md:h-20 w-auto"
+                  className="h-48 md:h-40 w-auto"
                 />
               </a>
               <div className="space-y-3">
@@ -229,7 +229,9 @@ function ProjectContent() {
                   Make your own task list for family events
                 </p>
                 <a 
-                  href="/"
+                  href="https://sharedtask.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-5 md:px-6 md:py-3 rounded-lg font-semibold md:font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg text-xl md:text-base min-h-[60px] md:min-h-0"
                 >
                   <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

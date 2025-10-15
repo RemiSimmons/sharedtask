@@ -28,16 +28,16 @@ export default function AppHeader({
 
   return (
     <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex justify-between items-center">
           {/* Left side - Logo and Back Button */}
           <div className="flex items-center gap-2 sm:gap-6 min-w-0 flex-1">
             {/* Logo - Always clickable to dashboard */}
             <Link href="/admin" className="flex items-center hover:opacity-80 transition-opacity flex-shrink-0">
               <img 
-                src="/shared-task-logo.svg" 
+                src="/logo.png" 
                 alt="SharedTask Logo" 
-                className="h-6 w-auto"
+                className="h-18 w-auto"
               />
             </Link>
 

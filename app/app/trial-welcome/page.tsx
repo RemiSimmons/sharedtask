@@ -48,7 +48,7 @@ function TrialWelcomeContent() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <img src="/shared-task-logo.svg" alt="SharedTask" className="h-20 w-auto" />
+            <img src="/logo.png" alt="SharedTask" className="h-40 w-auto" />
           </div>
           <div className="bg-green-100 rounded-full p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
             <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

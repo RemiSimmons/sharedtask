@@ -178,6 +178,7 @@ export default function AccountManagementPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
         },
         body: JSON.stringify({ 
           newEmail 
@@ -219,6 +220,7 @@ export default function AccountManagementPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
         },
         body: JSON.stringify({ name: name.trim() }),
       })
@@ -278,6 +280,7 @@ export default function AccountManagementPage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
         },
         body: JSON.stringify({ 
           currentPassword, 
@@ -349,6 +352,10 @@ export default function AccountManagementPage() {
     try {
       const response = await fetch('/api/account/delete', {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
+        },
       })
       
       const data = await response.json()

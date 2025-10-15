@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
+import { useCustomAlert } from "@/components/ui/custom-toast"
 import TaskTable from "@/components/task-table"
 import DangerZone from "@/components/danger-zone"
 import { EventDetailsSection } from "@/components/event-details-section"
@@ -15,6 +16,7 @@ export default function AdminProjectPage() {
   const router = useRouter()
   const params = useParams()
   const projectId = params.id as string
+  const { alert } = useCustomAlert()
 
   const copyContributorLink = () => {
     const link = `${window.location.origin}/project/${projectId}`
@@ -64,9 +66,9 @@ export default function AdminProjectPage() {
               <div className="flex items-center gap-4">
                 <Link href="/admin" className="flex items-center hover:opacity-80 transition-opacity">
                   <img 
-                    src="/shared-task-logo.svg" 
+                    src="/logo.png" 
                     alt="SharedTask Logo" 
-                    className="h-8 w-auto"
+                    className="h-16 w-auto"
                   />
                 </Link>
                 

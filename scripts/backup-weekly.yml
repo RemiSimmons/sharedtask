@@ -1,0 +1,277 @@
+# Weekly Backup Automation Script
+# GitHub Actions Workflow for automated backups
+
+name: Weekly Database & Code Backup
+
+on:
+  schedule:
+    # Run every Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  backup_database:
+    name: Database Backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm ci --production
+        
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          
+      - name: Create backup directory
+        run: mkdir -p ./backups/database
+        
+      - name: Database backup
+        env:
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_NAME: postgres
+        run: |
+          BACKUP_FILE="sharedtask_backup_$(date +%Y%m%d_%H%M%S).sql.gz"
+          echo "Creating database backup: ${BACKUP_FILE}"
+          
+          PGPASSWORD="${SUPABASE_DB_PASSWORD}" pg_dump \
+            -h "${SUPABASE_DB_HOST}" \
+            -U "${SUPABASE_DB_USER}" \
+            -d "${SUPABASE_DB_NAME}" \
+            --no-owner \
+            --no-acl \
+            --clean \
+            --if-exists \
+            | gzip > "./backups/database/${BACKUP_FILE}"
+          
+          echo "Backup created: ${BACKUP_FILE}"
+          echo "BACKUP_FILE=${BACKUP_FILE}" >> $GITHUB_ENV
+          
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: database-backup-${{ github.run_number }}
+          path: ./backups/database/*.sql.gz
+          retention-days: 30
+          
+      - name: Notify success
+        if: success()
+        run: |
+          echo "✅ Database backup completed successfully"
+          
+      - name: Notify failure
+        if: failure()
+        run: |
+          echo "❌ Database backup failed"
+          # Optional: Send notification to Slack/Discord/Email
+          # curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          #   -H 'Content-Type: application/json' \
+          #   -d '{"text":"⚠️ Weekly database backup failed!"}'
+
+  backup_code:
+    name: Code Repository Backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Get complete history
+          
+      - name: Create backup directory
+        run: mkdir -p ./backups/code
+        
+      - name: Create repository archive
+        run: |
+          BACKUP_FILE="sharedtask_code_$(date +%Y%m%d_%H%M%S).tar.gz"
+          echo "Creating code backup: ${BACKUP_FILE}"
+          
+          tar -czf "./backups/code/${BACKUP_FILE}" \
+            --exclude=node_modules \
+            --exclude=.next \
+            --exclude=.git \
+            --exclude=backups \
+            .
+          
+          echo "Code backup created: ${BACKUP_FILE}"
+          echo "BACKUP_FILE=${BACKUP_FILE}" >> $GITHUB_ENV
+          
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-backup-${{ github.run_number }}
+          path: ./backups/code/*.tar.gz
+          retention-days: 90
+          
+      - name: Notify success
+        if: success()
+        run: echo "✅ Code backup completed successfully"
+
+  backup_schema:
+    name: Database Schema Backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          
+      - name: Create backup directory
+        run: mkdir -p ./backups/schema
+        
+      - name: Schema-only backup
+        env:
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_NAME: postgres
+        run: |
+          BACKUP_FILE="sharedtask_schema_$(date +%Y%m%d_%H%M%S).sql"
+          echo "Creating schema backup: ${BACKUP_FILE}"
+          
+          PGPASSWORD="${SUPABASE_DB_PASSWORD}" pg_dump \
+            -h "${SUPABASE_DB_HOST}" \
+            -U "${SUPABASE_DB_USER}" \
+            -d "${SUPABASE_DB_NAME}" \
+            --schema-only \
+            --no-owner \
+            --no-acl \
+            > "./backups/schema/${BACKUP_FILE}"
+          
+          echo "Schema backup created: ${BACKUP_FILE}"
+          
+      - name: Upload schema backup
+        uses: actions/upload-artifact@v3
+        with:
+          name: schema-backup-${{ github.run_number }}
+          path: ./backups/schema/*.sql
+          retention-days: 180
+          
+      - name: Commit schema to repository
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          cp ./backups/schema/*.sql ./database-schema-snapshot.sql
+          git add ./database-schema-snapshot.sql
+          
+          if git diff --staged --quiet; then
+            echo "No schema changes detected"
+          else
+            git commit -m "chore: update database schema snapshot [skip ci]"
+            git push
+          fi
+
+  verify_backups:
+    name: Verify Backup Integrity
+    runs-on: ubuntu-latest
+    needs: [backup_database, backup_code, backup_schema]
+    timeout-minutes: 10
+    
+    steps:
+      - name: Download database backup
+        uses: actions/download-artifact@v3
+        with:
+          name: database-backup-${{ github.run_number }}
+          path: ./backups/database
+          
+      - name: Download code backup
+        uses: actions/download-artifact@v3
+        with:
+          name: code-backup-${{ github.run_number }}
+          path: ./backups/code
+          
+      - name: Verify database backup integrity
+        run: |
+          echo "Verifying database backup..."
+          gunzip -t ./backups/database/*.sql.gz
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Database backup integrity verified"
+          else
+            echo "❌ Database backup corrupted"
+            exit 1
+          fi
+          
+      - name: Verify code backup integrity
+        run: |
+          echo "Verifying code backup..."
+          tar -tzf ./backups/code/*.tar.gz > /dev/null
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Code backup integrity verified"
+          else
+            echo "❌ Code backup corrupted"
+            exit 1
+          fi
+          
+      - name: Generate backup report
+        run: |
+          echo "# Weekly Backup Report" > backup_report.md
+          echo "**Date:** $(date)" >> backup_report.md
+          echo "" >> backup_report.md
+          echo "## Backup Files" >> backup_report.md
+          echo "" >> backup_report.md
+          echo "### Database Backup" >> backup_report.md
+          ls -lh ./backups/database/ >> backup_report.md
+          echo "" >> backup_report.md
+          echo "### Code Backup" >> backup_report.md
+          ls -lh ./backups/code/ >> backup_report.md
+          echo "" >> backup_report.md
+          echo "## Status" >> backup_report.md
+          echo "✅ All backups completed successfully" >> backup_report.md
+          
+          cat backup_report.md
+          
+      - name: Upload backup report
+        uses: actions/upload-artifact@v3
+        with:
+          name: backup-report-${{ github.run_number }}
+          path: backup_report.md
+          retention-days: 365
+
+  # Optional: Upload to S3/GCS for long-term storage
+  upload_to_cloud:
+    name: Upload to Cloud Storage
+    runs-on: ubuntu-latest
+    needs: [verify_backups]
+    if: github.ref == 'refs/heads/main'  # Only on main branch
+    
+    steps:
+      - name: Download all backups
+        uses: actions/download-artifact@v3
+        
+      - name: Configure AWS credentials (optional)
+        # Uncomment if using AWS S3
+        # uses: aws-actions/configure-aws-credentials@v2
+        # with:
+        #   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        #   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        #   aws-region: us-east-1
+        run: echo "Cloud upload step (configure as needed)"
+        
+      # - name: Upload to S3
+      #   run: |
+      #     aws s3 sync . s3://sharedtask-backups/$(date +%Y-%m-%d)/ \
+      #       --exclude "*" \
+      #       --include "*.sql.gz" \
+      #       --include "*.tar.gz"
+
+

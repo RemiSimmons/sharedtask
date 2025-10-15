@@ -135,7 +135,10 @@ export default function WebsiteOperationsDashboard() {
       setIsExporting(true)
       const response = await fetch('/api/admin/actions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
+        },
         body: JSON.stringify({ action: 'export_users' })
       })
 
@@ -165,7 +168,10 @@ export default function WebsiteOperationsDashboard() {
       setIsExporting(true)
       const response = await fetch('/api/admin/actions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
+        },
         body: JSON.stringify({ action: 'export_projects' })
       })
 
@@ -233,7 +239,10 @@ export default function WebsiteOperationsDashboard() {
       // Load audit stats
       const statsResponse = await fetch('/api/admin/audit-logs', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
+        },
         body: JSON.stringify({ action: 'get_stats', timeframe: '24h' })
       })
       if (statsResponse.ok) {
@@ -287,7 +296,10 @@ export default function WebsiteOperationsDashboard() {
       setActionLoading(`${action}-${userId}`)
       const response = await fetch('/api/admin/actions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'fetch',
+        },
         body: JSON.stringify({ action, params: { userId } })
       })
 
@@ -993,7 +1005,10 @@ export default function WebsiteOperationsDashboard() {
                             try {
                               const response = await fetch('/api/admin/audit-logs', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers: { 
+                                  'Content-Type': 'application/json',
+                                  'X-Requested-With': 'fetch',
+                                },
                                 body: JSON.stringify({ action: 'export', format: 'csv' })
                               })
                               if (response.ok) {

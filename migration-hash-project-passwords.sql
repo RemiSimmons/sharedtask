@@ -115,3 +115,5 @@ END $$;
 --    ALTER TABLE projects DROP COLUMN IF EXISTS password_needs_migration;
 -- ============================================================================
 
+
+

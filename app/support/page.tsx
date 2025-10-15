@@ -315,15 +315,15 @@ export default function SupportPage() {
 
         {/* Back to Home */}
         <div className="text-center mt-12">
-          <Link 
-            href="/" 
+          <a 
+            href="https://app.sharedtask.ai" 
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Back to Home
-          </Link>
+          </a>
         </div>
       </div>
     </div>

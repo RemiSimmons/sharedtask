@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from 'next/server'
 const ALLOWED_ORIGINS = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
+  'https://app.sharedtask.ai',
   'https://sharedtask.ai',
   'https://www.sharedtask.ai',
   'https://sharedtask.vercel.app',
@@ -261,4 +262,6 @@ export default {
   PROTECTED_METHODS,
   CSRF_EXEMPT_PATHS
 }
+
+
 

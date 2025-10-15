@@ -50,7 +50,9 @@ export function PoweredByFooterCompact({ show, className = '' }: PoweredByFooter
       </a>
       <span className="mx-2">•</span>
       <a 
-        href="/pricing" 
+        href="https://sharedtask.ai/pricing" 
+        target="_blank"
+        rel="noopener noreferrer"
         className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
       >
         Upgrade
@@ -79,7 +81,9 @@ export function PoweredByFloating({ show, className = '' }: PoweredByFooterProps
           SharedTask
         </a>
         <a 
-          href="/pricing" 
+          href="https://sharedtask.ai/pricing" 
+          target="_blank"
+          rel="noopener noreferrer"
           className="ml-2 bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
         >
           Upgrade

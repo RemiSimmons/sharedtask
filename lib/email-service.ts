@@ -23,7 +23,7 @@ const EMAIL_TEMPLATES = {
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <img src="${EMAIL_CONFIG.baseUrl}/shared-task-logo.svg" alt="SharedTask" style="height: 60px;">
+            <img src="${EMAIL_CONFIG.baseUrl}/logo.png" alt="SharedTask" style="height: 120px;">
           </div>
           
           <h1 style="color: #2563eb; margin-bottom: 20px;">5 days left in your trial</h1>
@@ -94,7 +94,7 @@ SharedTask | The easiest collaboration tool
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <img src="${EMAIL_CONFIG.baseUrl}/shared-task-logo.svg" alt="SharedTask" style="height: 60px;">
+            <img src="${EMAIL_CONFIG.baseUrl}/logo.png" alt="SharedTask" style="height: 120px;">
           </div>
           
           <h1 style="color: #dc2626; margin-bottom: 20px;">⏰ Trial ends today</h1>
@@ -310,7 +310,7 @@ export async function sendSubscriptionWelcomeEmail(
         </head>
         <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="text-align: center; margin-bottom: 30px;">
-            <img src="${EMAIL_CONFIG.baseUrl}/shared-task-logo.svg" alt="SharedTask" style="height: 60px;">
+            <img src="${EMAIL_CONFIG.baseUrl}/logo.png" alt="SharedTask" style="height: 120px;">
           </div>
           
           <h1 style="color: #059669; margin-bottom: 20px;">🎉 Welcome to SharedTask ${subscription.plan}!</h1>
