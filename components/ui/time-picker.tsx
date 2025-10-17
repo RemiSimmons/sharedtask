@@ -23,6 +23,8 @@ export function TimePicker({
   setTime,
   className,
 }: TimePickerProps) {
+  const [isTimePickerOpen, setIsTimePickerOpen] = React.useState(false)
+
   // Generate time slots
   const generateTimeSlots = () => {
     const slots = []
@@ -52,10 +54,12 @@ export function TimePicker({
 
   const handleTimeSelect = (selectedTime: Date) => {
     setTime(selectedTime)
+    // Close the popover after selection
+    setIsTimePickerOpen(false)
   }
 
   return (
-    <Popover>
+    <Popover open={isTimePickerOpen} onOpenChange={setIsTimePickerOpen}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}

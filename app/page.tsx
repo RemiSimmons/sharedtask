@@ -663,12 +663,14 @@ function LandingPageContent() {
                       {/* Mobile Layout */}
                       <div className="md:hidden space-y-4">
                         <div className="space-y-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-xl font-semibold text-gray-900 break-words leading-tight">{project.name}</h3>
-                              <div className="text-sm text-gray-600 mt-1">
-                                Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
-                              </div>
+                          {/* Project Title - Full Width */}
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900 break-words leading-tight">{project.name}</h3>
+                          </div>
+                          {/* Date and Status - Side by Side */}
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-600">
+                              Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
                             </div>
                             <div className="flex-shrink-0">
                               {project.isExpired ? (
@@ -713,8 +715,15 @@ function LandingPageContent() {
                       <div className="hidden md:block">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-2">
-                              <h3 className="text-lg font-semibold text-gray-900 pr-4 break-words leading-tight">{project.name}</h3>
+                            {/* Project Title - Full Width */}
+                            <div className="mb-2">
+                              <h3 className="text-lg font-semibold text-gray-900 break-words leading-tight">{project.name}</h3>
+                            </div>
+                            {/* Date and Status - Side by Side */}
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm text-gray-600">
+                                Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
+                              </div>
                               <div className="flex-shrink-0">
                                 {project.isExpired ? (
                                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
@@ -726,9 +735,6 @@ function LandingPageContent() {
                                   </span>
                                 )}
                               </div>
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              Created {new Date(project.created_at).toLocaleDateString()} • {project.daysOld} days old
                             </div>
                           </div>
                           <div className="flex items-center gap-4 ml-6">
@@ -867,7 +873,7 @@ function LandingPageContent() {
                 Create Project
               </button>
               <button
-                onClick={() => router.push('/admin')}
+                onClick={() => router.push('/auth/signin')}
                 className="w-full btn-secondary px-5 py-4 md:py-3 text-lg md:text-base min-h-[56px] md:min-h-0"
               >
                 Sign In / Sign Up

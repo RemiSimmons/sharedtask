@@ -27,6 +27,16 @@ export function useRealtimeSubscription({
   // Track if user is actively editing (focused input)
   const [isEditing, setIsEditing] = useState(false)
   
+  // Store callbacks in refs to prevent reconnection loops
+  const onTasksChangeRef = useRef(onTasksChange)
+  const onProjectChangeRef = useRef(onProjectChange)
+  
+  // Update refs when callbacks change
+  useEffect(() => {
+    onTasksChangeRef.current = onTasksChange
+    onProjectChangeRef.current = onProjectChange
+  }, [onTasksChange, onProjectChange])
+  
   useEffect(() => {
     // Track focus on input/textarea elements
     const handleFocusIn = (e: FocusEvent) => {
@@ -85,7 +95,7 @@ export function useRealtimeSubscription({
         async (payload) => {
           console.log('🔄 Realtime: Tasks changed', payload.eventType)
           if (!isEditing) {
-            await onTasksChange()
+            await onTasksChangeRef.current()
             setLastUpdate(new Date())
           } else {
             console.log('⏸️  User is editing, deferring update')
@@ -103,7 +113,7 @@ export function useRealtimeSubscription({
         async (payload) => {
           console.log('🔄 Realtime: Task assignments changed', payload.eventType)
           if (!isEditing) {
-            await onTasksChange()
+            await onTasksChangeRef.current()
             setLastUpdate(new Date())
           }
         }
@@ -119,7 +129,7 @@ export function useRealtimeSubscription({
         async (payload) => {
           console.log('🔄 Realtime: Task comments changed', payload.eventType)
           if (!isEditing) {
-            await onTasksChange()
+            await onTasksChangeRef.current()
             setLastUpdate(new Date())
           }
         }
@@ -136,7 +146,7 @@ export function useRealtimeSubscription({
         async (payload) => {
           console.log('🔄 Realtime: Project settings changed')
           if (!isEditing) {
-            await onProjectChange()
+            await onProjectChangeRef.current()
             setLastUpdate(new Date())
           }
         }
@@ -165,7 +175,7 @@ export function useRealtimeSubscription({
         setIsConnected(false)
       }
     }
-  }, [projectId, enabled, onTasksChange, onProjectChange, isEditing])
+  }, [projectId, enabled]) // Removed callbacks from dependencies to prevent reconnection loops
 
   // When user stops editing, trigger delayed refresh if there were pending updates
   useEffect(() => {
@@ -174,10 +184,10 @@ export function useRealtimeSubscription({
       if (timeSinceUpdate < 5000) {
         // If update happened less than 5 seconds ago, refresh now
         console.log('🔄 User stopped editing, applying pending updates')
-        onTasksChange()
+        onTasksChangeRef.current()
       }
     }
-  }, [isEditing, lastUpdate, onTasksChange])
+  }, [isEditing, lastUpdate])
 
   return {
     isConnected,

@@ -243,44 +243,69 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
   }
 
   return (
-    <div className="card-table p-6 md:p-8">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 md:mb-8 gap-3 md:gap-0">
-        <div className="flex items-center">
-          <svg className="w-10 h-10 md:w-8 md:h-8 text-blue-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-          </svg>
-          <h2 className="text-3xl md:text-2xl font-bold text-gray-900 mb-0">All Tasks</h2>
-        </div>
-        {!isAdminView && (
-          <div className="text-lg md:text-sm text-blue-600 font-bold md:font-medium">
-            {selectedTasksForClaiming.length > 0 ? (
-              `${selectedTasksForClaiming.length} selected`
-            ) : (
-              <span className="hidden md:inline">Select Multiple Tasks at Once</span>
-            )}
+    <div className="space-y-6 md:space-y-8">
+      {/* Mobile: Simple heading without card wrapper */}
+      <div className="md:hidden px-2">
+        <div className="flex flex-col items-start justify-between mb-4 gap-3">
+          <div className="flex items-center">
+            <svg className="w-10 h-10 text-blue-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <h2 className="text-3xl font-bold text-gray-900 mb-0">Tasks</h2>
           </div>
-        )}
+          {!isAdminView && (
+            <div className="text-lg text-blue-600 font-bold">
+              {selectedTasksForClaiming.length > 0 ? (
+                `${selectedTasksForClaiming.length} selected`
+              ) : (
+                <span>Select Multiple Tasks at Once</span>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-      <div>
+
+      {/* Desktop: Nested card structure with header */}
+      <div className="hidden md:block card-table p-8">
+        <div className="flex flex-row items-center justify-between mb-8 gap-0">
+          <div className="flex items-center">
+            <svg className="w-8 h-8 text-blue-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <h2 className="text-2xl font-bold text-gray-900 mb-0">All Tasks</h2>
+          </div>
+          {!isAdminView && (
+            <div className="text-sm text-blue-600 font-medium">
+              {selectedTasksForClaiming.length > 0 ? (
+                `${selectedTasksForClaiming.length} selected`
+              ) : (
+                <span>Select Multiple Tasks at Once</span>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Desktop Table View */}
-        <div className="hidden md:block">
+        <div>
           <div className="table-header rounded-t-lg">
-            <div className="grid grid-cols-12 gap-6 px-8 py-4">
-              <div className="col-span-4 sm:col-span-3">
+            <div className={`grid gap-6 px-8 py-4 ${isAdminView ? 'grid-cols-9' : 'grid-cols-12'}`}>
+              <div className={isAdminView ? "col-span-3" : "col-span-4 sm:col-span-3"}>
                 <h3 className="text-lg font-semibold text-gray-900">Task Name</h3>
               </div>
               <div className="col-span-2">
                 <h3 className="text-lg font-semibold text-gray-900">Claimed By</h3>
               </div>
-              <div className="col-span-3">
+              <div className={isAdminView ? "col-span-2" : "col-span-3"}>
                 <h3 className="text-lg font-semibold text-gray-900">Status</h3>
               </div>
               <div className="col-span-2">
                 <h3 className="text-lg font-semibold text-gray-900">Comments</h3>
               </div>
-              <div className="col-span-2">
-                <h3 className="text-lg font-semibold text-gray-900">Action</h3>
-              </div>
+              {!isAdminView && (
+                <div className="col-span-2">
+                  <h3 className="text-lg font-semibold text-gray-900">Action</h3>
+                </div>
+              )}
             </div>
           </div>
 
@@ -291,7 +316,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
               const isPartiallyFilled = task.claimedBy && task.claimedBy.length > 0
               
               // Determine row styling based on task state
-              let rowClass = "table-row grid grid-cols-12 gap-6 px-8 py-6"
+              let rowClass = `table-row grid gap-6 px-8 py-6 ${isAdminView ? 'grid-cols-9' : 'grid-cols-12'}`
               if (isUnclaimed && isOwner) {
                 rowClass += " bg-orange-50 border-l-4 border-orange-200" // Draft state
               } else if (isFull) {
@@ -303,7 +328,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
               return (
               <div key={task.id}>
                 <div className={rowClass}>
-                  <div className="col-span-4 sm:col-span-3">
+                  <div className={isAdminView ? "col-span-3" : "col-span-4 sm:col-span-3"}>
                     {editingTasks.has(task.id) ? (
                       <div className="space-y-2">
                       <Input
@@ -346,7 +371,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       <div className="group">
                         <div className="flex items-start gap-2">
                           <div className="flex-1">
-                            <p className="text-lg font-medium text-gray-900 break-words leading-tight">{task.name}</p>
+                            <p className="text-lg font-medium text-gray-900 task-name leading-tight">{task.name}</p>
                             {task.description && (
                               <div className="mt-1">
                                 <p className="text-sm text-muted-foreground">{task.description}</p>
@@ -354,19 +379,6 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                             )}
                           </div>
                           <div className="flex gap-1">
-                            {/* Calendar Export Button */}
-                            {projectSettings.eventTime && (
-                              <CalendarExportButton
-                                taskTitle={task.name}
-                                taskDescription={task.description || undefined}
-                                eventDateTime={projectSettings.eventTime}
-                                eventLocation={projectSettings.eventLocation || undefined}
-                                projectName={projectSettings.projectName || "Event"}
-                                variant="ghost"
-                                size="sm"
-                                className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
-                              />
-                            )}
                             {isOwner && (
                               <Button
                                 variant="ghost"
@@ -421,7 +433,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       <p className="text-lg text-muted-foreground">—</p>
                     )}
                   </div>
-                  <div className="col-span-3 flex items-center justify-start">{getStatusBadge(task.status, task.claimedBy, task.maxContributors)}</div>
+                  <div className={`${isAdminView ? 'col-span-2' : 'col-span-3'} flex items-center justify-start`}>{getStatusBadge(task.status, task.claimedBy, task.maxContributors)}</div>
                   <div className="col-span-2">
                     <Button
                       variant="ghost"
@@ -438,6 +450,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       )}
                     </Button>
                   </div>
+                  {!isAdminView && (
                   <div className="col-span-2">
                     {editingTasks.has(task.id) ? (
                       <div className="flex flex-col gap-2">
@@ -491,6 +504,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       </>
                     )}
                   </div>
+                  )}
                 </div>
 
                 {expandedComments.has(task.id) && (
@@ -542,16 +556,17 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
           )}
           </div>
         </div>
+      </div>
 
-        {/* Mobile Card View */}
-        <div className="md:hidden space-y-4">
+      {/* Mobile: Task cards without wrapper */}
+      <div className="md:hidden space-y-4 px-2">
           {tasks.map((task) => {
             const isUnclaimed = !task.claimedBy || task.claimedBy.length === 0
             const isFull = task.maxContributors && task.claimedBy && task.claimedBy.length >= task.maxContributors
             const isPartiallyFilled = task.claimedBy && task.claimedBy.length > 0
             
             // Determine card styling based on task state
-            let cardClass = "card-beautiful p-5 space-y-4"
+            let cardClass = "bg-white border border-gray-200 rounded-lg p-5 space-y-4 shadow-sm"
             if (isUnclaimed && isOwner) {
               cardClass += " bg-orange-50 border-l-4 border-orange-200" // Draft state
             } else if (isFull) {
@@ -562,7 +577,6 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
             
             return (
             <div key={task.id} className={cardClass}>
-                <div className="space-y-4">
                   {editingTasks.has(task.id) ? (
                     <div className="space-y-4">
                       <Input
@@ -624,7 +638,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-bold text-gray-900 leading-tight" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', hyphens: 'auto' }}>{task.name}</h3>
+                          <h3 className="text-xl font-bold text-gray-900 task-name leading-tight">{task.name}</h3>
                           {task.description && (
                             <div className="mt-2">
                               <p className="text-base text-gray-700 leading-relaxed break-words">{task.description}</p>
@@ -632,19 +646,6 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                           )}
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
-                          {/* Calendar Export Button */}
-                          {projectSettings.eventTime && (
-                            <CalendarExportButton
-                              taskTitle={task.name}
-                              taskDescription={task.description || undefined}
-                              eventDateTime={projectSettings.eventTime}
-                              eventLocation={projectSettings.eventLocation || undefined}
-                              projectName={projectSettings.projectName || "Event"}
-                              variant="ghost"
-                              size="sm"
-                              className="p-3 h-auto min-w-[48px] min-h-[48px] border border-gray-200 hover:border-gray-300 rounded-lg"
-                            />
-                          )}
                           {isOwner && (
                             <Button
                               variant="ghost"
@@ -725,7 +726,6 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       </div>
                     </div>
                   )}
-                </div>
 
                 {expandedComments.has(task.id) && (
                   <div className="space-y-4 pt-2 border-t border-gray-300">
@@ -805,7 +805,6 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
             )}
           )}
         </div>
-      </div>
     </div>
   )
 }

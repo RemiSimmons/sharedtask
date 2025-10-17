@@ -26,8 +26,8 @@ function getContentSecurityPolicy(isDev: boolean = false): string {
     
     // Scripts: Allow self, inline scripts (for Next.js), and specific domains
     isDev 
-      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com"
-      : "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com"
+      : "script-src 'self' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com",
     
     // Styles: Allow self, inline styles (for styled-components/CSS-in-JS), and Google Fonts
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",

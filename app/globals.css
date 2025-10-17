@@ -274,7 +274,26 @@
     font-size: 14px;
     font-weight: 600;
     border: 2px solid #93c5fd;
-    box-shadow: 0 2px 4px -1px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 2px 4px -1px rgba(29, 78, 216, 0.1);
+  }
+  
+  /* Mobile text wrapping improvements */
+  .break-words {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: none;
+  }
+  
+  .hyphens-auto {
+    hyphens: auto;
+  }
+  
+  /* Fix task name display - prevent character-by-character breaking */
+  .task-name {
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: none;
+    white-space: normal;
   }
   
   .status-completed {
@@ -583,7 +602,7 @@
     .project-title {
       word-wrap: break-word;
       overflow-wrap: break-word;
-      hyphens: auto;
+      hyphens: none;
     }
     
     /* Improve mobile form layout */

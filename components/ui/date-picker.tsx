@@ -39,12 +39,14 @@ export function DatePicker({
   const handleDateSelect = (newDate: Date | undefined) => {
     setSelectedDate(newDate)
     setDate(newDate)
+    // Close the popover after selection
+    setIsCalendarOpen(false)
   }
 
 
   if (variant === "quick") {
     return (
-      <Popover>
+      <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
         <PopoverTrigger asChild>
           <Button
             variant={"outline"}
@@ -149,7 +151,7 @@ export function DatePicker({
 
   // Default calendar variant
   return (
-    <Popover>
+    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
