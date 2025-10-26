@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   title: 'SharedTask - Collaborative Task Management',
   description: 'Manage and collaborate on tasks efficiently with SharedTask',
   generator: 'SharedTask',
+  robots: {
+    index: false,
+    follow: false,
+  },
   // Optimize font loading
   other: {
     'font-display': 'swap',
