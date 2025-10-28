@@ -1,11 +1,23 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
+import Google from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
 import { supabaseAdmin } from './supabase'
 
 export const authOptions = {
   trustHost: true, // Allow multiple domains
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
+    }),
     Credentials({
       name: 'credentials',
       credentials: {
@@ -74,14 +86,84 @@ export const authOptions = {
     signIn: '/auth/signin',
   },
   callbacks: {
-    async jwt({ token, user, trigger }: any) {
+    async signIn({ user, account, profile }: any) {
+      // Handle Google OAuth sign in
+      if (account?.provider === 'google') {
+        try {
+          const email = user.email
+          const googleId = account.providerAccountId
+          
+          // Check if user already exists by email
+          const { data: existingUser } = await supabaseAdmin
+            .from('users')
+            .select('id, oauth_provider, oauth_provider_id')
+            .eq('email', email)
+            .single()
+          
+          if (existingUser) {
+            // User exists - link Google account automatically (Strategy 1a)
+            if (!existingUser.oauth_provider || !existingUser.oauth_provider_id) {
+              await supabaseAdmin
+                .from('users')
+                .update({
+                  oauth_provider: 'google',
+                  oauth_provider_id: googleId,
+                  email_verified: true, // Google emails are pre-verified
+                  email_verified_at: new Date().toISOString()
+                })
+                .eq('id', existingUser.id)
+            }
+            
+            // Update user object with existing user ID for JWT callback
+            user.id = existingUser.id
+          } else {
+            // New user - create account with Google OAuth
+            const { data: newUser, error } = await supabaseAdmin
+              .from('users')
+              .insert({
+                email: email,
+                name: user.name || 'Google User',
+                password_hash: '', // Empty for OAuth users
+                oauth_provider: 'google',
+                oauth_provider_id: googleId,
+                email_verified: true,
+                email_verified_at: new Date().toISOString(),
+                role: 'user'
+              })
+              .select('id')
+              .single()
+            
+            if (error || !newUser) {
+              console.error('Failed to create Google OAuth user:', error)
+              return false
+            }
+            
+            user.id = newUser.id
+          }
+          
+          return true
+        } catch (error) {
+          console.error('Google OAuth sign in error:', error)
+          return false
+        }
+      }
+      
+      // Allow credentials login (existing flow)
+      return true
+    },
+    async jwt({ token, user, account, trigger }: any) {
       // Initial sign in - set token data
       if (user) {
         token.id = user.id
         token.name = user.name
         token.email = user.email
-        token.emailVerified = user.emailVerified
+        token.emailVerified = user.emailVerified !== undefined ? user.emailVerified : true // Google users are verified
         token.loginAt = Date.now() // Track when user logged in (for session rotation)
+        
+        // Store OAuth provider info
+        if (account?.provider === 'google') {
+          token.provider = 'google'
+        }
       }
       
       // Session update triggered - refresh email verification status
@@ -108,6 +190,7 @@ export const authOptions = {
         
         // Add session metadata for tracking
         session.loginAt = token.loginAt
+        session.provider = token.provider // Track auth provider
       }
       return session
     },
