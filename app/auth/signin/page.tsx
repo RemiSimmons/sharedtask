@@ -38,7 +38,7 @@ export default function SignInPage() {
       })
 
       if (result?.error) {
-        setError('Invalid email or password. Please try again.')
+        setError('Email or password incorrect')
         return
       }
 
@@ -84,7 +84,7 @@ export default function SignInPage() {
             <h1 className="header-main">Welcome Back</h1>
           </div>
           <p className="text-xl text-gray-700 font-medium">
-            Sign in to manage your projects
+            Access your projects
           </p>
         </div>
 

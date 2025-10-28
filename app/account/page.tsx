@@ -439,14 +439,14 @@ export default function AccountManagementPage() {
       <div className="p-6 md:p-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center space-y-6 mb-8">
-            <div className="flex items-center justify-center gap-4">
-              <svg className="header-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center space-y-4 md:space-y-6 mb-8">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
+              <svg className="w-10 h-10 md:w-12 md:h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <h1 className="header-main">Account Management</h1>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">Account Management</h1>
             </div>
-            <p className="text-xl text-gray-700 font-medium">
+            <p className="text-base md:text-xl text-gray-700 font-medium px-4">
               Welcome back, {session.user?.name || 'User'}! 👋
             </p>
           </div>
@@ -783,7 +783,7 @@ export default function AccountManagementPage() {
               <div className="pt-6 border-t border-gray-200">
                 <h3 className="text-lg font-semibold text-red-600 mb-3">🗑️ Delete Account</h3>
                 <p className="text-gray-600 mb-4">
-                  Permanently delete your account and all associated data. This action cannot be undone.
+                  Delete everything. This can't be undone.
                 </p>
                 
                 {!showDeleteConfirm ? (

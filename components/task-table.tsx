@@ -100,7 +100,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
         await deleteTask(taskId)
       } catch (error) {
         console.error('Failed to delete task:', error)
-        alert('Failed to delete task. Please try again.')
+        alert('Couldn\'t delete task. Try again or refresh the page.')
       }
     }
   }
@@ -237,7 +237,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
         await unclaimTask(taskId, contributorName)
       } catch (error) {
         console.error('Failed to unclaim task:', error)
-        alert('Failed to leave this task. Please try again.')
+        alert('Couldn\'t leave task. Try again or refresh the page.')
       }
     }
   }
@@ -310,7 +310,15 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
           </div>
 
           <div className="divide-y divide-border">
-            {tasks.map((task) => {
+            {tasks.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-b-lg">
+                <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <h3 className="text-xl font-medium text-gray-900 mb-2">No tasks yet</h3>
+                <p className="text-gray-600">{isOwner ? "Add tasks to get started" : "The host will add tasks soon"}</p>
+              </div>
+            ) : tasks.map((task) => {
               const isUnclaimed = !task.claimedBy || task.claimedBy.length === 0
               const isFull = task.maxContributors && task.claimedBy && task.claimedBy.length >= task.maxContributors
               const isPartiallyFilled = task.claimedBy && task.claimedBy.length > 0
@@ -457,7 +465,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                         <Button
                           onClick={() => saveTaskEdit(task.id)}
                           size="sm"
-                          className="text-base px-3 py-2 h-auto min-h-[36px] font-medium"
+                          className="text-base px-3 py-2 h-auto min-h-[44px] font-medium"
                         >
                           <Save className="w-4 h-4 mr-1" />
                           Save
@@ -466,7 +474,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                           onClick={() => cancelEditing(task.id)}
                           variant="outline"
                           size="sm"
-                          className="text-base px-3 py-2 h-auto min-h-[36px] font-medium"
+                          className="text-base px-3 py-2 h-auto min-h-[44px] font-medium"
                         >
                           <X className="w-4 h-4 mr-1" />
                           Cancel
@@ -560,7 +568,15 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
 
       {/* Mobile: Task cards without wrapper */}
       <div className="md:hidden space-y-4 px-2">
-          {tasks.map((task) => {
+          {tasks.length === 0 ? (
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <h3 className="text-xl font-medium text-gray-900 mb-2">No tasks yet</h3>
+              <p className="text-gray-600">{isOwner ? "Add tasks to get started" : "The host will add tasks soon"}</p>
+            </div>
+          ) : tasks.map((task) => {
             const isUnclaimed = !task.claimedBy || task.claimedBy.length === 0
             const isFull = task.maxContributors && task.claimedBy && task.claimedBy.length >= task.maxContributors
             const isPartiallyFilled = task.claimedBy && task.claimedBy.length > 0

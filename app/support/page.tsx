@@ -4,12 +4,14 @@ import React, { useState } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import AppHeader from "@/components/app-header"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function SupportPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    subject: "",
+    subjectType: "",
+    customSubject: "",
     message: "",
     priority: "medium"
   })
@@ -61,7 +63,8 @@ export default function SupportPage() {
       setFormData({
         name: session?.user?.name || "",
         email: session?.user?.email || "",
-        subject: "",
+        subjectType: "",
+        customSubject: "",
         message: "",
         priority: "medium"
       })
@@ -81,15 +84,15 @@ export default function SupportPage() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 md:p-8">
         <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center space-y-6 mb-12">
-          <div className="flex items-center justify-center gap-4">
-            <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center space-y-4 md:space-y-6 mb-8 md:mb-12">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
+            <svg className="w-10 h-10 md:w-12 md:h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 110 19.5 9.75 9.75 0 010-19.5z" />
             </svg>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">Support Center</h1>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">Support Center</h1>
           </div>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
-            Need help with SharedTask? We're here to assist you. Send us a message and we'll get back to you as soon as possible.
+          <p className="text-base md:text-xl text-gray-700 max-w-2xl mx-auto px-4">
+            Need help? We'll respond within 24 hours.
           </p>
         </div>
 
@@ -163,41 +166,51 @@ export default function SupportPage() {
                   </div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                {/* Subject Type Dropdown */}
+                <div>
+                  <label htmlFor="subjectType" className="block text-sm font-semibold text-gray-700 mb-2">
+                    What can we help you with? *
+                  </label>
+                  <Select
+                    value={formData.subjectType}
+                    onValueChange={(value) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        subjectType: value
+                      }))
+                    }}
+                    required
+                  >
+                    <SelectTrigger className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base h-auto">
+                      <SelectValue placeholder="Select a subject..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="general-inquiry">General Inquiry</SelectItem>
+                      <SelectItem value="technical-support">Technical Support</SelectItem>
+                      <SelectItem value="feature-request">Feature Request</SelectItem>
+                      <SelectItem value="billing-question">Billing Question</SelectItem>
+                      <SelectItem value="cancel-subscription">Cancel Subscription Request</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Custom Subject (only if Other is selected) */}
+                {formData.subjectType === "general-inquiry" && (
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Subject *
+                    <label htmlFor="customSubject" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Please specify
                     </label>
                     <input
-                      id="subject"
-                      name="subject"
+                      id="customSubject"
+                      name="customSubject"
                       type="text"
-                      value={formData.subject}
+                      value={formData.customSubject}
                       onChange={handleChange}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Brief description of your issue"
-                      required
+                      placeholder="Brief description of your inquiry"
                     />
                   </div>
-
-                  <div>
-                    <label htmlFor="priority" className="block text-sm font-semibold text-gray-700 mb-2">
-                      Priority Level
-                    </label>
-                    <select
-                      id="priority"
-                      name="priority"
-                      value={formData.priority}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="low">Low - General inquiry</option>
-                      <option value="medium">Medium - Need assistance</option>
-                      <option value="high">High - Urgent issue</option>
-                      <option value="critical">Critical - System down</option>
-                    </select>
-                  </div>
-                </div>
+                )}
 
                 <div>
                   <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">

@@ -144,7 +144,7 @@ export default function AdminProjectsView() {
                       <p className="text-gray-600">{project.task_label}</p>
                       {project.user && (
                         <div className="mt-2 text-sm text-gray-500">
-                          <p className="font-medium">Owner: {project.user.name}</p>
+                          <p className="font-medium">Host: {project.user.name}</p>
                           <p className="text-xs">{project.user.email}</p>
                         </div>
                       )}

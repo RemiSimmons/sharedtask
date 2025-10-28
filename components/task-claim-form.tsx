@@ -21,6 +21,7 @@ export default function TaskClaimForm() {
   } = useTask()
   const [selectedName, setSelectedName] = useState<string>("")
   const [selectedTask, setSelectedTask] = useState<string>("")
+  const [headcount, setHeadcount] = useState<number>(1)
   const [showSuccess, setShowSuccess] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [customName, setCustomName] = useState<string>("")
@@ -90,8 +91,8 @@ export default function TaskClaimForm() {
         await addTaskAndClaim(customTask, finalName)
         setClaimedTaskName(customTask)
       } else {
-        // Claim existing task
-        await claimTask(selectedTask, finalName)
+        // Claim existing task with headcount
+        await claimTask(selectedTask, finalName, headcount)
         const taskName = availableTasks.find((t) => t.id === selectedTask)?.name || ""
         setClaimedTaskName(taskName)
       }
@@ -111,7 +112,7 @@ export default function TaskClaimForm() {
       }
     } catch (error) {
       console.error('Failed to claim task:', error)
-      alert(`Failed to claim task: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      alert(`Couldn't claim task. Try again or refresh the page.`)
     } finally {
       setIsSubmitting(false)
     }
@@ -136,7 +137,7 @@ export default function TaskClaimForm() {
       setTimeout(() => setShowSuccess(false), 3000)
     } catch (error) {
       console.error('Failed to claim selected tasks:', error)
-      alert(`Failed to claim tasks: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      alert(`Couldn't claim tasks. Try again or refresh the page.`)
     } finally {
       setIsSubmitting(false)
     }
@@ -144,7 +145,7 @@ export default function TaskClaimForm() {
 
   const handleClaimAnother = () => {
     setShowMultipleClaimPrompt(false)
-    // Only reset task selection, keep name
+    // Only reset task selection, keep name and headcount
     setSelectedTask("")
     setCustomTask("")
   }
@@ -157,6 +158,7 @@ export default function TaskClaimForm() {
       setShowSuccess(false)
       setSelectedName("")
       setSelectedTask("")
+      setHeadcount(1)
       setCustomName("")
       setCustomTask("")
     }, 3000)
@@ -231,7 +233,7 @@ export default function TaskClaimForm() {
                       Selected Tasks ({selectedTasksForClaiming.length})
                     </h3>
                     <p className="text-sm text-blue-700">
-                      Add your name below to claim all selected tasks at once.
+                      Enter your name to claim selected tasks
                     </p>
                   </div>
                   <div className="space-y-2 mb-4">
@@ -351,7 +353,7 @@ export default function TaskClaimForm() {
                 {activeContributors.length === 0 && !projectSettings.allowContributorsAddNames && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <p className="text-sm text-yellow-800">
-                      ⚠️ No contributor names are available yet. The host needs to add contributor names or enable the "Allow contributors to add their own names" permission.
+                      ⚠️ Contact the host to add contributors
                     </p>
                   </div>
                 )}
@@ -403,7 +405,7 @@ export default function TaskClaimForm() {
                 {availableTasks.length === 0 && !projectSettings.allowContributorsAddTasks && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <p className="text-sm text-yellow-800">
-                      ⚠️ No tasks are available to claim. The host needs to add tasks or enable the "Allow contributors to add custom tasks" permission.
+                      ⚠️ No tasks available. Contact the host.
                     </p>
                   </div>
                 )}
@@ -427,6 +429,27 @@ export default function TaskClaimForm() {
                     </p>
                   </div>
                 )}
+              </div>
+
+              {/* Headcount Input */}
+              <div className="space-y-4 md:space-y-3">
+                <label htmlFor="headcount" className="text-2xl md:text-lg font-bold md:font-semibold text-gray-900 block">
+                  How many attending?
+                </label>
+                <input
+                  id="headcount"
+                  type="number"
+                  inputMode="numeric"
+                  min="1"
+                  max="99"
+                  value={headcount}
+                  onChange={(e) => setHeadcount(Math.max(1, Math.min(99, parseInt(e.target.value) || 1)))}
+                  className="form-input text-xl md:text-base py-4 md:py-2 px-4 md:px-3 min-h-[56px] md:min-h-[44px]"
+                  placeholder="1"
+                />
+                <p className="text-lg md:text-sm text-gray-700 md:text-gray-600">
+                  💡 Including you
+                </p>
               </div>
 
               <button

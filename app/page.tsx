@@ -10,6 +10,7 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { TimePicker } from "@/components/ui/time-picker"
 import { ParticipantAutocomplete } from "@/components/participant-autocomplete"
 import { ConfirmDialog } from "@/components/ui/confirm-dialog"
+import { MobileNav } from "@/components/mobile-nav"
 // Force rebuild - syntax errors fixed
 
 function LandingPageContent() {
@@ -273,7 +274,7 @@ function LandingPageContent() {
             />
           </div>
           <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
-            Create a new project to start organizing tasks with your team
+            Set up your task list
           </p>
         </div>
 
@@ -313,7 +314,6 @@ function LandingPageContent() {
               <p className="text-sm text-gray-600 mt-1">
                 {projectName.length}/50 characters
               </p>
-              <p className="text-sm text-gray-600 mt-1">This will appear at the top of your task management page</p>
             </div>
 
             {/* Task Label */}
@@ -334,13 +334,12 @@ function LandingPageContent() {
               <p className="text-sm text-gray-600 mt-1">
                 {taskLabel.length}/30 characters
               </p>
-              <p className="text-sm text-gray-600 mt-1">This label will replace "Task Name" in your table headers</p>
             </div>
 
             {/* Event Details - Optional */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">📅 Event Details (Optional)</h3>
-              <p className="text-sm text-gray-600">Add location, time, and attire info to help contributors plan better</p>
+              <p className="text-sm text-gray-600">Help people plan ahead</p>
               
               {/* Location */}
               <div>
@@ -375,7 +374,7 @@ function LandingPageContent() {
                     className="w-full"
                   />
                   <p className="text-sm text-gray-600 mt-1">
-                    When is your event?
+                    Date
                   </p>
                 </div>
 
@@ -389,7 +388,7 @@ function LandingPageContent() {
                     className="w-full"
                   />
                   <p className="text-sm text-gray-600 mt-1">
-                    What time does it start?
+                    Time
                   </p>
                 </div>
               </div>
@@ -455,7 +454,7 @@ function LandingPageContent() {
                 )}
                 
                 <p className="text-sm text-gray-600 mt-1">
-                  Add people who might help. They can also enter their names when claiming tasks.
+                  Add expected guests (they can add themselves later)
                 </p>
               </div>
             </div>
@@ -477,7 +476,7 @@ function LandingPageContent() {
                   <label htmlFor="multiple-tasks" className="text-base font-medium text-gray-900">
                     👥 Let people claim multiple tasks
                   </label>
-                  <p className="text-sm text-gray-600">One person can take several different tasks</p>
+                  <p className="text-sm text-gray-600">Allow one person to claim multiple tasks</p>
                 </div>
               </div>
 
@@ -494,7 +493,7 @@ function LandingPageContent() {
                   <label htmlFor="team-tasks" className="text-base font-medium text-gray-900">
                     🤝 Allow team tasks (multiple people per task)
                   </label>
-                  <p className="text-sm text-gray-600">Multiple people can work together on one task</p>
+                  <p className="text-sm text-gray-600">Allow team tasks with multiple people</p>
                 </div>
               </div>
 
@@ -522,7 +521,7 @@ function LandingPageContent() {
                   <p className="text-sm text-gray-600 mt-1">
                     {maxContributors && (parseInt(maxContributors) < 1 || parseInt(maxContributors) > 20) 
                       ? <span className="text-red-600">Must be between 1 and 20</span>
-                      : "Maximum number of people who can claim each task (1-20)"
+                      : "Max per task (1-20)"
                     }
                   </p>
                 </div>
@@ -541,7 +540,7 @@ function LandingPageContent() {
                   <label htmlFor="allow-contributor-names" className="text-base font-medium text-gray-900">
                     ✏️ Allow people to add their names when claiming tasks
                   </label>
-                  <p className="text-sm text-gray-600">Contributors can enter their names when claiming tasks</p>
+                  <p className="text-sm text-gray-600">People can add their names</p>
                 </div>
               </div>
 
@@ -558,7 +557,7 @@ function LandingPageContent() {
                   <label htmlFor="allow-contributor-tasks" className="text-base font-medium text-gray-900">
                     ➕ Allow people to add new tasks
                   </label>
-                  <p className="text-sm text-gray-600">Contributors can create additional tasks for the project</p>
+                  <p className="text-sm text-gray-600">People can add new tasks</p>
                 </div>
               </div>
             </div>
@@ -591,20 +590,25 @@ function LandingPageContent() {
   // Render authenticated user view - Main Dashboard
   const renderAuthenticatedView = () => {
     return (
-      <div className="min-h-screen p-6 md:p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center space-y-6 mb-12">
-            <div className="flex flex-col items-center gap-4">
-              <img
-                src="/logo.png"
-                alt="SharedTask Logo"
-                className="h-40 w-auto"
-              />
-              <h1 className="text-4xl font-bold text-gray-900">Welcome Back, {session?.user?.name}!</h1>
+      <div className="min-h-screen">
+        {/* Mobile Navigation */}
+        <MobileNav showHomeLink={false} />
+        
+        <div className="p-6 md:p-8 pt-20 md:pt-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center space-y-6 mb-12">
+              <div className="flex flex-col items-center gap-4">
+                <img
+                  src="/logo.png"
+                  alt="SharedTask Logo"
+                  className="h-40 w-auto"
+                />
+                <h1 className="text-4xl font-bold text-gray-900">Welcome Back, {session?.user?.name}!</h1>
+              </div>
+              <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
+                Ready to manage your projects?
+              </p>
             </div>
-            <p className="text-xl text-gray-700 max-w-2xl mx-auto font-medium">
-              Ready to manage your projects?
-            </p>
           </div>
           <div className="space-y-8 max-w-2xl mx-auto">
             {/* Create New Project Card */}
@@ -654,7 +658,7 @@ function LandingPageContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
                   <h3 className="text-xl font-medium text-gray-900 mb-2">No projects yet</h3>
-                  <p className="text-gray-600 mb-6">Use the "Create Project" button above to get started!</p>
+                  <p className="text-gray-600 mb-6">Create your first project to get started</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -781,24 +785,24 @@ function LandingPageContent() {
             )}
           </div>
 
-          {/* Bottom Navigation */}
-          <div className="text-center mt-12 space-y-4">
+          {/* Bottom Navigation - Hidden on mobile since we have MobileNav */}
+          <div className="text-center mt-12 space-y-4 hidden md:block">
             <div className="flex justify-center gap-8">
               <button
                 onClick={() => router.push('/support')}
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="text-blue-600 hover:text-blue-800 font-medium min-h-[44px] px-3 py-2"
               >
                 💬 Support
               </button>
               <button
                 onClick={() => router.push('/account')}
-                className="text-gray-600 hover:text-gray-800 font-medium"
+                className="text-gray-600 hover:text-gray-800 font-medium min-h-[44px] px-3 py-2"
               >
                 👤 Account Settings
               </button>
               <button
                 onClick={() => router.push('/auth/signout')}
-                className="text-gray-600 hover:text-gray-800 font-medium"
+                className="text-gray-600 hover:text-gray-800 font-medium min-h-[44px] px-3 py-2"
               >
                 🚪 Sign Out
               </button>

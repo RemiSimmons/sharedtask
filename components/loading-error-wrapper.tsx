@@ -21,9 +21,9 @@ export function LoadingErrorWrapper({ children }: LoadingErrorWrapperProps) {
                 </svg>
               </div>
               <div className="text-center space-y-2">
-                <h2 className="text-2xl font-semibold text-gray-900">Loading Tasks</h2>
+                <h2 className="text-2xl font-semibold text-gray-900">Loading...</h2>
                 <p className="text-lg text-gray-600">
-                  Connecting to database and loading your project...
+                  Getting your project ready
                 </p>
               </div>
             </div>
@@ -45,16 +45,16 @@ export function LoadingErrorWrapper({ children }: LoadingErrorWrapperProps) {
                 </svg>
               </div>
               <div className="text-center space-y-4 max-w-2xl">
-                <h2 className="text-2xl font-semibold text-gray-900">Database Connection Error</h2>
+                <h2 className="text-2xl font-semibold text-gray-900">Connection Problem</h2>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <p className="text-base text-red-700">{error}</p>
                 </div>
                 <div className="space-y-3">
-                  <p className="text-lg text-gray-600">Make sure you have:</p>
+                  <p className="text-lg text-gray-600">Try these steps:</p>
                   <ul className="text-left text-base text-gray-600 space-y-2">
-                    <li>• Set up your Supabase project and database tables</li>
-                    <li>• Added your Supabase URL and API key to .env.local</li>
-                    <li>• Run the database schema SQL in your Supabase dashboard</li>
+                    <li>• Check your internet connection</li>
+                    <li>• Try refreshing the page</li>
+                    <li>• Contact support if this persists</li>
                   </ul>
                 </div>
                 <button 
