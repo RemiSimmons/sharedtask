@@ -35,7 +35,7 @@ export function ShareProjectButton({
   const handleShare = async () => {
     const projectUrl = `${window.location.origin}/project/${projectId}`
     const shareTitle = projectName ? `Join ${projectName}!` : "Join our event!"
-    const shareText = "🎉 Help contribute to our event! Claim a task here:"
+    const shareText = "📝 Help contribute to our event! Claim a task here:"
 
     // Try Web Share API first (mobile devices)
     if (canShare) {
