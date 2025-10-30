@@ -188,11 +188,11 @@ function ProjectContent() {
                                 return (
                                   <button
                                     onClick={() => {
-                                      const mapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(projectSettings.eventLocation)}`
+                                      const mapsUrl = `https://maps.google.com/maps?q=${encodeURIComponent(projectSettings.eventLocation || '')}`
                                       window.open(mapsUrl, '_blank', 'noopener,noreferrer')
                                     }}
                                     className="text-xl text-blue-600 hover:text-blue-800 hover:underline transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded-sm"
-                                    title={`View ${projectSettings.eventLocation} on Google Maps`}
+                                    title={`View ${projectSettings.eventLocation || ''} on Google Maps`}
                                   >
                                     {line1 && <div className="text-green-800">{line1}</div>}
                                     <div className="text-green-800 flex items-center justify-center gap-1">
