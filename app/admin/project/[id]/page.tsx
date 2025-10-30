@@ -742,10 +742,78 @@ function ProjectSettingsSection() {
       </div>
 
       <p className="text-lg text-gray-700 mb-8">
-        Control how contributors can interact with your project.
+        Manage your project details and contributor permissions.
       </p>
 
-      <div className="space-y-6">
+      {/* Project Details Section */}
+      <div className="space-y-6 mb-8 pb-8 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Project Details</h3>
+        
+        {/* Project Name */}
+        <div>
+          <label htmlFor="project-name-setting" className="block text-base font-medium text-gray-900 mb-2">
+            📋 Project Name
+          </label>
+          <input
+            id="project-name-setting"
+            type="text"
+            value={projectSettings.projectName}
+            onChange={(e) => updateProjectSettings({ projectName: e.target.value })}
+            placeholder="e.g., Smith Family Potluck"
+            maxLength={50}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <p className="text-sm text-gray-600 mt-1">
+            {projectSettings.projectName.length}/50 characters
+          </p>
+        </div>
+
+        {/* Task Label */}
+        <div>
+          <label htmlFor="task-label-setting" className="block text-base font-medium text-gray-900 mb-2">
+            🏷️ Task Label
+          </label>
+          <input
+            id="task-label-setting"
+            type="text"
+            value={projectSettings.taskLabel}
+            onChange={(e) => updateProjectSettings({ taskLabel: e.target.value })}
+            placeholder="e.g., Food Dishes, Volunteer Roles, Equipment"
+            maxLength={30}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <p className="text-sm text-gray-600 mt-1">
+            {projectSettings.taskLabel.length}/30 characters - This replaces "Task Name" in your table
+          </p>
+        </div>
+
+        {/* Project Description */}
+        <div>
+          <label htmlFor="project-description-setting" className="block text-base font-medium text-gray-900 mb-2">
+            📝 Project Description <span className="text-sm font-normal text-gray-600">(Optional)</span>
+          </label>
+          <textarea
+            id="project-description-setting"
+            value={projectSettings.projectDescription || ""}
+            onChange={(e) => updateProjectSettings({ projectDescription: e.target.value || undefined })}
+            placeholder="Describe your project for contributors..."
+            rows={3}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          />
+          <p className="text-sm text-gray-600 mt-1">
+            This description will be shown to contributors under the project title
+          </p>
+        </div>
+      </div>
+
+      {/* Permission Settings Section */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Permission Settings</h3>
+        <p className="text-sm text-gray-600 mb-6">
+          Control how contributors can interact with your project
+        </p>
+        
+        <div className="space-y-6">
         {/* Multiple Claims Setting */}
         <div className="flex items-start space-x-3">
           <input
