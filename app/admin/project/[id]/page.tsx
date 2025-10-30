@@ -882,6 +882,7 @@ function ProjectSettingsSection() {
           </div>
         </div>
       </div>
+      </div>
 
       {isUpdating && (
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
