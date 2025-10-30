@@ -31,9 +31,13 @@ export function DatePicker({
 }: DatePickerProps) {
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date)
   const [isCalendarOpen, setIsCalendarOpen] = React.useState(false)
+  const [displayMonth, setDisplayMonth] = React.useState<Date>(date || new Date())
 
   React.useEffect(() => {
     setSelectedDate(date)
+    if (date) {
+      setDisplayMonth(date)
+    }
   }, [date])
 
   const handleDateSelect = (newDate: Date | undefined) => {
@@ -46,7 +50,16 @@ export function DatePicker({
 
   if (variant === "quick") {
     return (
-      <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+      <Popover 
+        open={isCalendarOpen} 
+        onOpenChange={(open) => {
+          setIsCalendarOpen(open)
+          // Reset display month when opening
+          if (open) {
+            setDisplayMonth(selectedDate || new Date())
+          }
+        }}
+      >
         <PopoverTrigger asChild>
           <Button
             variant={"outline"}
@@ -60,7 +73,7 @@ export function DatePicker({
             {date ? (
               format(date, "EEE, MMM d, yyyy")
             ) : (
-              <span>Pick a date</span>
+              <span>No date selected</span>
             )}
           </Button>
         </PopoverTrigger>
@@ -73,9 +86,9 @@ export function DatePicker({
               <div className="flex items-center justify-center gap-4 mb-4">
                 <button
                   onClick={() => {
-                    const newDate = new Date(selectedDate || new Date())
-                    newDate.setMonth(newDate.getMonth() - 1)
-                    handleDateSelect(newDate)
+                    const newMonth = new Date(displayMonth)
+                    newMonth.setMonth(newMonth.getMonth() - 1)
+                    setDisplayMonth(newMonth)
                   }}
                   className="h-8 w-8 bg-transparent p-0 opacity-60 hover:opacity-100 hover:bg-accent rounded-md transition-all flex items-center justify-center"
                 >
@@ -85,14 +98,14 @@ export function DatePicker({
                 </button>
                 
                 <h3 className="text-lg font-semibold min-w-[120px] text-center">
-                  {selectedDate ? format(selectedDate, "MMMM yyyy") : format(new Date(), "MMMM yyyy")}
+                  {format(displayMonth, "MMMM yyyy")}
                 </h3>
                 
                 <button
                   onClick={() => {
-                    const newDate = new Date(selectedDate || new Date())
-                    newDate.setMonth(newDate.getMonth() + 1)
-                    handleDateSelect(newDate)
+                    const newMonth = new Date(displayMonth)
+                    newMonth.setMonth(newMonth.getMonth() + 1)
+                    setDisplayMonth(newMonth)
                   }}
                   className="h-8 w-8 bg-transparent p-0 opacity-60 hover:opacity-100 hover:bg-accent rounded-md transition-all flex items-center justify-center"
                 >
@@ -109,9 +122,14 @@ export function DatePicker({
                 mode="single"
                 selected={selectedDate}
                 onSelect={handleDateSelect}
+                month={displayMonth}
+                onMonthChange={setDisplayMonth}
                 disabled={(date) => {
                   if (minDate) {
-                    return date < minDate
+                    // Normalize dates to midnight for proper comparison (ignore time)
+                    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+                    const minDateOnly = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate())
+                    return dateOnly < minDateOnly
                   }
                   return false
                 }}
@@ -151,7 +169,16 @@ export function DatePicker({
 
   // Default calendar variant
   return (
-    <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+    <Popover 
+      open={isCalendarOpen} 
+      onOpenChange={(open) => {
+        setIsCalendarOpen(open)
+        // Reset display month when opening
+        if (open) {
+          setDisplayMonth(selectedDate || new Date())
+        }
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
@@ -165,7 +192,7 @@ export function DatePicker({
           {date ? (
             format(date, "EEE, MMM d, yyyy")
           ) : (
-            <span>Pick a date</span>
+            <span>No date selected</span>
           )}
         </Button>
       </PopoverTrigger>
@@ -174,9 +201,22 @@ export function DatePicker({
           mode="single"
           selected={selectedDate}
           onSelect={handleDateSelect}
+          month={displayMonth}
+          onMonthChange={setDisplayMonth}
           disabled={(date) => {
-            if (minDate && date < minDate) return true
-            if (maxDate && date > maxDate) return true
+            // Normalize dates to midnight for proper comparison (ignore time)
+            const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+            
+            if (minDate) {
+              const minDateOnly = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate())
+              if (dateOnly < minDateOnly) return true
+            }
+            
+            if (maxDate) {
+              const maxDateOnly = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate())
+              if (dateOnly > maxDateOnly) return true
+            }
+            
             return false
           }}
           initialFocus

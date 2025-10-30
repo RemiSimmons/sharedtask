@@ -73,7 +73,7 @@ export function TimePicker({
           {time ? (
             format(time, "h:mm a")
           ) : (
-            <span>Pick a time</span>
+            <span>No time selected</span>
           )}
         </Button>
       </PopoverTrigger>

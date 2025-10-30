@@ -10,6 +10,8 @@ import { EventDetailsSection } from "@/components/event-details-section"
 import { TaskProvider } from "@/contexts/TaskContextWithSupabase"
 import { useTask } from "@/contexts/TaskContextWithSupabase"
 import Link from "next/link"
+import { ShareProjectButton } from "@/components/share-project-button"
+import { MobileNav } from "@/components/mobile-nav"
 
 export default function AdminProjectPage() {
   const { data: session, status } = useSession()
@@ -17,6 +19,13 @@ export default function AdminProjectPage() {
   const params = useParams()
   const projectId = params.id as string
   const { alert } = useCustomAlert()
+
+  // Handle unauthenticated redirect in useEffect to avoid state update during render
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push('/auth/signin')
+    }
+  }, [status, router])
 
   const copyContributorLink = () => {
     const link = `${window.location.origin}/project/${projectId}`
@@ -51,15 +60,17 @@ export default function AdminProjectPage() {
   }
 
   if (status === "unauthenticated") {
-    router.push('/auth/signin')
     return null
   }
 
   return (
     <TaskProvider projectId={projectId}>
       <div className="min-h-screen bg-gray-50">
-        {/* Clean Header with Shared Task logo and user actions */}
-        <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        {/* Mobile Navigation - Only shows on mobile */}
+        <MobileNav showHomeLink={true} />
+        
+        {/* Clean Header with Shared Task logo and user actions - Desktop */}
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
           <div className="max-w-6xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
               {/* Left side - Logo and Back Button */}
@@ -75,7 +86,7 @@ export default function AdminProjectPage() {
                 {/* Back Button */}
                 <Link 
                   href="/admin"
-                  className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium transition-colors border border-blue-200"
+                  className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium transition-colors border border-blue-200 min-h-[44px]"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -85,12 +96,12 @@ export default function AdminProjectPage() {
                 </Link>
               </div>
 
-              {/* Right side - User info and actions */}
-              <div className="flex items-center gap-4">
+              {/* Right side - User info and actions - Desktop Only */}
+              <div className="hidden md:flex items-center gap-4">
                 {session?.user && (
                   <>
                     {/* User greeting */}
-                    <div className="hidden sm:block text-gray-600">
+                    <div className="hidden lg:block text-gray-600">
                       <span className="text-sm">
                         Hello, <span className="font-medium">{session.user.name || session.user.email}</span>
                       </span>
@@ -101,7 +112,7 @@ export default function AdminProjectPage() {
                       {/* Account button */}
                       <Link 
                         href="/account" 
-                        className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200"
+                        className="flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors border border-gray-200 min-h-[44px]"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -112,7 +123,7 @@ export default function AdminProjectPage() {
                       {/* Sign out button */}
                       <button
                         onClick={handleSignOut}
-                        className="flex items-center gap-2 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg font-medium transition-colors"
+                        className="flex items-center gap-2 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg font-medium transition-colors min-h-[44px]"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -135,18 +146,13 @@ export default function AdminProjectPage() {
                 <ProjectHeader projectId={projectId} />
               
               <div className="flex items-center gap-3 flex-wrap">
-                <button
-                  onClick={copyContributorLink}
-                  className="btn-accent flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Copy Share Link
-                </button>
+                <ShareProjectButton
+                  projectId={projectId}
+                  className="btn-accent flex items-center gap-2 min-h-[44px]"
+                />
                 <button
                   onClick={() => window.open(`/project/${projectId}`, '_blank')}
-                  className="btn-secondary flex items-center gap-2"
+                  className="btn-secondary flex items-center gap-2 min-h-[44px]"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

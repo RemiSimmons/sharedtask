@@ -16,7 +16,6 @@ export function EventDetailsSection() {
       
       // Check if the date is valid
       if (isNaN(dateTime.getTime())) {
-        console.error('Invalid event time value:', eventTime)
         return { date: undefined, time: undefined }
       }
       
@@ -33,8 +32,6 @@ export function EventDetailsSection() {
   const { date: eventDate, time: eventTime } = parseEventTime(projectSettings.eventTime)
 
   const handleEventUpdate = async (updates: {
-    eventName?: string
-    eventDescription?: string
     eventLocation?: string
     eventDate?: Date
     eventTime?: Date
@@ -42,42 +39,29 @@ export function EventDetailsSection() {
     maxContributors?: number
   }) => {
     try {
-      // Combine date and time into ISO string if both are provided
+      // Only create ISO timestamp when BOTH date AND time are set
       let combinedEventTime = projectSettings.eventTime
       
-      if (updates.eventDate && updates.eventTime) {
-        const combinedDateTime = new Date(
-          updates.eventDate.getFullYear(),
-          updates.eventDate.getMonth(),
-          updates.eventDate.getDate(),
-          updates.eventTime.getHours(),
-          updates.eventTime.getMinutes(),
-          0,
-          0
-        )
-        combinedEventTime = combinedDateTime.toISOString()
-      } else if (updates.eventDate) {
-        const combinedDateTime = new Date(
-          updates.eventDate.getFullYear(),
-          updates.eventDate.getMonth(),
-          updates.eventDate.getDate(),
-          eventTime?.getHours() || 18,
-          eventTime?.getMinutes() || 0,
-          0,
-          0
-        )
-        combinedEventTime = combinedDateTime.toISOString()
-      } else if (updates.eventTime) {
-        const combinedDateTime = new Date(
-          eventDate?.getFullYear() || new Date().getFullYear(),
-          eventDate?.getMonth() || new Date().getMonth(),
-          eventDate?.getDate() || new Date().getDate(),
-          updates.eventTime.getHours(),
-          updates.eventTime.getMinutes(),
-          0,
-          0
-        )
-        combinedEventTime = combinedDateTime.toISOString()
+      if (updates.eventDate !== undefined || updates.eventTime !== undefined) {
+        const finalDate = updates.eventDate !== undefined ? updates.eventDate : eventDate
+        const finalTime = updates.eventTime !== undefined ? updates.eventTime : eventTime
+        
+        // Only set timestamp if both exist
+        if (finalDate && finalTime) {
+          const combinedDateTime = new Date(
+            finalDate.getFullYear(),
+            finalDate.getMonth(),
+            finalDate.getDate(),
+            finalTime.getHours(),
+            finalTime.getMinutes(),
+            0,
+            0
+          )
+          combinedEventTime = combinedDateTime.toISOString()
+        } else {
+          // If either is undefined, clear the timestamp
+          combinedEventTime = undefined
+        }
       }
 
       await updateProjectSettings({
@@ -93,8 +77,6 @@ export function EventDetailsSection() {
 
   return (
     <EventDetailsCard
-      eventName={projectSettings.projectName || ""}
-      eventDescription={projectSettings.projectDescription || undefined}
       eventLocation={projectSettings.eventLocation || undefined}
       eventDate={eventDate}
       eventTime={eventTime}

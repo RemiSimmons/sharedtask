@@ -24,7 +24,9 @@ export default function AdminDashboard() {
     updateProjectSettings,
     activeContributors,
     addContributorName,
-    removeContributorName 
+    removeContributorName,
+    getTotalHeadcount,
+    getContributorHeadcounts
   } = useTask()
   
   // Use actual contributors from the system, with fallback for empty projects
@@ -448,6 +450,61 @@ export default function AdminDashboard() {
                 </p>
               </div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Headcount Overview Card */}
+      <Card className="shadow-lg shadow-black/8 hover:shadow-xl hover:shadow-black/12 border-2 border-blue-200">
+        <CardHeader className="pb-6">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent flex items-center gap-2">
+            <Users className="w-6 h-6 text-blue-600" />
+            Expected Headcount
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-lg text-blue-700 font-medium mb-1">Total Expected Attendees</p>
+                  <p className="text-sm text-blue-600">Across all contributors</p>
+                </div>
+                <div className="text-5xl font-bold text-blue-900">
+                  {getTotalHeadcount()}
+                </div>
+              </div>
+            </div>
+
+            {getContributorHeadcounts().size > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-lg font-bold text-gray-900">Breakdown by Contributor:</h4>
+                <div className="grid gap-3">
+                  {Array.from(getContributorHeadcounts().entries())
+                    .sort(([nameA], [nameB]) => nameA.localeCompare(nameB))
+                    .map(([contributor, count]) => (
+                      <div
+                        key={contributor}
+                        className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-blue-100 hover:border-blue-300 transition-colors"
+                      >
+                        <span className="text-base font-medium text-gray-900">{contributor}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl font-bold text-blue-900">{count}</span>
+                          <span className="text-sm text-blue-600">{count === 1 ? 'person' : 'people'}</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {getContributorHeadcounts().size === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="text-lg">No contributors have claimed tasks yet</p>
+                <p className="text-sm mt-1">Headcount will appear once contributors start claiming tasks</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

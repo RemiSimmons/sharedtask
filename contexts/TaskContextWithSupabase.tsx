@@ -64,7 +64,7 @@ interface TaskContextType {
   reassignTask: (taskId: string, newAssignee: string) => Promise<void>
   
   // Task claiming functions
-  claimTask: (taskId: string, claimerName: string) => Promise<void>
+  claimTask: (taskId: string, claimerName: string, headcount?: number) => Promise<void>
   unclaimTask: (taskId: string, claimerName: string) => Promise<void>
   
   // Comment functions
@@ -77,6 +77,11 @@ interface TaskContextType {
   addContributorName: (name: string, isHostAction?: boolean) => Promise<void>
   addContributorNames: (names: string[]) => Promise<void>
   removeContributorName: (name: string) => Promise<void>
+  
+  // Headcount functions
+  updateContributorHeadcount: (contributorName: string, headcount: number) => Promise<void>
+  getTotalHeadcount: () => number
+  getContributorHeadcounts: () => Map<string, number>
   
   // Quick claiming functions
   setCurrentContributorName: (name: string) => void
@@ -99,6 +104,7 @@ interface TaskProviderProps {
 export function TaskProvider({ children, projectId }: TaskProviderProps) {
   const { data: session } = useSession()
   const [tasks, setTasks] = useState<Task[]>([])
+  const [assignments, setAssignments] = useState<TaskAssignment[]>([])
   const [projectSettings, setProjectSettings] = useState<ProjectSettings>({
     projectName: "",
     projectDescription: undefined,
@@ -338,6 +344,9 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         handleSupabaseError(commentsError, 'fetching comments')
       }
 
+      // Store assignments for headcount tracking
+      setAssignments(assignmentsData || [])
+      
       // Convert to UI format
       const uiTasks = (tasksData || []).map(task => 
         convertDatabaseTaskToUITask(task, assignmentsData || [], commentsData || [], projectToUse)
@@ -541,7 +550,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
   }
 
   // Task claiming functions
-  const claimTask = async (taskId: string, claimerName: string) => {
+  const claimTask = async (taskId: string, claimerName: string, headcount: number = 1) => {
     try {
       const task = tasks.find(t => t.id === taskId)
       if (!task) throw new Error('Task not found')
@@ -566,7 +575,8 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         .from('task_assignments')
         .insert({
           task_id: taskId,
-          contributor_name: claimerName
+          contributor_name: claimerName,
+          headcount: headcount
         })
 
       if (assignmentError) {
@@ -828,6 +838,53 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     clearClaimingSelection()
   }
 
+  // Headcount functions
+  const updateContributorHeadcount = async (contributorName: string, headcount: number) => {
+    if (!projectId) return
+    
+    try {
+      // Get all task IDs for this project
+      const taskIds = tasks.map(t => t.id)
+      
+      // Update all assignments for this contributor across all tasks in this project
+      const { error } = await supabase
+        .from('task_assignments')
+        .update({ headcount })
+        .eq('contributor_name', contributorName)
+        .in('task_id', taskIds)
+      
+      if (error) {
+        handleSupabaseError(error, 'updating headcount')
+        throw error
+      }
+      
+      await refreshTasks()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update headcount')
+      throw err
+    }
+  }
+
+  const getContributorHeadcounts = (): Map<string, number> => {
+    const contributorHeadcounts = new Map<string, number>()
+    
+    // Get headcount from actual assignments data
+    // Since headcount is per contributor (not per task), we just need to find
+    // any assignment for each contributor to get their headcount
+    assignments.forEach(assignment => {
+      if (!contributorHeadcounts.has(assignment.contributor_name)) {
+        contributorHeadcounts.set(assignment.contributor_name, assignment.headcount || 1)
+      }
+    })
+    
+    return contributorHeadcounts
+  }
+
+  const getTotalHeadcount = (): number => {
+    const headcounts = getContributorHeadcounts()
+    return Array.from(headcounts.values()).reduce((sum, count) => sum + count, 0)
+  }
+
   // Calculate active contributors
   // Use project contributor names if available, otherwise fall back to task assignments
   const activeContributors = Array.from(
@@ -884,6 +941,11 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     addContributorName,
     addContributorNames,
     removeContributorName,
+    
+    // Headcount functions
+    updateContributorHeadcount,
+    getTotalHeadcount,
+    getContributorHeadcounts,
     
     // Quick claiming functions
     setCurrentContributorName: setCurrentContributorNameHandler,

@@ -11,7 +11,7 @@ function PricingContent() {
   const { data: session, status } = useSession()
   
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
-  const [actionType, setActionType] = useState<'trial' | 'paid'>('trial')
+  const [actionType, setActionType] = useState<'trial' | 'paid'>('paid')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,7 +67,7 @@ function PricingContent() {
         '"Powered by SharedTask" footer'
       ],
       cta: 'Start Free Trial',
-      popular: false,
+      popular: true,
       color: 'blue'
     },
     {
@@ -90,7 +90,7 @@ function PricingContent() {
         'Custom task labels'
       ],
       cta: 'Start Pro Trial',
-      popular: true,
+      popular: false,
       color: 'green'
     },
     {

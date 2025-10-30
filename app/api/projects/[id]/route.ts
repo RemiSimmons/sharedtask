@@ -57,37 +57,42 @@ export async function DELETE(
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    // Delete in correct order due to foreign key constraints
-    // 1. Delete task comments
-    const { error: commentsError } = await supabase
-      .from('task_comments')
-      .delete()
-      .in('task_id', 
-        await supabase
-          .from('tasks')
-          .select('id')
-          .eq('project_id', id)
-          .then(({ data }) => data?.map(t => t.id) || [])
-      )
+    // Get all task IDs first
+    const { data: tasks, error: tasksQueryError } = await supabase
+      .from('tasks')
+      .select('id')
+      .eq('project_id', id)
 
-    if (commentsError) {
-      console.error('Comments deletion error:', commentsError)
+    if (tasksQueryError) {
+      console.error('Tasks query error:', tasksQueryError)
+      return NextResponse.json({ error: 'Failed to query tasks' }, { status: 500 })
     }
 
-    // 2. Delete task assignments
-    const { error: assignmentsError } = await supabase
-      .from('task_assignments')
-      .delete()
-      .in('task_id',
-        await supabase
-          .from('tasks')
-          .select('id')
-          .eq('project_id', id)
-          .then(({ data }) => data?.map(t => t.id) || [])
-      )
+    const taskIds = tasks?.map(t => t.id) || []
 
-    if (assignmentsError) {
-      console.error('Assignments deletion error:', assignmentsError)
+    // Delete in correct order due to foreign key constraints
+    if (taskIds.length > 0) {
+      // 1. Delete task comments
+      const { error: commentsError } = await supabase
+        .from('task_comments')
+        .delete()
+        .in('task_id', taskIds)
+
+      if (commentsError) {
+        console.error('Comments deletion error:', commentsError)
+        // Continue anyway, comments might not exist
+      }
+
+      // 2. Delete task assignments
+      const { error: assignmentsError } = await supabase
+        .from('task_assignments')
+        .delete()
+        .in('task_id', taskIds)
+
+      if (assignmentsError) {
+        console.error('Assignments deletion error:', assignmentsError)
+        // Continue anyway, assignments might not exist
+      }
     }
 
     // 3. Delete tasks

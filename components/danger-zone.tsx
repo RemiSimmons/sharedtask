@@ -20,6 +20,10 @@ export default function DangerZone({ projectId }: DangerZoneProps) {
     try {
       const response = await fetch(`/api/projects/${projectId}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+        },
       })
 
       if (!response.ok) {

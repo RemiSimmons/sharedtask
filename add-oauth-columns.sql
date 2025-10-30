@@ -23,3 +23,6 @@ ALTER COLUMN password_hash DROP NOT NULL;
 -- New Google OAuth users will have oauth_provider='google' and oauth_provider_id set
 -- Existing email/password users will have both fields as NULL
 
+
+
+

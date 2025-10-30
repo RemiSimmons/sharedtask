@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import { PasswordInput } from "@/components/ui/password-input"
 
 function ResetPasswordContent() {
   const [password, setPassword] = useState("")
@@ -132,39 +133,27 @@ function ResetPasswordContent() {
               )}
 
               {/* New Password */}
-              <div>
-                <label htmlFor="password" className="block text-lg font-semibold text-gray-900 mb-2">
-                  🔒 New Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="form-input"
-                  placeholder="Enter your new password"
-                  required
-                  disabled={isLoading}
-                />
-                <p className="text-sm text-gray-600 mt-1">Must be at least 8 characters long</p>
-              </div>
+              <PasswordInput
+                id="password"
+                label="🔒 New Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your new password"
+                helperText="Must be at least 8 characters long"
+                required
+                disabled={isLoading}
+              />
 
               {/* Confirm New Password */}
-              <div>
-                <label htmlFor="confirm-password" className="block text-lg font-semibold text-gray-900 mb-2">
-                  🔒 Confirm New Password
-                </label>
-                <input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="form-input"
-                  placeholder="Enter your new password again"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
+              <PasswordInput
+                id="confirm-password"
+                label="🔒 Confirm New Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Enter your new password again"
+                required
+                disabled={isLoading}
+              />
 
               {/* Submit Button */}
               <button
