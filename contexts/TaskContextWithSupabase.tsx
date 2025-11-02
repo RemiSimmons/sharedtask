@@ -189,10 +189,10 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
 
       if (project) {
         // Add admin_password placeholder since we don't fetch it for security reasons
-        const updatedProject: Project = {
-          ...project,
+        // Explicitly construct the project to avoid TypeScript spread issues
+        const updatedProject = Object.assign({}, project, {
           admin_password: 'no_password_set'
-        } as Project
+        }) as Project
         
         setCurrentProject(updatedProject)
         setProjectSettings({
@@ -260,10 +260,10 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         }
 
         // Add admin_password placeholder since we don't fetch it for security reasons
-        project = {
-          ...projectData,
+        // Use Object.assign to avoid TypeScript spread issues
+        project = Object.assign({}, projectData, {
           admin_password: 'no_password_set'
-        } as Project
+        }) as Project
       } else {
         // No project ID provided - user needs to create a project through proper UI
         setError('No project specified. Please create a project first.')
