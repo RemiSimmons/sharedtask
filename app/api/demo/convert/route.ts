@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
             for (const contributor of task.claimedBy) {
               assignmentsToInsert.push({
                 task_id: dbTaskId,
-                project_id: newProjectId,
+                project_id: project.id,
                 contributor_name: contributor
               })
             }
