@@ -8,6 +8,7 @@ import { Check, Share2, Copy } from "lucide-react"
 interface ShareProjectButtonProps {
   projectId: string
   projectName?: string
+  shareMessage?: string
   className?: string
   variant?: "default" | "outline" | "secondary" | "ghost"
   size?: "default" | "sm" | "lg" | "icon"
@@ -16,59 +17,52 @@ interface ShareProjectButtonProps {
 export function ShareProjectButton({
   projectId,
   projectName,
+  shareMessage,
   className,
   variant = "default",
   size = "default",
 }: ShareProjectButtonProps) {
   const [copied, setCopied] = useState(false)
-  const [canShare, setCanShare] = useState(false)
   const { showToast } = useToast()
-
-  // Check if Web Share API is available
-  useEffect(() => {
-    setCanShare(
-      typeof navigator !== "undefined" && 
-      typeof navigator.share === "function"
-    )
-  }, [])
 
   const handleShare = async () => {
     const projectUrl = `${window.location.origin}/project/${projectId}`
     const shareTitle = projectName ? `Join ${projectName}!` : "Join our event!"
-    const shareText = "📝 Help contribute to our event! Claim a task here:"
+    const shareText = shareMessage || "📝 Help contribute to our event! Claim a task here:"
 
-    // Try Web Share API first (mobile devices)
-    if (canShare) {
+    // Always try Web Share API first (works on mobile and some desktop browsers like Chrome/Edge)
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
       try {
         await navigator.share({
           title: shareTitle,
           text: shareText,
           url: projectUrl,
         })
-        // No toast needed - native share sheet provides feedback
+        // Successfully shared - no toast needed as native share provides feedback
         return
       } catch (error) {
         // User cancelled or share failed
-        // Only show error if it's not an AbortError (user cancellation)
-        if (error instanceof Error && error.name !== "AbortError") {
-          console.error("Share failed:", error)
-          // Fall through to clipboard copy
-        } else {
-          // User cancelled - don't show error
+        // Only fall through to clipboard if it's not an AbortError (user cancellation)
+        if (error instanceof Error && error.name === "AbortError") {
+          // User cancelled - don't show error or copy to clipboard
           return
         }
+        // Share failed for another reason - fall through to clipboard copy
+        console.log("Native share not available, falling back to clipboard")
       }
     }
 
-    // Fallback to clipboard copy (desktop or if share fails)
+    // Fallback to clipboard copy (desktop browsers without native share support)
     try {
-      await navigator.clipboard.writeText(projectUrl)
+      // Copy both the message and the URL
+      const textToCopy = `${shareText}\n\n${projectUrl}`
+      await navigator.clipboard.writeText(textToCopy)
       
       setCopied(true)
       showToast({
         type: "success",
-        title: "Link copied!",
-        message: "Project link has been copied to clipboard",
+        title: "Message & link copied!",
+        message: "Share message and project link copied to clipboard",
         confirmText: "OK"
       })
       
@@ -94,9 +88,7 @@ export function ShareProjectButton({
       aria-label={
         copied 
           ? "Link copied" 
-          : canShare 
-            ? `Share ${projectName || "project"}` 
-            : `Copy link for ${projectName || "project"}`
+          : `Share ${projectName || "project"}`
       }
     >
       {copied ? (
@@ -104,15 +96,10 @@ export function ShareProjectButton({
           <Check className="w-5 h-5 md:w-4 md:h-4 mr-2" />
           Copied!
         </>
-      ) : canShare ? (
+      ) : (
         <>
           <Share2 className="w-5 h-5 md:w-4 md:h-4 mr-2" />
           Share Project
-        </>
-      ) : (
-        <>
-          <Copy className="w-5 h-5 md:w-4 md:h-4 mr-2" />
-          Copy Link
         </>
       )}
     </Button>

@@ -38,6 +38,7 @@ interface ProjectSettings {
   eventLocation?: string | null
   eventTime?: string | null
   eventAttire?: string | null
+  shareMessage?: string | null
 }
 
 interface TaskContextType {
@@ -66,6 +67,7 @@ interface TaskContextType {
   // Task claiming functions
   claimTask: (taskId: string, claimerName: string, headcount?: number) => Promise<void>
   unclaimTask: (taskId: string, claimerName: string) => Promise<void>
+  addAttendingOnlyRsvp: (name: string, headcount?: number) => Promise<void>
   
   // Comment functions
   addComment: (taskId: string, text: string, author: string) => Promise<void>
@@ -118,6 +120,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     eventLocation: null,
     eventTime: null,
     eventAttire: null,
+    shareMessage: null,
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -174,7 +177,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     try {
       const { data: project, error } = await supabase
         .from('projects')
-        .select('id, user_id, name, task_label, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, created_at')
+        .select('id, user_id, name, task_label, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, share_message, created_at')
         .eq('id', currentProject.id)
         .maybeSingle() // Use maybeSingle() instead of single() to handle cases where no rows are found
 
@@ -213,6 +216,8 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
           eventLocation: project.event_location || null,
           eventTime: project.event_time || null,
           eventAttire: project.event_attire || null,
+          // Share message
+          shareMessage: project.share_message || null,
         })
       }
     } catch (err) {
@@ -232,7 +237,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         const client = getSupabaseClient()
         const { data: projectData, error: projectError } = await client
           .from('projects')
-          .select('id, user_id, name, task_label, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, created_at')
+          .select('id, user_id, name, task_label, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, share_message, created_at')
           .eq('id', projectId)
           .maybeSingle() // Use maybeSingle() to handle cases where project doesn't exist
 
@@ -287,6 +292,8 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         eventLocation: project.event_location || null,
         eventTime: project.event_time || null,
         eventAttire: project.event_attire || null,
+        // Share message
+        shareMessage: project.share_message || null,
       })
 
       // Load tasks for this project
@@ -317,14 +324,11 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         handleSupabaseError(tasksError, 'fetching tasks')
       }
 
-      // Fetch assignments for tasks in this project
+      // Fetch assignments for tasks in this project (including attending-only with NULL task_id)
       const { data: assignmentsData, error: assignmentsError } = await supabase
         .from('task_assignments')
-        .select(`
-          *,
-          tasks!inner(project_id)
-        `)
-        .eq('tasks.project_id', projectToUse.id)
+        .select('*')
+        .eq('project_id', projectToUse.id)
 
       if (assignmentsError) {
         handleSupabaseError(assignmentsError, 'fetching assignments')
@@ -429,6 +433,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         .from('task_assignments')
         .insert({
           task_id: newTask.id,
+          project_id: newTask.project_id,
           contributor_name: claimerName.trim()
         })
 
@@ -518,6 +523,10 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
 
   const reassignTask = async (taskId: string, newAssignee: string) => {
     try {
+      if (!currentProject?.id) {
+        throw new Error('No project selected')
+      }
+
       // Remove existing assignments
       await supabase
         .from('task_assignments')
@@ -529,6 +538,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         .from('task_assignments')
         .insert({
           task_id: taskId,
+          project_id: currentProject.id,
           contributor_name: newAssignee
         })
 
@@ -555,6 +565,10 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
       const task = tasks.find(t => t.id === taskId)
       if (!task) throw new Error('Task not found')
 
+      if (!currentProject?.id) {
+        throw new Error('No project selected')
+      }
+
       // Check if user already claimed this task
       if (task.claimedBy?.includes(claimerName)) {
         throw new Error("You've already joined this task ✓")
@@ -575,6 +589,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         .from('task_assignments')
         .insert({
           task_id: taskId,
+          project_id: currentProject.id,
           contributor_name: claimerName,
           headcount: headcount
         })
@@ -605,6 +620,42 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
       await refreshTasks()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to claim task')
+      throw err
+    }
+  }
+
+  // Attending only RSVP (no task claimed)
+  const addAttendingOnlyRsvp = async (name: string, headcount: number = 1) => {
+    try {
+      if (!currentProject?.id) {
+        throw new Error('No project selected')
+      }
+
+      // Insert into task_assignments with NULL task_id but include project_id
+      const { error: assignmentError } = await supabase
+        .from('task_assignments')
+        .insert({
+          task_id: null,
+          project_id: currentProject.id,
+          contributor_name: name,
+          headcount: headcount
+        })
+
+      if (assignmentError) {
+        console.error('Error adding attending-only RSVP:', assignmentError)
+        throw new Error(`Failed to add RSVP: ${assignmentError.message}`)
+      }
+
+      // Add contributor name to project if it's new
+      const isNewContributor = !projectSettings.contributorNames.includes(name.trim())
+      if (isNewContributor) {
+        const updatedNames = [...projectSettings.contributorNames, name.trim()]
+        await updateProjectSettings({ contributorNames: updatedNames })
+      }
+
+      await refreshTasks()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add RSVP')
       throw err
     }
   }
@@ -715,6 +766,9 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
       }
       if (settings.eventAttire !== undefined) {
         updateData.event_attire = settings.eventAttire
+      }
+      if (settings.shareMessage !== undefined) {
+        updateData.share_message = settings.shareMessage
       }
 
       const { error } = await supabase
@@ -840,18 +894,16 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
 
   // Headcount functions
   const updateContributorHeadcount = async (contributorName: string, headcount: number) => {
-    if (!projectId) return
+    if (!currentProject?.id) return
     
     try {
-      // Get all task IDs for this project
-      const taskIds = tasks.map(t => t.id)
-      
-      // Update all assignments for this contributor across all tasks in this project
+      // Update all assignments for this contributor in this project
+      // This includes both task assignments AND attending-only (task_id = NULL)
       const { error } = await supabase
         .from('task_assignments')
         .update({ headcount })
         .eq('contributor_name', contributorName)
-        .in('task_id', taskIds)
+        .eq('project_id', currentProject.id)
       
       if (error) {
         handleSupabaseError(error, 'updating headcount')
@@ -930,6 +982,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     // Task claiming functions
     claimTask,
     unclaimTask,
+    addAttendingOnlyRsvp,
     
     // Comment functions
     addComment,

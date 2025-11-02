@@ -65,7 +65,32 @@ export default function AdminProjectPage() {
 
   return (
     <TaskProvider projectId={projectId}>
-      <div className="min-h-screen bg-gray-50">
+      <AdminProjectContent 
+        projectId={projectId}
+        copyContributorLink={copyContributorLink}
+        handleSignOut={handleSignOut}
+        session={session}
+      />
+    </TaskProvider>
+  )
+}
+
+// Main content component with access to TaskContext
+function AdminProjectContent({
+  projectId,
+  copyContributorLink,
+  handleSignOut,
+  session
+}: {
+  projectId: string
+  copyContributorLink: () => void
+  handleSignOut: () => void
+  session: any
+}) {
+  const { projectSettings } = useTask()
+
+  return (
+    <div className="min-h-screen bg-gray-50">
         {/* Mobile Navigation - Only shows on mobile */}
         <MobileNav showHomeLink={true} />
         
@@ -148,6 +173,8 @@ export default function AdminProjectPage() {
               <div className="flex items-center gap-3 flex-wrap">
                 <ShareProjectButton
                   projectId={projectId}
+                  projectName={projectSettings.projectName}
+                  shareMessage={projectSettings.shareMessage || undefined}
                   className="btn-accent flex items-center gap-2 min-h-[44px]"
                 />
                 <button
@@ -181,7 +208,6 @@ export default function AdminProjectPage() {
           </div>
         </div>
       </div>
-    </TaskProvider>
   )
 }
 
@@ -346,7 +372,7 @@ function BulkAddSection() {
 
   const taskCount = parseTasks().length
   const contributorCount = parseContributors().length
-  const hasContent = taskCount > 0 || contributorCount > 0  // Allow either tasks or contributors or both
+  const hasContent = taskCount > 0 || contributorCount > 0  // Allow tasks or contributors (description requires tasks)
 
   return (
     <div className="card-beautiful p-6 md:p-8">
@@ -354,8 +380,8 @@ function BulkAddSection() {
         <h2 className="header-section mb-0">Project Setup</h2>
       </div>
 
-      <p className="text-lg md:text-lg text-gray-700 mb-8">
-        Set up your project quickly by adding all tasks and contributors at once.
+      <p className="text-lg md:text-lg text-gray-700 mb-6">
+        Add tasks and guests now, or leave blank and let guests add themselves.
       </p>
 
       {/* Success Message */}
@@ -368,7 +394,7 @@ function BulkAddSection() {
             <p className="text-green-800 font-medium">
               Successfully added {lastAddedInfo.tasks > 0 && `${lastAddedInfo.tasks} task(s)`}
               {lastAddedInfo.tasks > 0 && lastAddedInfo.contributors > 0 && ' and '}
-              {lastAddedInfo.contributors > 0 && `${lastAddedInfo.contributors} contributor(s)`}!
+              {lastAddedInfo.contributors > 0 && `${lastAddedInfo.contributors} guest(s)`}!
             </p>
           </div>
         </div>
@@ -378,7 +404,7 @@ function BulkAddSection() {
         {/* Tasks Input - Primary position */}
         <div>
           <label htmlFor="bulk-tasks" className="block text-xl md:text-xl font-semibold text-gray-900 mb-3">
-            What needs to be done?
+            Add Task (Optional)
           </label>
           <textarea
             id="bulk-tasks"
@@ -397,7 +423,7 @@ function BulkAddSection() {
         {/* Contributors Input - Secondary position */}
         <div>
           <label htmlFor="bulk-contributors-main" className="block text-lg md:text-lg font-semibold text-gray-900 mb-2">
-            Who might help? (Optional)
+            Add Guests (Optional)
           </label>
           <input
             id="bulk-contributors-main"
@@ -405,14 +431,14 @@ function BulkAddSection() {
             value={bulkContributors}
             onChange={(e) => setBulkContributors(e.target.value)}
             className="form-input text-base"
-            placeholder="Enter expected contributor names (separated by commas)"
+            placeholder="Enter expected guest names (separated by commas)"
             disabled={isAdding}
           />
           {contributorCount > 0 && (
-            <p className="text-sm text-blue-600 mt-1">{contributorCount} contributor{contributorCount !== 1 ? 's' : ''} for reference</p>
+            <p className="text-sm text-blue-600 mt-1">{contributorCount} guest{contributorCount !== 1 ? 's' : ''} for reference</p>
           )}
           <p className="text-xs md:text-xs text-gray-600 mt-1">
-            Optional: Add expected contributors for planning. People can also enter their names when claiming tasks.
+            Optional: Add expected guests for planning. People can also enter their names when claiming tasks.
           </p>
         </div>
 
@@ -426,9 +452,12 @@ function BulkAddSection() {
             value={bulkDescription}
             onChange={(e) => setBulkDescription(e.target.value)}
             className="form-input h-20 resize-none text-base"
-            placeholder="Add any additional details or instructions for all tasks..."
+            placeholder="Add any additional details or instructions for all tasks above..."
             disabled={isAdding}
           />
+          <p className="text-xs text-gray-600 mt-1">
+            These details will be added to all tasks entered above
+          </p>
         </div>
       </div>
 
@@ -452,15 +481,15 @@ function BulkAddSection() {
         ) : hasContent ? (
           (() => {
             if (taskCount > 0 && contributorCount > 0) {
-              return `Add ${taskCount} Task${taskCount !== 1 ? 's' : ''} & ${contributorCount} Contributor${contributorCount !== 1 ? 's' : ''}`
+              return `Add ${taskCount} Task${taskCount !== 1 ? 's' : ''} & ${contributorCount} Guest${contributorCount !== 1 ? 's' : ''}`
             } else if (taskCount > 0) {
               return `Add ${taskCount} Task${taskCount !== 1 ? 's' : ''}`
             } else {
-              return `Add ${contributorCount} Contributor${contributorCount !== 1 ? 's' : ''}`
+              return `Add ${contributorCount} Guest${contributorCount !== 1 ? 's' : ''}`
             }
           })()
         ) : (
-          'Enter tasks or contributors above to get started'
+          'Enter tasks or guests above to get started'
         )}
       </button>
 
@@ -468,14 +497,14 @@ function BulkAddSection() {
         This bulk setup saves time, but you can always add details per task or modify them later.
       </p>
 
-      {/* Active Contributors Display */}
+      {/* Active Guests Display */}
       {activeContributors.length > 0 && (
         <div className="mt-8 p-6 bg-green-50 rounded-lg border border-green-200">
           <div className="flex items-center gap-2 mb-4">
             <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <h4 className="text-lg font-semibold text-green-800">👥 Active Contributors</h4>
+            <h4 className="text-lg font-semibold text-green-800">👥 Active Guests</h4>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {activeContributors.map((contributor) => (
@@ -488,7 +517,7 @@ function BulkAddSection() {
             ))}
           </div>
           <p className="text-green-700 text-sm mt-4">
-            These people have claimed tasks in your project. Contributors don't need to be pre-added - they can enter their names when claiming tasks.
+            
           </p>
         </div>
       )}
@@ -517,32 +546,37 @@ function ProjectActions({
         </div>
 
       <div className="space-y-6">
-        {/* Share Link Section */}
-        <div>
-          <label className="block text-sm font-medium text-gray-900 mb-3">
-            Share Link
+        {/* Share Link Section - More Prominent */}
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-lg border-2 border-green-200">
+          <label className="block text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            Your Shareable Link
           </label>
           <div className="flex gap-3 items-center">
-            <div className="flex-shrink-0">
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
-            </div>
             <input
               type="text"
               value={`${window.location.origin}/project/${projectId}`}
               readOnly
-              className="form-input flex-1 text-sm bg-gray-50"
+              className="form-input flex-1 text-base bg-white font-mono text-gray-800 border-2 border-green-300 focus:border-green-500 focus:ring-green-500 select-all"
+              onClick={(e) => e.currentTarget.select()}
             />
             <button
               onClick={copyContributorLink}
-              className="btn-primary px-4 py-2 text-sm font-medium"
+              className="btn-primary px-6 py-3 text-base font-semibold bg-green-600 hover:bg-green-700 flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
             >
-              Copy
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Copy Link
             </button>
           </div>
-          <p className="text-gray-600 text-xs mt-2">
-            Share this link — contributors can claim tasks without signup.
+          <p className="text-green-800 font-medium text-sm mt-3 flex items-start gap-2">
+            <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Share this link with guests — they can claim tasks without signing up!</span>
           </p>
         </div>
 
@@ -561,7 +595,7 @@ function ProjectActions({
             <svg className="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
-            Open Contributor View
+            Open Guest View
           </button>
         </div>
       </div>
@@ -594,7 +628,7 @@ function ProjectHeader({ projectId }: { projectId: string }) {
 
 // Project Summary Component
 function ProjectSummary() {
-  const { tasks, projectSettings, loading } = useTask()
+  const { tasks, projectSettings, loading, getContributorHeadcounts, getTotalHeadcount } = useTask()
 
   if (loading) {
     return (
@@ -617,13 +651,10 @@ function ProjectSummary() {
   const claimedTasks = tasks.filter(t => t.status === 'claimed').length
   const availableTasks = tasks.filter(t => t.status === 'available').length
   
-  // Get unique contributors
-  const contributors = new Set<string>()
-  tasks.forEach(task => {
-    if (task.claimedBy) {
-      task.claimedBy.forEach(contributor => contributors.add(contributor))
-    }
-  })
+  // Get unique contributors from headcount (includes attending-only guests)
+  const contributorHeadcounts = getContributorHeadcounts()
+  const contributors = Array.from(contributorHeadcounts.keys())
+  const totalPeopleAttending = getTotalHeadcount()
   
   const totalComments = tasks.reduce((sum, task) => sum + task.comments.length, 0)
 
@@ -657,14 +688,13 @@ function ProjectSummary() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-gray-200">
-        {/* Contributors */}
+        {/* Total People Attending */}
         <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">{contributors.size}</div>
-          <div className="text-sm text-gray-600">Active Contributors</div>
-          {contributors.size > 0 && (
+          <div className="text-2xl font-bold text-gray-900">{totalPeopleAttending}</div>
+          <div className="text-sm text-gray-600">Expected Attendees</div>
+          {contributors.length > 0 && (
             <div className="text-xs text-gray-500 mt-1">
-              {Array.from(contributors).slice(0, 3).join(", ")}
-              {contributors.size > 3 && ` +${contributors.size - 3} more`}
+              {contributors.length} guest{contributors.length !== 1 ? 's' : ''}
             </div>
           )}
         </div>
@@ -680,9 +710,9 @@ function ProjectSummary() {
           <div className="text-sm text-gray-600">Settings</div>
           <div className="text-xs text-gray-500 mt-1 space-y-1">
             <div>Multiple Claims: {projectSettings.allowMultipleClaims ? "✅ Yes" : "❌ No"}</div>
-            <div>Multiple Contributors: {projectSettings.allowMultipleContributors ? "✅ Yes" : "❌ No"}</div>
-            <div>Contributors Add Names: {projectSettings.allowContributorsAddNames ? "✅ Yes" : "❌ No"}</div>
-            <div>Contributors Add Tasks: {projectSettings.allowContributorsAddTasks ? "✅ Yes" : "❌ No"}</div>
+            <div>Multiple Guests: {projectSettings.allowMultipleContributors ? "✅ Yes" : "❌ No"}</div>
+            <div>Guests Add Names: {projectSettings.allowContributorsAddNames ? "✅ Yes" : "❌ No"}</div>
+            <div>Guests Add Tasks: {projectSettings.allowContributorsAddTasks ? "✅ Yes" : "❌ No"}</div>
           </div>
         </div>
       </div>
@@ -742,7 +772,7 @@ function ProjectSettingsSection() {
       </div>
 
       <p className="text-lg text-gray-700 mb-8">
-        Manage your project details and contributor permissions.
+        Manage your project details and guest permissions.
       </p>
 
       {/* Project Details Section */}
@@ -796,12 +826,31 @@ function ProjectSettingsSection() {
             id="project-description-setting"
             value={projectSettings.projectDescription || ""}
             onChange={(e) => updateProjectSettings({ projectDescription: e.target.value || undefined })}
-            placeholder="Describe your project for contributors..."
+            placeholder="Describe your project for guests..."
             rows={3}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
           />
           <p className="text-sm text-gray-600 mt-1">
-            This description will be shown to contributors under the project title
+            This description will be shown to guests under the project title
+          </p>
+        </div>
+
+        {/* Share Message */}
+        <div>
+          <label htmlFor="share-message-setting" className="block text-base font-medium text-gray-900 mb-2">
+            💬 Share Message <span className="text-sm font-normal text-gray-600">(Optional)</span>
+          </label>
+          <textarea
+            id="share-message-setting"
+            value={projectSettings.shareMessage || ""}
+            onChange={(e) => updateProjectSettings({ shareMessage: e.target.value || undefined })}
+            placeholder="Help contribute to our event! Claim a task here:"
+            rows={2}
+            maxLength={200}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+          />
+          <p className="text-sm text-gray-600 mt-1">
+            {(projectSettings.shareMessage || "").length}/200 characters - This message appears when you share the project link
           </p>
         </div>
       </div>
@@ -810,7 +859,7 @@ function ProjectSettingsSection() {
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Permission Settings</h3>
         <p className="text-sm text-gray-600 mb-6">
-          Control how contributors can interact with your project
+          Control how guests can interact with your project
         </p>
         
         <div className="space-y-6">
@@ -831,7 +880,7 @@ function ProjectSettingsSection() {
           </div>
         </div>
 
-        {/* Multiple Contributors Setting */}
+        {/* Multiple Guests Setting */}
         <div className="flex items-start space-x-3">
           <input
             type="checkbox"
@@ -848,7 +897,7 @@ function ProjectSettingsSection() {
           </div>
         </div>
 
-        {/* Allow Contributors to Add Names Setting */}
+        {/* Allow Guests to Add Names Setting */}
         <div className="flex items-start space-x-3">
           <input
             type="checkbox"
@@ -861,11 +910,11 @@ function ProjectSettingsSection() {
             <label className="text-base font-medium text-gray-900">
               ✏️ Allow people to add their names when claiming tasks
             </label>
-            <p className="text-sm text-gray-600">Contributors can enter their names when claiming tasks</p>
+            <p className="text-sm text-gray-600">Guests can enter their names when claiming tasks</p>
           </div>
         </div>
 
-        {/* Allow Contributors to Add Tasks Setting */}
+        {/* Allow Guests to Add Tasks Setting */}
         <div className="flex items-start space-x-3">
           <input
             type="checkbox"
@@ -878,7 +927,7 @@ function ProjectSettingsSection() {
             <label className="text-base font-medium text-gray-900">
               ➕ Allow people to add new tasks
             </label>
-            <p className="text-sm text-gray-600">Contributors can create additional tasks for the project</p>
+            <p className="text-sm text-gray-600">Guests can create additional tasks for the project</p>
           </div>
         </div>
       </div>
