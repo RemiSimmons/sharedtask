@@ -304,6 +304,7 @@ export function useClaimTask(projectId: string) {
         .from('task_assignments')
         .insert({
           task_id: taskId,
+          project_id: projectId,
           contributor_name: contributorName
         })
         .select()
