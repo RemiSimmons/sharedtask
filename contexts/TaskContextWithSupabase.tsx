@@ -437,6 +437,10 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
       }
 
       // Step 2: Create the task assignment
+      if (!newTask.project_id) {
+        throw new Error('Task was created without a project_id')
+      }
+      
       const { error: assignmentError } = await supabase
         .from('task_assignments')
         .insert({
