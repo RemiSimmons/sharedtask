@@ -56,13 +56,14 @@ export function ShareProjectButton({
     try {
       // Copy both the message and the URL
       const textToCopy = `${shareText}\n\n${projectUrl}`
+      console.log('Copying to clipboard:', textToCopy) // Debug log
       await navigator.clipboard.writeText(textToCopy)
       
       setCopied(true)
       showToast({
         type: "success",
-        title: "Message & link copied!",
-        message: "Share message and project link copied to clipboard",
+        title: "Copied!",
+        message: `Message and link copied to clipboard`,
         confirmText: "OK"
       })
       
