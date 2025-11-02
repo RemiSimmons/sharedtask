@@ -720,3 +720,114 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+// Custom types for application logic
+export type PlanType = 'basic' | 'pro' | 'team'
+export type BillingInterval = 'month' | 'year'
+export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'unpaid' | 'incomplete' | 'incomplete_expired' | 'trialing'
+export type TrialStatus = 'active' | 'expired' | 'canceled'
+
+// Subscription-related types
+export interface UserSubscription {
+  id: string
+  user_id: string | null
+  stripe_subscription_id: string | null
+  stripe_customer_id: string | null
+  stripe_price_id: string | null
+  plan: string
+  interval: string
+  status: string
+  current_period_start: string | null
+  current_period_end: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface UserTrial {
+  id: string
+  user_id: string | null
+  plan: string
+  status: string
+  started_at: string
+  ends_at: string
+  created_at: string | null
+  updated_at: string | null
+  converted_to_subscription_id: string | null
+  day_5_reminder_sent: boolean | null
+  day_5_reminder_sent_at: string | null
+  day_7_reminder_sent: boolean | null
+  day_7_reminder_sent_at: string | null
+}
+
+export interface InsertUserSubscription {
+  user_id: string
+  stripe_subscription_id?: string | null
+  stripe_customer_id?: string | null
+  stripe_price_id?: string | null
+  plan: string
+  interval: string
+  status: string
+  current_period_start?: string | null
+  current_period_end?: string | null
+  cancel_at_period_end?: boolean | null
+  canceled_at?: string | null
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export interface InsertUserTrial {
+  user_id: string
+  plan: string
+  status: string
+  started_at?: string
+  ends_at: string
+  converted_to_subscription_id?: string | null
+  created_at?: string | null
+  day_5_reminder_sent?: boolean | null
+  day_5_reminder_sent_at?: string | null
+  day_7_reminder_sent?: boolean | null
+  day_7_reminder_sent_at?: string | null
+  updated_at?: string | null
+}
+
+export interface UpdateUserSubscription {
+  plan?: string
+  interval?: string
+  status?: string
+  current_period_start?: string | null
+  current_period_end?: string | null
+  cancel_at_period_end?: boolean | null
+  canceled_at?: string | null
+  created_at?: string | null
+  stripe_customer_id?: string | null
+  stripe_price_id?: string | null
+  stripe_subscription_id?: string | null
+  updated_at?: string | null
+  user_id?: string | null
+}
+
+export interface UpdateUserTrial {
+  plan?: string
+  status?: string
+  started_at?: string
+  ends_at?: string
+  converted_to_subscription_id?: string | null
+  created_at?: string | null
+  day_5_reminder_sent?: boolean | null
+  day_5_reminder_sent_at?: string | null
+  day_7_reminder_sent?: boolean | null
+  day_7_reminder_sent_at?: string | null
+  updated_at?: string | null
+  user_id?: string | null
+}
+
+// Type aliases for easier imports
+export type Project = Database['public']['Tables']['projects']['Row']
+export type Task = Database['public']['Tables']['tasks']['Row']
+export type TaskAssignment = Database['public']['Tables']['task_assignments']['Row']
+export type TaskComment = Database['public']['Tables']['task_comments']['Row']
+export type InsertEmailLog = Database['public']['Tables']['email_logs']['Insert']
+export type User = Database['public']['Tables']['users']['Row']
+
+// Email types
+export type EmailType = 'trial_welcome' | 'trial_reminder' | 'trial_expired' | 'trial_day_5' | 'trial_day_14' | 'subscription_welcome' | 'subscription_reminder' | 'subscription_canceled'
