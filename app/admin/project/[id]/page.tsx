@@ -843,7 +843,7 @@ function ProjectSettingsSection() {
           <textarea
             id="project-description-setting"
             value={projectSettings.projectDescription || ""}
-            onChange={(e) => updateProjectSettings({ projectDescription: e.target.value.trim() === "" ? null : e.target.value })}
+            onChange={(e) => updateProjectSettings({ projectDescription: e.target.value.trim() === "" ? undefined : e.target.value })}
             placeholder="Describe your project for guests..."
             rows={3}
             maxLength={500}
