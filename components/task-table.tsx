@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronDown, ChevronRight, MessageCircle, Edit2, Save, X, Trash2, UserX } from "lucide-react"
+import { ChevronDown, ChevronRight, MessageCircle, Edit2, Save, X, Trash2, UserX, Check } from "lucide-react"
 import { useTask, type TaskStatus } from "@/contexts/TaskContextWithSupabase"
 import { useSession } from "next-auth/react"
 import { CalendarExportButton } from "@/components/calendar-export-button"
@@ -212,6 +212,17 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
     }
   }
 
+  const handleUnassignGuest = async (taskId: string, guestName: string) => {
+    if (confirm(`Remove ${guestName} from this task?`)) {
+      try {
+        await unclaimTask(taskId, guestName)
+      } catch (error) {
+        console.error('Failed to unassign guest:', error)
+        alert('Failed to unassign guest. Please try again.')
+      }
+    }
+  }
+
   return (
     <div className="space-y-6 md:space-y-8">
       {/* Mobile: Simple heading without card wrapper */}
@@ -258,7 +269,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
         {/* Desktop Table View */}
         <div>
           <div className="table-header rounded-t-lg">
-            <div className={`grid gap-6 px-8 py-4 ${isAdminView ? 'grid-cols-9' : 'grid-cols-12'}`}>
+            <div className={`grid gap-6 px-8 py-4 ${isAdminView ? 'grid-cols-9' : 'grid-cols-10'}`}>
               <div className={isAdminView ? "col-span-3" : "col-span-4 sm:col-span-3"}>
                 <h3 className="text-lg font-semibold text-gray-900">Task Name</h3>
               </div>
@@ -271,11 +282,6 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
               <div className="col-span-2">
                 <h3 className="text-lg font-semibold text-gray-900">Comments</h3>
               </div>
-              {!isAdminView && (
-                <div className="col-span-2">
-                  <h3 className="text-lg font-semibold text-gray-900">Action</h3>
-                </div>
-              )}
             </div>
           </div>
 
@@ -294,7 +300,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
               const isPartiallyFilled = task.claimedBy && task.claimedBy.length > 0
               
               // Determine row styling based on task state
-              let rowClass = `table-row grid gap-6 px-8 py-6 ${isAdminView ? 'grid-cols-9' : 'grid-cols-12'}`
+              let rowClass = `table-row grid gap-6 px-8 py-6 ${isAdminView ? 'grid-cols-9' : 'grid-cols-10'}`
               if (isUnclaimed && isOwner) {
                 rowClass += " bg-orange-50 border-l-4 border-orange-200" // Open (unclaimed) state
               } else if (isFull) {
@@ -308,7 +314,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                 <div className={rowClass}>
                   <div className={isAdminView ? "col-span-3" : "col-span-4 sm:col-span-3"}>
                     {editingTasks.has(task.id) ? (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                       <Input
                         value={editValues[task.id]?.name || ''}
                         onChange={(e) => setEditValues(prev => ({
@@ -343,6 +349,24 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                               Clear description
                             </Button>
                           )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => saveTaskEdit(task.id)}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button
+                            onClick={() => cancelEditing(task.id)}
+                            size="sm"
+                            variant="outline"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Cancel
+                          </Button>
                         </div>
                       </div>
                     ) : (
@@ -386,23 +410,35 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                   </div>
                   <div className="col-span-2 flex items-center">
                     {task.claimedBy && task.claimedBy.length > 0 ? (
-                      <div className="space-y-1">
+                      <div className="flex flex-wrap gap-2 items-center">
                         {task.claimedBy.map((name, idx) => (
-                          <div key={idx} className="flex items-center gap-2 group/contributor">
-                            <span className="text-base text-gray-700">{name}</span>
-                            {!isAdminView && (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-1 bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-full transition-all duration-200"
+                          >
+                            <span className="text-base font-semibold text-gray-900">{name}</span>
+                            {isOwner && (
+                              <button
+                                onClick={() => handleUnassignGuest(task.id, name)}
+                                className="opacity-60 hover:opacity-100 transition-opacity ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                                title={`Remove ${name}`}
+                              >
+                                <X className="w-4 h-4 text-destructive" />
+                              </button>
+                            )}
+                            {!isAdminView && !isOwner && (
                               <button
                                 onClick={() => handleUnclaimTask(task.id, name, task.name)}
-                                className="opacity-0 group-hover/contributor:opacity-100 text-xs text-red-600 hover:text-red-700 hover:underline transition-opacity"
+                                className="opacity-60 hover:opacity-100 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-all"
                                 title="Remove yourself"
                               >
-                                ✕
+                                <X className="w-3.5 h-3.5" />
                               </button>
                             )}
                           </div>
                         ))}
                         {task.maxContributors && (
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-muted-foreground ml-1">
                             ({task.claimedBy.length}/{task.maxContributors})
                           </span>
                         )}
@@ -428,61 +464,6 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                       )}
                     </Button>
                   </div>
-                  {!isAdminView && (
-                  <div className="col-span-2">
-                    {editingTasks.has(task.id) ? (
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          onClick={() => saveTaskEdit(task.id)}
-                          size="sm"
-                          className="text-base px-3 py-2 h-auto min-h-[44px] font-medium"
-                        >
-                          <Save className="w-4 h-4 mr-1" />
-                          Save
-                        </Button>
-                        <Button
-                          onClick={() => cancelEditing(task.id)}
-                          variant="outline"
-                          size="sm"
-                          className="text-base px-3 py-2 h-auto min-h-[44px] font-medium"
-                        >
-                          <X className="w-4 h-4 mr-1" />
-                          Cancel
-                        </Button>
-                      </div>
-                    ) : (
-                      <>
-                        {task.status === "available" && (
-                          <Button
-                            onClick={() => handleSelectTaskForClaiming(task.id)}
-                            className={`text-base px-6 py-2 h-auto min-h-[44px] font-medium ${
-                              selectedTasksForClaiming.includes(task.id) 
-                                ? 'btn-primary' 
-                                : 'bg-blue-500 text-white hover:bg-blue-600 border-0'
-                            }`}
-                          >
-                            {selectedTasksForClaiming.includes(task.id) ? 'Selected' : 'Select Task'}
-                          </Button>
-                        )}
-                        {task.status === "claimed" &&
-                          projectSettings.allowMultipleContributors &&
-                          task.claimedBy &&
-                          (!task.maxContributors || task.claimedBy.length < task.maxContributors) && (
-                            <Button
-                              onClick={() => handleSelectTaskForClaiming(task.id)}
-                              className={`text-base px-6 py-2 h-auto min-h-[44px] font-medium ${
-                                selectedTasksForClaiming.includes(task.id) 
-                                  ? 'btn-primary' 
-                                  : 'bg-blue-500 text-white hover:bg-blue-600 border-0'
-                              }`}
-                            >
-                              {selectedTasksForClaiming.includes(task.id) ? 'Selected' : 'Select to Join'}
-                            </Button>
-                          )}
-                      </>
-                    )}
-                  </div>
-                  )}
                 </div>
 
                 {expandedComments.has(task.id) && (
@@ -661,24 +642,36 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-gray-600 mb-2">Claimed By</p>
                           {task.claimedBy && task.claimedBy.length > 0 ? (
-                            <div className="space-y-2">
+                            <div className="flex flex-wrap gap-2">
                               {task.claimedBy.map((name, idx) => (
-                                <div key={idx} className="flex items-center justify-between bg-gray-50 rounded-lg p-2 group/contributor">
-                                  <span className="text-base text-gray-900 font-medium">{name}</span>
-                                  {!isAdminView && (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-1 bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-full transition-all duration-200"
+                                >
+                                  <span className="text-base font-semibold text-gray-900">{name}</span>
+                                  {isOwner && (
+                                    <button
+                                      onClick={() => handleUnassignGuest(task.id, name)}
+                                      className="hover:bg-destructive/20 rounded-full p-1 active:scale-95 transition-all"
+                                      title={`Remove ${name}`}
+                                    >
+                                      <X className="w-4 h-4 text-destructive" />
+                                    </button>
+                                  )}
+                                  {!isAdminView && !isOwner && (
                                     <button
                                       onClick={() => handleUnclaimTask(task.id, name, task.name)}
-                                      className="text-sm text-red-600 hover:text-red-700 hover:underline font-medium px-2 py-1"
+                                      className="hover:bg-red-50 rounded-full p-1 active:scale-95 transition-all"
                                       title="Remove yourself"
                                     >
-                                      Remove
+                                      <X className="w-3.5 h-3.5 text-red-600" />
                                     </button>
                                   )}
                                 </div>
                               ))}
                               {task.maxContributors && (
-                                <span className="text-sm text-muted-foreground">
-                                  {task.claimedBy.length}/{task.maxContributors} filled
+                                <span className="text-sm text-muted-foreground self-center">
+                                  {task.claimedBy.length}/{task.maxContributors}
                                 </span>
                               )}
                             </div>

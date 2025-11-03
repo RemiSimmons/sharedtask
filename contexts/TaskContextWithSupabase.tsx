@@ -71,6 +71,8 @@ interface TaskContextType {
   
   // Comment functions
   addComment: (taskId: string, text: string, author: string) => Promise<void>
+  updateComment: (commentId: string, newText: string) => Promise<void>
+  deleteComment: (commentId: string) => Promise<void>
   
   // Settings functions
   updateProjectSettings: (settings: Partial<ProjectSettings>) => Promise<void>
@@ -736,6 +738,44 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     }
   }
 
+  const updateComment = async (commentId: string, newText: string) => {
+    try {
+      const { error } = await supabase
+        .from('task_comments')
+        .update({
+          content: newText.trim()
+        })
+        .eq('id', commentId)
+
+      if (error) {
+        handleSupabaseError(error, 'updating comment')
+      }
+
+      await refreshTasks()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update comment')
+      throw err
+    }
+  }
+
+  const deleteComment = async (commentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('task_comments')
+        .delete()
+        .eq('id', commentId)
+
+      if (error) {
+        handleSupabaseError(error, 'deleting comment')
+      }
+
+      await refreshTasks()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete comment')
+      throw err
+    }
+  }
+
   // Settings functions
   const updateProjectSettings = async (settings: Partial<ProjectSettings>) => {
     if (!currentProject) throw new Error('No project loaded')
@@ -998,6 +1038,8 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     
     // Comment functions
     addComment,
+    updateComment,
+    deleteComment,
     
     // Settings functions
     updateProjectSettings,

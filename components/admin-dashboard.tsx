@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronDown, ChevronRight, MessageCircle, Trash2, Settings, Plus, Users, X, CheckCircle2 } from "lucide-react"
+import { ChevronDown, ChevronRight, MessageCircle, Trash2, Settings, Plus, Users, X, CheckCircle2, Edit2, Check, UserX } from "lucide-react"
 import { useTask, type TaskStatus } from "@/contexts/TaskContextWithSupabase"
 import { useSession } from "next-auth/react"
 
@@ -18,9 +18,14 @@ export default function AdminDashboard() {
     tasks, 
     projectSettings, 
     addTasks, 
-    deleteTask, 
-    reassignTask, 
-    addComment, 
+    updateTask,
+    deleteTask,
+    markTaskComplete,
+    reassignTask,
+    unclaimTask,
+    addComment,
+    updateComment,
+    deleteComment,
     updateProjectSettings,
     activeContributors,
     addContributorName,
@@ -54,6 +59,15 @@ export default function AdminDashboard() {
   // Contributor management state
   const [newContributorName, setNewContributorName] = useState("")
   const [isAddingContributor, setIsAddingContributor] = useState(false)
+
+  // Task editing state
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
+  const [editingTaskName, setEditingTaskName] = useState("")
+  const [editingTaskDescription, setEditingTaskDescription] = useState("")
+
+  // Comment editing state
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
+  const [editingCommentText, setEditingCommentText] = useState("")
 
   const handleAddTasks = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -146,6 +160,89 @@ export default function AdminDashboard() {
       newSet.delete(taskId)
       return newSet
     })
+  }
+
+  const handleEditTask = (taskId: string, name: string, description?: string) => {
+    setEditingTaskId(taskId)
+    setEditingTaskName(name)
+    setEditingTaskDescription(description || "")
+  }
+
+  const handleSaveTaskEdit = async () => {
+    if (!editingTaskId || !editingTaskName.trim()) return
+
+    try {
+      await updateTask(editingTaskId, {
+        name: editingTaskName.trim(),
+        description: editingTaskDescription.trim() || undefined
+      })
+      setEditingTaskId(null)
+      setEditingTaskName("")
+      setEditingTaskDescription("")
+    } catch (error) {
+      console.error('Failed to update task:', error)
+      alert('Failed to update task. Please try again.')
+    }
+  }
+
+  const handleCancelTaskEdit = () => {
+    setEditingTaskId(null)
+    setEditingTaskName("")
+    setEditingTaskDescription("")
+  }
+
+  const handleEditComment = (commentId: string, currentText: string) => {
+    setEditingCommentId(commentId)
+    setEditingCommentText(currentText)
+  }
+
+  const handleSaveCommentEdit = async () => {
+    if (!editingCommentId || !editingCommentText.trim()) return
+
+    try {
+      await updateComment(editingCommentId, editingCommentText.trim())
+      setEditingCommentId(null)
+      setEditingCommentText("")
+    } catch (error) {
+      console.error('Failed to update comment:', error)
+      alert('Failed to update comment. Please try again.')
+    }
+  }
+
+  const handleCancelCommentEdit = () => {
+    setEditingCommentId(null)
+    setEditingCommentText("")
+  }
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (confirm("Are you sure you want to delete this comment? This action cannot be undone.")) {
+      try {
+        await deleteComment(commentId)
+      } catch (error) {
+        console.error('Failed to delete comment:', error)
+        alert('Failed to delete comment. Please try again.')
+      }
+    }
+  }
+
+  const handleMarkTaskComplete = async (taskId: string) => {
+    try {
+      await markTaskComplete(taskId)
+    } catch (error) {
+      console.error('Failed to mark task complete:', error)
+      alert('Failed to mark task complete. Please try again.')
+    }
+  }
+
+  const handleUnassignGuest = async (taskId: string, guestName: string) => {
+    if (confirm(`Remove ${guestName} from this task?`)) {
+      try {
+        await unclaimTask(taskId, guestName)
+      } catch (error) {
+        console.error('Failed to unassign guest:', error)
+        alert('Failed to unassign guest. Please try again.')
+      }
+    }
   }
 
 
@@ -672,13 +769,80 @@ export default function AdminDashboard() {
                 <div key={task.id} className="hover:-translate-y-1 transition-transform duration-200">
                   <div className="grid grid-cols-12 gap-4 px-8 py-8 hover:bg-gradient-to-r hover:from-muted/5 hover:to-primary/5 transition-all duration-300">
                     <div className="col-span-3">
-                      <p className="text-lg font-bold text-gray-900 break-words leading-tight">{task.name}</p>
-                      {task.description && <p className="text-base text-muted-foreground mt-2">{task.description}</p>}
+                      {editingTaskId === task.id ? (
+                        <div className="space-y-3">
+                          <Input
+                            value={editingTaskName}
+                            onChange={(e) => setEditingTaskName(e.target.value)}
+                            placeholder="Task name..."
+                            className="text-lg font-bold border-2 border-primary/50"
+                            autoFocus
+                          />
+                          <textarea
+                            value={editingTaskDescription}
+                            onChange={(e) => setEditingTaskDescription(e.target.value)}
+                            placeholder="Description (optional)..."
+                            className="w-full px-3 py-2 text-base border-2 border-primary/50 rounded-md resize-none"
+                            rows={2}
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={handleSaveTaskEdit}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              Save
+                            </Button>
+                            <Button
+                              onClick={handleCancelTaskEdit}
+                              size="sm"
+                              variant="outline"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="group">
+                          <div className="flex items-start gap-2">
+                            <p className="text-lg font-bold text-gray-900 break-words leading-tight flex-1">{task.name}</p>
+                            <Button
+                              onClick={() => handleEditTask(task.id, task.name, task.description)}
+                              variant="ghost"
+                              size="sm"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                            >
+                              <Edit2 className="w-4 h-4 text-primary" />
+                            </Button>
+                          </div>
+                          {task.description && <p className="text-base text-muted-foreground mt-2">{task.description}</p>}
+                        </div>
+                      )}
                     </div>
                     <div className="col-span-2 flex items-center">
-                      <p className="text-lg font-semibold text-muted-foreground">
-                        {task.claimedBy ? task.claimedBy.join(", ") : "—"}
-                      </p>
+                      {task.claimedBy && task.claimedBy.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {task.claimedBy.map((guestName) => (
+                            <div
+                              key={guestName}
+                              className="group flex items-center gap-1 bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-full transition-all duration-200"
+                            >
+                              <span className="text-base font-semibold text-gray-900">{guestName}</span>
+                              <button
+                                onClick={() => handleUnassignGuest(task.id, guestName)}
+                                className="opacity-60 hover:opacity-100 transition-opacity ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                                title={`Remove ${guestName}`}
+                              >
+                                <X className="w-4 h-4 text-destructive" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-lg font-semibold text-muted-foreground">—</p>
+                      )}
                     </div>
                     <div className="col-span-2 flex items-center justify-start">{getStatusBadge(task.status, task.claimedBy, task.maxContributors)}</div>
                     <div className="col-span-2 flex items-start">
@@ -746,6 +910,16 @@ export default function AdminDashboard() {
                           </div>
                         )}
 
+                        {task.status !== "completed" && (
+                          <Button
+                            onClick={() => handleMarkTaskComplete(task.id)}
+                            className="bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 text-lg px-6 py-3 h-auto min-h-[48px]"
+                          >
+                            <CheckCircle2 className="w-5 h-5 mr-2" />
+                            Mark Complete
+                          </Button>
+                        )}
+
                         <Button
                           onClick={() => handleDeleteTask(task.id)}
                           variant="ghost"
@@ -766,13 +940,61 @@ export default function AdminDashboard() {
                             {task.comments.map((comment) => (
                               <div
                                 key={comment.id}
-                              className="bg-gradient-to-br from-card to-muted border-2 border-gray-300/30 rounded-2xl p-6 shadow-lg hover:-translate-y-1 transition-transform duration-200"
-                            >
-                              <div className="mb-3">
-                                <span className="text-base font-bold text-gray-900">{comment.author}</span>
+                                className="bg-gradient-to-br from-card to-muted border-2 border-gray-300/30 rounded-2xl p-6 shadow-lg hover:-translate-y-1 transition-transform duration-200 group"
+                              >
+                                <div className="mb-3 flex items-center justify-between">
+                                  <span className="text-base font-bold text-gray-900">{comment.author}</span>
+                                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button
+                                      onClick={() => handleEditComment(comment.id, comment.text)}
+                                      variant="ghost"
+                                      size="sm"
+                                      className="p-1 h-auto"
+                                    >
+                                      <Edit2 className="w-4 h-4 text-primary" />
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleDeleteComment(comment.id)}
+                                      variant="ghost"
+                                      size="sm"
+                                      className="p-1 h-auto"
+                                    >
+                                      <Trash2 className="w-4 h-4 text-destructive" />
+                                    </Button>
+                                  </div>
+                                </div>
+                                {editingCommentId === comment.id ? (
+                                  <div className="space-y-3">
+                                    <textarea
+                                      value={editingCommentText}
+                                      onChange={(e) => setEditingCommentText(e.target.value)}
+                                      className="w-full px-4 py-3 text-lg border-2 border-primary/50 rounded-lg resize-none"
+                                      rows={3}
+                                      autoFocus
+                                    />
+                                    <div className="flex gap-2">
+                                      <Button
+                                        onClick={handleSaveCommentEdit}
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700 text-white"
+                                      >
+                                        <Check className="w-4 h-4 mr-1" />
+                                        Save
+                                      </Button>
+                                      <Button
+                                        onClick={handleCancelCommentEdit}
+                                        size="sm"
+                                        variant="outline"
+                                      >
+                                        <X className="w-4 h-4 mr-1" />
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <p className="text-lg text-gray-900">{comment.text}</p>
+                                )}
                               </div>
-                              <p className="text-lg text-gray-900">{comment.text}</p>
-                            </div>
                             ))}
                           </div>
                         )}
@@ -812,14 +1034,81 @@ export default function AdminDashboard() {
               <Card key={task.id} className="shadow-lg shadow-black/8 hover:shadow-xl hover:shadow-black/12 border-2 border-primary/20 hover:-translate-y-1 transition-transform duration-200">
                 <CardContent className="p-5 space-y-5">
                   <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-gray-900 break-words leading-tight min-h-[2rem]">{task.name}</h3>
-                    {task.description && <p className="text-base text-muted-foreground">{task.description}</p>}
+                    {editingTaskId === task.id ? (
+                      <div className="space-y-3">
+                        <Input
+                          value={editingTaskName}
+                          onChange={(e) => setEditingTaskName(e.target.value)}
+                          placeholder="Task name..."
+                          className="text-lg font-bold border-2 border-primary/50"
+                          autoFocus
+                        />
+                        <textarea
+                          value={editingTaskDescription}
+                          onChange={(e) => setEditingTaskDescription(e.target.value)}
+                          placeholder="Description (optional)..."
+                          className="w-full px-3 py-2 text-base border-2 border-primary/50 rounded-md resize-none"
+                          rows={2}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={handleSaveTaskEdit}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Save
+                          </Button>
+                          <Button
+                            onClick={handleCancelTaskEdit}
+                            size="sm"
+                            variant="outline"
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-start gap-2">
+                          <h3 className="text-xl font-bold text-gray-900 break-words leading-tight min-h-[2rem] flex-1">{task.name}</h3>
+                          <Button
+                            onClick={() => handleEditTask(task.id, task.name, task.description)}
+                            variant="ghost"
+                            size="sm"
+                            className="p-1 h-auto flex-shrink-0"
+                          >
+                            <Edit2 className="w-4 h-4 text-primary" />
+                          </Button>
+                        </div>
+                        {task.description && <p className="text-base text-muted-foreground">{task.description}</p>}
+                      </>
+                    )}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-muted-foreground mb-2">👤 Claimed By</p>
-                        <p className="text-base font-semibold text-gray-900 break-words">
-                          {task.claimedBy ? task.claimedBy.join(", ") : "—"}
-                        </p>
+                        {task.claimedBy && task.claimedBy.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {task.claimedBy.map((guestName) => (
+                              <div
+                                key={guestName}
+                                className="flex items-center gap-1 bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-full transition-all duration-200"
+                              >
+                                <span className="text-base font-semibold text-gray-900">{guestName}</span>
+                                <button
+                                  onClick={() => handleUnassignGuest(task.id, guestName)}
+                                  className="hover:bg-destructive/20 rounded-full p-1 active:scale-95 transition-all"
+                                  title={`Remove ${guestName}`}
+                                >
+                                  <X className="w-4 h-4 text-destructive" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-base font-semibold text-gray-900">—</p>
+                        )}
                       </div>
                       <div className="flex-shrink-0 sm:text-right">
                         <p className="text-sm font-bold text-muted-foreground mb-2">🎯 Status</p>
@@ -877,6 +1166,16 @@ export default function AdminDashboard() {
                       </div>
                     )}
 
+                    {task.status !== "completed" && (
+                      <Button
+                        onClick={() => handleMarkTaskComplete(task.id)}
+                        className="bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 w-full text-lg py-4 h-auto min-h-[52px]"
+                      >
+                        <CheckCircle2 className="w-6 h-6 mr-3" />
+                        Mark Complete
+                      </Button>
+                    )}
+
                     <div className="flex items-center justify-between">
                       <Button
                         variant="ghost"
@@ -911,13 +1210,61 @@ export default function AdminDashboard() {
                           {task.comments.map((comment) => (
                             <div
                               key={comment.id}
-                            className="bg-gradient-to-br from-card to-muted rounded-2xl p-6 border-2 border-gray-300/30 shadow-lg"
-                          >
-                            <div className="mb-3">
-                              <span className="text-base font-bold text-gray-900">{comment.author}</span>
+                              className="bg-gradient-to-br from-card to-muted rounded-2xl p-6 border-2 border-gray-300/30 shadow-lg"
+                            >
+                              <div className="mb-3 flex items-center justify-between">
+                                <span className="text-base font-bold text-gray-900">{comment.author}</span>
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() => handleEditComment(comment.id, comment.text)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="p-1 h-auto"
+                                  >
+                                    <Edit2 className="w-4 h-4 text-primary" />
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleDeleteComment(comment.id)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="p-1 h-auto"
+                                  >
+                                    <Trash2 className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </div>
+                              </div>
+                              {editingCommentId === comment.id ? (
+                                <div className="space-y-3">
+                                  <textarea
+                                    value={editingCommentText}
+                                    onChange={(e) => setEditingCommentText(e.target.value)}
+                                    className="w-full px-4 py-3 text-lg border-2 border-primary/50 rounded-lg resize-none"
+                                    rows={3}
+                                    autoFocus
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button
+                                      onClick={handleSaveCommentEdit}
+                                      size="sm"
+                                      className="bg-green-600 hover:bg-green-700 text-white"
+                                    >
+                                      <Check className="w-4 h-4 mr-1" />
+                                      Save
+                                    </Button>
+                                    <Button
+                                      onClick={handleCancelCommentEdit}
+                                      size="sm"
+                                      variant="outline"
+                                    >
+                                      <X className="w-4 h-4 mr-1" />
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-lg text-gray-900">{comment.text}</p>
+                              )}
                             </div>
-                            <p className="text-lg text-gray-900">{comment.text}</p>
-                          </div>
                           ))}
                         </div>
                       )}
