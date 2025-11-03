@@ -262,7 +262,7 @@ export function EventDetailsCard({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  👥 Max Contributors per Task
+                  👥 Max Guests per Task
                 </label>
                 <Input
                   type="number"
@@ -351,7 +351,7 @@ export function EventDetailsCard({
               <div className="flex items-center gap-3">
                 <Users className="h-4 w-4 text-orange-600 flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Max Contributors</p>
+                  <p className="text-sm font-medium text-gray-900">Max Guests</p>
                   <Badge variant="outline" className="text-xs">
                     {maxContributors || 1} per task
                   </Badge>

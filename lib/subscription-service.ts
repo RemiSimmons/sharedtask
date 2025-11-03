@@ -55,12 +55,25 @@ export interface UserSubscriptionState {
 export async function getUserSubscriptionState(userId: string): Promise<UserSubscriptionState> {
   try {
     // Get active subscription
-    const { data: subscription } = await supabaseAdmin
+    const { data: activeSubscription } = await supabaseAdmin
       .from('user_subscriptions')
       .select('*')
       .eq('user_id', userId)
       .eq('status', 'active')
       .maybeSingle()
+
+    // Also get the most recent subscription (any status) for billing portal access
+    // This allows users with past_due or other statuses to update payment
+    const { data: anySubscription } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    // Use active subscription if available, otherwise use any subscription (for billing portal)
+    const subscription = activeSubscription || anySubscription
 
     // Get active trial
     const { data: trial } = await supabaseAdmin
@@ -79,7 +92,7 @@ export async function getUserSubscriptionState(userId: string): Promise<UserSubs
       .maybeSingle()
 
     const hasActiveTrial = !!trial && !isTrialExpired(trial.ends_at)
-    const hasActiveSubscription = !!subscription
+    const hasActiveSubscription = !!activeSubscription // Only count 'active' status
     const canStartTrial = !anyTrial && !hasActiveSubscription
     
     let accessLevel: 'free' | 'trial' | 'paid' = 'free'
@@ -95,11 +108,11 @@ export async function getUserSubscriptionState(userId: string): Promise<UserSubs
       hasActiveTrial,
       hasActiveSubscription,
       canStartTrial,
-      subscription: subscription || undefined,
+      subscription: subscription || undefined, // Return any subscription (for Stripe customer ID)
       trial: trial || undefined,
       accessLevel,
-      plan: (subscription?.plan || trial?.plan) as PlanType | undefined,
-      interval: subscription?.interval as BillingInterval | undefined,
+      plan: (activeSubscription?.plan || trial?.plan) as PlanType | undefined,
+      interval: activeSubscription?.interval as BillingInterval | undefined,
       trialDaysRemaining
     }
   } catch (error) {

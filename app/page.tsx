@@ -412,10 +412,10 @@ function LandingPageContent() {
                 </p>
               </div>
 
-              {/* Contributors */}
+              {/* Guests */}
               <div>
                 <label className="block text-base font-medium text-gray-900 mb-2">
-                  👥 Who might help? (Optional)
+                  👥 Add Guests (Optional)
                 </label>
                 <ParticipantAutocomplete
                   value={contributorInput}
@@ -425,7 +425,7 @@ function LandingPageContent() {
                   className="w-full"
                 />
                 
-                {/* Selected Contributors */}
+                {/* Selected Guests */}
                 {contributors.length > 0 && (
                   <div className="mt-3">
                     <div className="flex flex-wrap gap-2">
@@ -497,11 +497,11 @@ function LandingPageContent() {
                 </div>
               </div>
 
-              {/* Max Contributors */}
+              {/* Max Guests */}
               {allowMultipleContributors && (
                 <div className="ml-7">
                   <label htmlFor="max-contributors" className="block text-base font-medium text-gray-900 mb-2">
-                    Maximum contributors per task
+                    Maximum guests per task
                   </label>
                   <input
                     id="max-contributors"
@@ -509,12 +509,7 @@ function LandingPageContent() {
                     min="1"
                     max="20"
                     value={maxContributors}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value)
-                      if (val >= 1 && val <= 20) {
-                        setMaxContributors(e.target.value)
-                      }
-                    }}
+                    onChange={(e) => setMaxContributors(e.target.value)}
                     className="form-input max-w-xs"
                     placeholder="e.g., 3"
                   />
@@ -527,7 +522,7 @@ function LandingPageContent() {
                 </div>
               )}
 
-              {/* Allow Contributors to Add Names */}
+              {/* Allow Guests to Add Names */}
               <div className="flex items-start space-x-3">
                 <input
                   id="allow-contributor-names"
@@ -544,7 +539,7 @@ function LandingPageContent() {
                 </div>
               </div>
 
-              {/* Allow Contributors to Add Tasks */}
+              {/* Allow Guests to Add Tasks */}
               <div className="flex items-start space-x-3">
                 <input
                   id="allow-contributor-tasks"

@@ -68,6 +68,7 @@ export function EventDetailsSection() {
         eventLocation: updates.eventLocation,
         eventTime: combinedEventTime,
         eventAttire: updates.eventAttire,
+        maxContributorsPerTask: updates.maxContributors,
       })
     } catch (error) {
       console.error('Failed to update event details:', error)

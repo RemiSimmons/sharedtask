@@ -103,20 +103,20 @@ export default function AdminDashboard() {
       await addContributorName(newContributorName.trim(), true)
       setNewContributorName("")
     } catch (error) {
-      console.error('Failed to add contributor:', error)
-      alert('Failed to add contributor. Please try again.')
+      console.error('Failed to add guest:', error)
+      alert('Failed to add guest. Please try again.')
     } finally {
       setIsAddingContributor(false)
     }
   }
 
   const handleRemoveContributor = async (name: string) => {
-    if (confirm(`Remove "${name}" from the contributor list?`)) {
+    if (confirm(`Remove "${name}" from the guest list?`)) {
       try {
         await removeContributorName(name)
       } catch (error) {
-        console.error('Failed to remove contributor:', error)
-        alert('Failed to remove contributor. Please try again.')
+        console.error('Failed to remove guest:', error)
+        alert('Failed to remove guest. Please try again.')
       }
     }
   }
@@ -198,6 +198,63 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Headcount Overview Card - Prominently displayed at top */}
+      <Card className="shadow-xl shadow-blue-500/20 hover:shadow-2xl hover:shadow-blue-500/30 border-4 border-blue-300 bg-gradient-to-br from-blue-50 to-white">
+        <CardHeader className="pb-6 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-t-lg">
+          <CardTitle className="text-3xl font-bold flex items-center gap-3">
+            <Users className="w-8 h-8" />
+            Expected Headcount
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl p-8 border-4 border-blue-300 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl text-blue-900 font-bold mb-2">Total Expected Attendees</p>
+                  <p className="text-lg text-blue-700 font-medium">Across all guests</p>
+                </div>
+                <div className="bg-white rounded-2xl px-8 py-6 border-4 border-blue-400 shadow-xl">
+                  <div className="text-7xl font-black text-blue-900">
+                    {getTotalHeadcount()}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {getContributorHeadcounts().size > 0 && (
+              <div className="space-y-4">
+                <h4 className="text-xl font-bold text-gray-900">Breakdown by Guest:</h4>
+                <div className="grid gap-4">
+                  {Array.from(getContributorHeadcounts().entries())
+                    .sort(([nameA], [nameB]) => nameA.localeCompare(nameB))
+                    .map(([contributor, count]) => (
+                      <div
+                        key={contributor}
+                        className="flex items-center justify-between p-5 bg-white rounded-xl border-3 border-blue-200 hover:border-blue-400 hover:shadow-lg transition-all"
+                      >
+                        <span className="text-lg font-semibold text-gray-900">{contributor}</span>
+                        <div className="flex items-center gap-3 bg-blue-100 rounded-lg px-4 py-2">
+                          <span className="text-3xl font-bold text-blue-900">{count}</span>
+                          <span className="text-base text-blue-700 font-medium">{count === 1 ? 'person' : 'people'}</span>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {getContributorHeadcounts().size === 0 && (
+              <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                <Users className="w-16 h-16 mx-auto mb-4 opacity-40" />
+                <p className="text-xl font-semibold">No guests have claimed tasks yet</p>
+                <p className="text-base mt-2">Headcount will appear once guests start claiming tasks</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="shadow-lg shadow-black/8 hover:shadow-xl hover:shadow-black/12 border-2 border-secondary/20">
         <CardHeader className="pb-6">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">⚙️ Project Settings</CardTitle>
@@ -253,12 +310,12 @@ export default function AdminDashboard() {
                 id="project-description"
                 value={projectSettings.projectDescription || ""}
                 onChange={(e) => updateProjectSettings({ projectDescription: e.target.value || undefined })}
-                placeholder="Describe your project for contributors (e.g., 'Annual company potluck - please bring dishes to share!')"
+                placeholder="Describe your project for guests (e.g., 'Annual company potluck - please bring dishes to share!')"
                 className="w-full h-24 text-lg border-2 border-gray-300/50 focus:ring-primary/50 focus:border-primary rounded-xl bg-white/80 hover:shadow-lg hover:shadow-primary/25 transition-all duration-200 p-4 resize-none"
                 rows={3}
               />
               <p className="text-sm text-muted-foreground font-medium">
-                This description will be shown to contributors under the project title
+                This description will be shown to guests under the project title
               </p>
             </div>
           </div>
@@ -333,7 +390,7 @@ export default function AdminDashboard() {
 
           <div className="mt-10 pt-8 border-t-2 border-gray-300/50">
             <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-8">
-              🔒 Contributor Permissions
+              🔒 Guest Permissions
             </h3>
             <div className="space-y-6">
               <div className="flex items-start gap-6 p-6 bg-gradient-to-br from-card to-muted rounded-xl border border-gray-300/30 hover:-translate-y-1 transition-transform duration-200">
@@ -349,10 +406,10 @@ export default function AdminDashboard() {
                     htmlFor="allow-contributors-add-names"
                     className="text-lg font-bold text-gray-900 cursor-pointer"
                   >
-                    👤 Allow contributors to add their own names
+                    👤 Allow guests to add their own names
                   </label>
                   <p className="text-base text-muted-foreground">
-                    When enabled, contributors can add new names to the contributor list when claiming tasks. When disabled, only you can manage the contributor list.
+                    When enabled, guests can add new names to the list when claiming tasks. When disabled, only you can manage the guest list.
                   </p>
                 </div>
               </div>
@@ -370,10 +427,10 @@ export default function AdminDashboard() {
                     htmlFor="allow-contributors-add-tasks"
                     className="text-lg font-bold text-gray-900 cursor-pointer"
                   >
-                    ➕ Allow contributors to add custom tasks
+                    ➕ Allow guests to add custom tasks
                   </label>
                   <p className="text-base text-muted-foreground">
-                    When enabled, contributors can add new tasks to the project. When disabled, only you can add tasks.
+                    When enabled, guests can add new tasks to the project. When disabled, only you can add tasks.
                   </p>
                 </div>
               </div>
@@ -454,75 +511,20 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Headcount Overview Card */}
-      <Card className="shadow-lg shadow-black/8 hover:shadow-xl hover:shadow-black/12 border-2 border-blue-200">
-        <CardHeader className="pb-6">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent flex items-center gap-2">
-            <Users className="w-6 h-6 text-blue-600" />
-            Expected Headcount
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-lg text-blue-700 font-medium mb-1">Total Expected Attendees</p>
-                  <p className="text-sm text-blue-600">Across all contributors</p>
-                </div>
-                <div className="text-5xl font-bold text-blue-900">
-                  {getTotalHeadcount()}
-                </div>
-              </div>
-            </div>
-
-            {getContributorHeadcounts().size > 0 && (
-              <div className="space-y-3">
-                <h4 className="text-lg font-bold text-gray-900">Breakdown by Contributor:</h4>
-                <div className="grid gap-3">
-                  {Array.from(getContributorHeadcounts().entries())
-                    .sort(([nameA], [nameB]) => nameA.localeCompare(nameB))
-                    .map(([contributor, count]) => (
-                      <div
-                        key={contributor}
-                        className="flex items-center justify-between p-4 bg-white rounded-lg border-2 border-blue-100 hover:border-blue-300 transition-colors"
-                      >
-                        <span className="text-base font-medium text-gray-900">{contributor}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold text-blue-900">{count}</span>
-                          <span className="text-sm text-blue-600">{count === 1 ? 'person' : 'people'}</span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {getContributorHeadcounts().size === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p className="text-lg">No contributors have claimed tasks yet</p>
-                <p className="text-sm mt-1">Headcount will appear once contributors start claiming tasks</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
       <Card className="shadow-lg shadow-black/8 hover:shadow-xl hover:shadow-black/12 border-2 border-accent/20">
         <CardHeader className="pb-6">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">👥 Contributor Names</CardTitle>
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">👥 Guest Names</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
             <p className="text-lg text-muted-foreground">
-              Add contributor names that will appear in the task claiming dropdown. This makes it easy for team members to select their names when claiming tasks.
+              Add guest names that will appear in the task claiming dropdown. This makes it easy for team members to select their names when claiming tasks.
             </p>
             
-            {/* Current Contributors */}
+            {/* Current Guests */}
             {projectSettings.contributorNames.length > 0 && (
               <div className="space-y-4">
-                <h3 className="text-lg font-bold text-gray-900">📋 Current Contributors</h3>
+                <h3 className="text-lg font-bold text-gray-900">📋 Current Guests</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {projectSettings.contributorNames.map((name) => (
                     <div key={name} className="flex items-center justify-between bg-white rounded-lg p-3 border border-gray-200 shadow-sm">
@@ -541,15 +543,15 @@ export default function AdminDashboard() {
               </div>
             )}
             
-            {/* Add New Contributor */}
+            {/* Add New Guest */}
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900">➕ Add New Contributor</h3>
+              <h3 className="text-lg font-bold text-gray-900">➕ Add New Guest</h3>
               <form onSubmit={handleAddContributor} className="flex gap-3">
                 <Input
                   type="text"
                   value={newContributorName}
                   onChange={(e) => setNewContributorName(e.target.value)}
-                  placeholder="Enter contributor name..."
+                  placeholder="Enter guest name..."
                   className="flex-1 h-12 text-lg border-2 border-gray-300/50 focus:ring-accent/50 focus:border-accent rounded-xl bg-white/80 hover:shadow-lg hover:shadow-primary/25 transition-all duration-200"
                   disabled={isAddingContributor}
                 />

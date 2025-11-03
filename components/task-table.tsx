@@ -163,72 +163,42 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
   }
 
   const getStatusBadge = (status: TaskStatus, claimedBy: string[] | null, maxContributors?: number) => {
-    // Check if task is full
+    // Check if task is full (at maximum contributors)
     const isFull = maxContributors && claimedBy && claimedBy.length >= maxContributors
     const isPartiallyFilled = claimedBy && claimedBy.length > 0
     
-    switch (status) {
-      case "available":
-        if (!isPartiallyFilled) {
-          // Unclaimed task - show as "Draft" if owner, "Available" if participant
-          return (
-            <Badge
-              variant="outline"
-              className={`text-base px-4 py-1.5 font-medium whitespace-nowrap ${
-                isOwner 
-                  ? "bg-orange-50 text-orange-700 border-orange-200" 
-                  : "bg-muted text-muted-foreground border-muted-foreground/20"
-              }`}
-            >
-              {isOwner ? "Draft" : "Available"}
-            </Badge>
-          )
-        }
-        
-        if (projectSettings.allowMultipleContributors && maxContributors && maxContributors > 1) {
-          return (
-            <Badge
-              variant="outline"
-              className="bg-blue-50 text-blue-700 border-blue-200 text-base px-4 py-1.5 font-medium whitespace-nowrap"
-            >
-              In Progress ({claimedBy?.length || 0}/{maxContributors})
-            </Badge>
-          )
-        }
-        return (
-          <Badge
-            variant="outline"
-            className="bg-blue-50 text-blue-700 border-blue-200 text-base px-4 py-1.5 font-medium whitespace-nowrap"
-          >
-            In Progress
-          </Badge>
-        )
-        
-      case "claimed":
-        if (isFull) {
-          return (
-            <Badge className="bg-green-500 text-white text-base px-4 py-1.5 font-medium whitespace-nowrap flex items-center gap-1">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              Complete
-            </Badge>
-          )
-        }
-        if (projectSettings.allowMultipleContributors && maxContributors && claimedBy) {
-          const spotsLeft = maxContributors - claimedBy.length
-          if (spotsLeft > 0) {
-            return (
-              <Badge className="bg-blue-500 text-white text-base px-4 py-1.5 font-medium whitespace-nowrap">
-                In Progress ({spotsLeft} spots left)
-              </Badge>
-            )
-          }
-        }
-        return (
-          <Badge className="bg-blue-500 text-white text-base px-4 py-1.5 font-medium whitespace-nowrap">In Progress</Badge>
-        )
+    // If task is full, show "Claimed"
+    if (isFull) {
+      return (
+        <Badge className="bg-green-500 text-white text-base px-4 py-1.5 font-medium whitespace-nowrap flex items-center gap-1">
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+          Claimed
+        </Badge>
+      )
     }
+    
+    // Otherwise, show "Open" (either unclaimed or not at maximum)
+    if (projectSettings.allowMultipleContributors && maxContributors && maxContributors > 1 && isPartiallyFilled) {
+      return (
+        <Badge
+          variant="outline"
+          className="bg-blue-50 text-blue-700 border-blue-200 text-base px-4 py-1.5 font-medium whitespace-nowrap"
+        >
+          Open ({claimedBy?.length || 0}/{maxContributors})
+        </Badge>
+      )
+    }
+    
+    return (
+      <Badge
+        variant="outline"
+        className="bg-blue-50 text-blue-700 border-blue-200 text-base px-4 py-1.5 font-medium whitespace-nowrap"
+      >
+        Open
+      </Badge>
+    )
   }
   
   const handleUnclaimTask = async (taskId: string, contributorName: string, taskName: string) => {
@@ -326,11 +296,11 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
               // Determine row styling based on task state
               let rowClass = `table-row grid gap-6 px-8 py-6 ${isAdminView ? 'grid-cols-9' : 'grid-cols-12'}`
               if (isUnclaimed && isOwner) {
-                rowClass += " bg-orange-50 border-l-4 border-orange-200" // Draft state
+                rowClass += " bg-orange-50 border-l-4 border-orange-200" // Open (unclaimed) state
               } else if (isFull) {
-                rowClass += " bg-green-50 border-l-4 border-green-200" // Complete state
+                rowClass += " bg-green-50 border-l-4 border-green-200" // Claimed state
               } else if (isPartiallyFilled) {
-                rowClass += " bg-blue-50 border-l-4 border-blue-200" // In Progress state
+                rowClass += " bg-blue-50 border-l-4 border-blue-200" // Open (partially filled) state
               }
               
               return (
@@ -584,11 +554,11 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
             // Determine card styling based on task state
             let cardClass = "bg-white border border-gray-200 rounded-lg p-5 space-y-4 shadow-sm"
             if (isUnclaimed && isOwner) {
-              cardClass += " bg-orange-50 border-l-4 border-orange-200" // Draft state
+              cardClass += " bg-orange-50 border-l-4 border-orange-200" // Open (unclaimed) state
             } else if (isFull) {
-              cardClass += " bg-green-50 border-l-4 border-green-200" // Complete state
+              cardClass += " bg-green-50 border-l-4 border-green-200" // Claimed state
             } else if (isPartiallyFilled) {
-              cardClass += " bg-blue-50 border-l-4 border-blue-200" // In Progress state
+              cardClass += " bg-blue-50 border-l-4 border-blue-200" // Open (partially filled) state
             }
             
             return (

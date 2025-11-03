@@ -90,6 +90,11 @@ export function ParticipantAutocomplete({
     setIsOpen(false)
   }
 
+  // Prevent blur from firing when clicking/tapping suggestions
+  const handleSuggestionMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault() // Prevents input blur
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
@@ -112,7 +117,8 @@ export function ParticipantAutocomplete({
 
   const handleInputBlur = () => {
     // Delay closing to allow clicks on suggestions
-    setTimeout(() => setIsOpen(false), 150)
+    // Increased timeout for mobile browsers where touch events take longer to register
+    setTimeout(() => setIsOpen(false), 300)
   }
 
   return (
@@ -149,6 +155,7 @@ export function ParticipantAutocomplete({
           {filteredSuggestions.map((suggestion, index) => (
             <button
               key={`${suggestion.name}-${index}`}
+              onMouseDown={handleSuggestionMouseDown}
               onClick={() => handleSuggestionClick(suggestion)}
               className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
             >
@@ -182,6 +189,7 @@ export function ParticipantAutocomplete({
             existing.toLowerCase() === value.toLowerCase()
           ) && (
             <button
+              onMouseDown={handleSuggestionMouseDown}
               onClick={() => {
                 onAddParticipant(value.trim())
                 onChange("")

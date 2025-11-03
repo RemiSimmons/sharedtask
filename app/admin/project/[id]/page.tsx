@@ -224,10 +224,10 @@ function DynamicContentLayout({
   const isNewProject = tasks.length <= 2
 
   if (isNewProject) {
-    // For new/empty projects (0-2 tasks): Show Project Setup first, then Active Tasks
+    // For new/empty projects (0-2 tasks): Show Add Tasks & Guests first, then Active Tasks
     return (
       <div className="space-y-8">
-        {/* Project Setup Section */}
+        {/* Add Tasks & Guests Section */}
         <BulkAddSection />
 
         {/* Task Management - Secondary for new projects */}
@@ -259,7 +259,7 @@ function DynamicContentLayout({
       </div>
     )
   } else {
-    // For established projects (3+ tasks): Show Active Tasks first, then Project Setup
+    // For established projects (3+ tasks): Show Active Tasks first, then Add Tasks & Guests
     return (
       <div className="space-y-8">
         {/* Task Management - Primary for established projects */}
@@ -273,7 +273,7 @@ function DynamicContentLayout({
           <TaskTable isAdminView={true} />
         </div>
 
-        {/* Project Setup Section */}
+        {/* Add Tasks & Guests Section */}
         <BulkAddSection />
 
         {/* Project Actions Section */}
@@ -377,7 +377,7 @@ function BulkAddSection() {
   return (
     <div className="card-beautiful p-6 md:p-8">
       <div className="mb-6">
-        <h2 className="header-section mb-0">Project Setup</h2>
+        <h2 className="header-section mb-0">Add Tasks & Guests</h2>
       </div>
 
       <p className="text-lg md:text-lg text-gray-700 mb-6">
@@ -499,25 +499,43 @@ function BulkAddSection() {
 
       {/* Active Guests Display */}
       {activeContributors.length > 0 && (
-        <div className="mt-8 p-6 bg-green-50 rounded-lg border border-green-200">
+        <div className="mt-8 p-4 md:p-6 bg-green-50 rounded-lg border border-green-200">
           <div className="flex items-center gap-2 mb-4">
             <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <h4 className="text-lg font-semibold text-green-800">👥 Active Guests</h4>
+            <h4 className="text-lg font-semibold text-green-800">👥 Active Guests ({activeContributors.length})</h4>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {activeContributors.map((contributor) => (
-              <div key={contributor} className="flex items-center justify-between bg-white rounded-lg p-3 shadow-sm">
-                <span className="text-gray-900 font-medium">{contributor}</span>
-                <span className="text-green-600 text-sm font-semibold">
-                  {tasks.filter(t => t.claimedBy?.includes(contributor)).length} task{tasks.filter(t => t.claimedBy?.includes(contributor)).length !== 1 ? 's' : ''}
-                </span>
-              </div>
-            ))}
+          {/* Scrollable container for mobile */}
+          <div 
+            className="max-h-[60vh] md:max-h-[400px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-green-300 scrollbar-track-green-100"
+            style={{ 
+              WebkitOverflowScrolling: 'touch',
+              touchAction: 'pan-y'
+            }}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pr-2">
+              {activeContributors.map((contributor) => (
+                <div 
+                  key={contributor} 
+                  className="flex items-center justify-between bg-white rounded-lg p-4 md:p-3 shadow-sm hover:shadow-md transition-shadow min-h-[60px] md:min-h-0"
+                  style={{ touchAction: 'manipulation' }}
+                >
+                  <span className="text-gray-900 font-medium text-base md:text-sm break-words pr-2 flex-1">{contributor}</span>
+                  <span className="text-green-600 text-sm font-semibold whitespace-nowrap ml-2">
+                    {tasks.filter(t => t.claimedBy?.includes(contributor)).length} task{tasks.filter(t => t.claimedBy?.includes(contributor)).length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-          <p className="text-green-700 text-sm mt-4">
-            
+          <p className="text-green-700 text-xs md:text-sm mt-4">
+            {activeContributors.length > 3 && (
+              <span className="block text-green-600 font-medium mb-2">
+                ↕️ Scroll to see all guests
+              </span>
+            )}
+            Guests who have claimed tasks will appear here
           </p>
         </div>
       )}
@@ -825,13 +843,19 @@ function ProjectSettingsSection() {
           <textarea
             id="project-description-setting"
             value={projectSettings.projectDescription || ""}
-            onChange={(e) => updateProjectSettings({ projectDescription: e.target.value || undefined })}
+            onChange={(e) => updateProjectSettings({ projectDescription: e.target.value.trim() === "" ? null : e.target.value })}
             placeholder="Describe your project for guests..."
             rows={3}
+            maxLength={500}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            style={{ touchAction: 'manipulation', userSelect: 'text', WebkitUserSelect: 'text' }}
+            autoComplete="off"
+            autoCorrect="on"
+            autoCapitalize="sentences"
+            spellCheck="true"
           />
           <p className="text-sm text-gray-600 mt-1">
-            This description will be shown to guests under the project title
+            {(projectSettings.projectDescription || "").length}/500 characters - This description will be shown to guests under the project title
           </p>
         </div>
 
@@ -848,6 +872,11 @@ function ProjectSettingsSection() {
             rows={2}
             maxLength={200}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+            style={{ touchAction: 'manipulation', userSelect: 'text', WebkitUserSelect: 'text' }}
+            autoComplete="off"
+            autoCorrect="on"
+            autoCapitalize="sentences"
+            spellCheck="true"
           />
           <p className="text-sm text-gray-600 mt-1">
             {(projectSettings.shareMessage || "").length}/200 characters - This message appears when you share the project link

@@ -127,6 +127,7 @@ function ProjectContent() {
                   <ShareProjectButton
                     projectId={projectId}
                     projectName={projectSettings.projectName}
+                    shareMessage={projectSettings.shareMessage || undefined}
                     className="w-full md:w-auto text-lg md:text-sm px-6 py-5 md:px-4 md:py-2 h-auto font-semibold md:font-medium bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-md hover:shadow-lg transition-all min-h-[60px] md:min-h-0"
                   />
                   
@@ -263,7 +264,7 @@ function ProjectContent() {
 
             {/* Headcount Display */}
             <div className="max-w-3xl mx-auto px-2">
-              <HeadcountDisplay />
+              <HeadcountDisplay isOwner={!!isOwner} />
             </div>
 
             {!projectSettings.projectDescription && (

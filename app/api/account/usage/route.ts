@@ -51,13 +51,28 @@ export async function GET(request: NextRequest) {
       return new Date() <= expiryDate
     }) || []
 
+    // Get detailed subscription info for paid users
+    let subscriptionDetails = null
+    if (subscriptionState.hasActiveSubscription || subscriptionState.hasActiveTrial) {
+      const { data: subData } = await supabaseAdmin
+        .from('user_subscriptions')
+        .select('id, interval, ends_at, renews_at')
+        .eq('user_id', session.user.id)
+        .single()
+      
+      subscriptionDetails = subData
+    }
+
     return NextResponse.json({
       subscription: {
         plan: subscriptionState.plan || 'free',
         accessLevel: subscriptionState.accessLevel,
         hasActiveTrial: subscriptionState.hasActiveTrial,
         hasActiveSubscription: subscriptionState.hasActiveSubscription,
-        trialDaysRemaining: subscriptionState.trialDaysRemaining
+        trialDaysRemaining: subscriptionState.trialDaysRemaining,
+        interval: subscriptionDetails?.interval || 'monthly',
+        renewsAt: subscriptionDetails?.renews_at || subscriptionDetails?.ends_at || null,
+        subscriptionId: subscriptionDetails?.id || null
       },
       usage: {
         projects: {
@@ -74,6 +89,9 @@ export async function GET(request: NextRequest) {
         storage: {
           used: Math.floor(Math.random() * 50), // Placeholder - would need actual calculation
           max: 100 // MB
+        },
+        contributors: {
+          max: planLimits.maxContributors
         }
       },
       limits: planLimits

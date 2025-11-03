@@ -82,6 +82,86 @@ SharedTask | The easiest collaboration tool
     `
   },
   
+  payment_failed: {
+    subject: '⚠️ Payment Failed - Action Required',
+    getHtml: (data: { userName: string; plan: string; updatePaymentUrl: string; amountDue: string }) => `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Payment Failed</title>
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="${EMAIL_CONFIG.baseUrl}/logo.png" alt="SharedTask" style="height: 120px;">
+          </div>
+          
+          <h1 style="color: #dc2626; margin-bottom: 20px;">⚠️ Payment Failed</h1>
+          
+          <p>Hi ${data.userName},</p>
+          
+          <p>We had trouble processing your payment for your SharedTask ${data.plan} subscription.</p>
+          
+          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #dc2626;">⚡ Immediate Action Required</h3>
+            <p><strong>Amount due:</strong> ${data.amountDue}</p>
+            <p style="margin-bottom: 0;">Please update your payment method to avoid service interruption. If we don't receive payment within 7 days, your subscription will be canceled.</p>
+          </div>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${data.updatePaymentUrl}" style="background: #dc2626; color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block; font-size: 16px;">Update Payment Method</a>
+          </div>
+          
+          <div style="background: #f8fafc; border-radius: 8px; padding: 15px; margin: 20px 0;">
+            <h4 style="margin-top: 0; color: #475569;">Common reasons for payment failure:</h4>
+            <ul style="margin: 10px 0; padding-left: 20px; color: #64748b;">
+              <li>Expired credit card</li>
+              <li>Insufficient funds</li>
+              <li>Card declined by bank</li>
+              <li>Incorrect billing information</li>
+            </ul>
+          </div>
+          
+          <p style="color: #64748b; font-size: 14px;">
+            Having trouble? Reply to this email or <a href="${EMAIL_CONFIG.baseUrl}/support" style="color: #2563eb;">contact our support team</a>.
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;">
+          
+          <p style="color: #94a3b8; font-size: 12px; text-align: center;">
+            SharedTask | The easiest collaboration tool<br>
+            <a href="${data.updatePaymentUrl}" style="color: #94a3b8;">Manage billing</a>
+          </p>
+        </body>
+      </html>
+    `,
+    getText: (data: { userName: string; plan: string; updatePaymentUrl: string; amountDue: string }) => `
+Hi ${data.userName},
+
+⚠️ PAYMENT FAILED - ACTION REQUIRED
+
+We had trouble processing your payment for your SharedTask ${data.plan} subscription.
+
+⚡ Immediate Action Required
+Amount due: ${data.amountDue}
+
+Please update your payment method to avoid service interruption. If we don't receive payment within 7 days, your subscription will be canceled.
+
+Update payment method: ${data.updatePaymentUrl}
+
+Common reasons for payment failure:
+- Expired credit card
+- Insufficient funds
+- Card declined by bank
+- Incorrect billing information
+
+Having trouble? Reply to this email or visit ${EMAIL_CONFIG.baseUrl}/support
+
+SharedTask | The easiest collaboration tool
+    `
+  },
+  
   trial_day_14: {
     subject: 'Trial ends today - Subscribe to keep your access',
     getHtml: (data: { userName: string; plan: string; trialEndDate: string; subscribeUrl: string }) => `
@@ -393,6 +473,68 @@ SharedTask | The easiest collaboration tool
     )
     
     throw error
+  }
+}
+
+/**
+ * Send payment failed email
+ */
+export async function sendPaymentFailedEmail(
+  user: User,
+  subscription: { plan: string; amountDue: string },
+  subscriptionId?: string
+): Promise<void> {
+  try {
+    const emailType: EmailType = 'payment_failed'
+    const template = EMAIL_TEMPLATES[emailType]
+    
+    // Generate billing management URL
+    const updatePaymentUrl = `${EMAIL_CONFIG.baseUrl}/account/billing?update=payment&utm_source=email&utm_campaign=${emailType}`
+    
+    const emailData = {
+      userName: user.name,
+      plan: subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1),
+      updatePaymentUrl,
+      amountDue: subscription.amountDue
+    }
+
+    const subject = template.subject
+    const html = template.getHtml(emailData)
+    const text = template.getText(emailData)
+
+    // Send the email
+    await sendEmail(user.email, subject, html, text)
+    
+    // Log successful send
+    await logEmail(
+      user.id, 
+      emailType, 
+      user.email, 
+      subject, 
+      'sent',
+      undefined,
+      undefined,
+      subscriptionId
+    )
+    
+    console.log(`✅ Sent payment failed email to ${user.email}`)
+  } catch (error) {
+    console.error('Error sending payment failed email:', error)
+    
+    // Log failed send
+    await logEmail(
+      user.id, 
+      'payment_failed', 
+      user.email, 
+      '⚠️ Payment Failed - Action Required', 
+      'failed',
+      error instanceof Error ? error.message : 'Unknown error',
+      undefined,
+      subscriptionId
+    )
+    
+    // Don't throw - we don't want to fail the webhook if email fails
+    console.error('Payment failed email could not be sent, but webhook will continue')
   }
 }
 

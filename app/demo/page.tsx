@@ -362,11 +362,11 @@ function CreateProjectStep({
                 </div>
               </div>
 
-              {/* Max Contributors */}
+              {/* Max Guests */}
               {allowMultipleContributors && (
                 <div className="ml-7">
                   <label htmlFor="demo-max-contributors" className="block text-base font-medium text-gray-900 mb-2">
-                    Maximum contributors per task
+                    Maximum guests per task
                   </label>
                   <input
                     id="demo-max-contributors"
@@ -394,7 +394,7 @@ function CreateProjectStep({
                   <label htmlFor="demo-allow-contributor-names" className="text-base font-medium text-gray-900">
                     ✏️ Allow people to add their names when claiming tasks
                   </label>
-                  <p className="text-sm text-gray-600">Contributors can enter their names when claiming tasks</p>
+                  <p className="text-sm text-gray-600">Guests can enter their names when claiming tasks</p>
                 </div>
               </div>
 
@@ -411,7 +411,7 @@ function CreateProjectStep({
                   <label htmlFor="demo-allow-contributor-tasks" className="text-base font-medium text-gray-900">
                     ➕ Allow people to add new tasks
                   </label>
-                  <p className="text-sm text-gray-600">Contributors can create additional tasks for the project</p>
+                  <p className="text-sm text-gray-600">Guests can create additional tasks for the project</p>
                 </div>
               </div>
             </div>
@@ -611,12 +611,12 @@ function ProjectSummary() {
           <p className="text-gray-700"><strong>Task Label:</strong> {projectSettings.taskLabel}</p>
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Contributor Settings</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Guest Settings</h3>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>{getStatusIcon(projectSettings.allowMultipleClaims)} Multiple tasks per person: {getStatusText(projectSettings.allowMultipleClaims)}</li>
             <li>{getStatusIcon(projectSettings.allowMultipleContributors)} Team tasks: {projectSettings.allowMultipleContributors ? `Allowed (max ${projectSettings.maxContributorsPerTask || "unlimited"})` : "Not allowed"}</li>
-            <li>{getStatusIcon(projectSettings.allowContributorsAddNames)} Contributors add names: {getStatusText(projectSettings.allowContributorsAddNames)}</li>
-            <li>{getStatusIcon(projectSettings.allowContributorsAddTasks)} Contributors add tasks: {getStatusText(projectSettings.allowContributorsAddTasks)}</li>
+            <li>{getStatusIcon(projectSettings.allowContributorsAddNames)} Guests add names: {getStatusText(projectSettings.allowContributorsAddNames)}</li>
+            <li>{getStatusIcon(projectSettings.allowContributorsAddTasks)} Guests add tasks: {getStatusText(projectSettings.allowContributorsAddTasks)}</li>
           </ul>
         </div>
       </div>
@@ -681,13 +681,13 @@ function ProjectSettingsCard() {
             </button>
           </div>
 
-          {/* Add Contributors */}
+          {/* Add Guests */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">👥 Add Contributors (Optional)</h3>
+            <h3 className="text-lg font-semibold text-gray-900">👥 Add Guests (Optional)</h3>
             <textarea
               value={bulkContributors}
               onChange={(e) => setBulkContributors(e.target.value)}
-              placeholder="Enter contributor names (comma or line separated):\n\nSarah, Mike, Jessica, David"
+              placeholder="Enter guest names (comma or line separated):\n\nSarah, Mike, Jessica, David"
               className="form-textarea h-32"
             />
             <button
@@ -695,7 +695,7 @@ function ProjectSettingsCard() {
               disabled={!bulkContributors.trim()}
               className="btn-secondary w-full"
             >
-              Add Contributors
+              Add Guests
                 </button>
           </div>
         </div>
@@ -759,7 +759,7 @@ function ProjectSettingsCard() {
                   <label className="text-base font-medium text-gray-900">
                     ✏️ Allow people to add names
                   </label>
-                  <p className="text-sm text-gray-600">Contributors can enter their names when claiming tasks</p>
+                  <p className="text-sm text-gray-600">Guests can enter their names when claiming tasks</p>
                 </div>
               </div>
 
@@ -774,7 +774,7 @@ function ProjectSettingsCard() {
                   <label className="text-base font-medium text-gray-900">
                     ➕ Allow people to add tasks
                   </label>
-                  <p className="text-sm text-gray-600">Contributors can create additional tasks for the project</p>
+                  <p className="text-sm text-gray-600">Guests can create additional tasks for the project</p>
                 </div>
               </div>
             </div>
@@ -792,7 +792,7 @@ function DemoTaskTable() {
   const getStatusBadge = (status: "available" | "claimed" | "completed") => {
     switch (status) {
       case "available":
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Available</span>
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Open</span>
       case "claimed":
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Claimed</span>
       case "completed":

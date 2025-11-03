@@ -4,7 +4,11 @@ import React, { useState } from "react"
 import { useTask } from "@/contexts/TaskContextWithSupabase"
 import { Users } from "lucide-react"
 
-export function HeadcountDisplay() {
+interface HeadcountDisplayProps {
+  isOwner?: boolean
+}
+
+export function HeadcountDisplay({ isOwner = false }: HeadcountDisplayProps) {
   const { getTotalHeadcount, getContributorHeadcounts, updateContributorHeadcount } = useTask()
   const [editingContributor, setEditingContributor] = useState<string | null>(null)
   const [tempHeadcounts, setTempHeadcounts] = useState<Map<string, number>>(new Map())
@@ -86,8 +90,16 @@ export function HeadcountDisplay() {
 
         {contributorHeadcounts.size > 0 && (
           <div className="space-y-3 md:space-y-2 w-full">
-            <p className="text-base md:text-sm font-medium text-blue-800 text-center">Breakdown by contributor:</p>
-            <div className="flex flex-col items-center space-y-2 mx-auto">
+            <p className="text-base md:text-sm font-medium text-blue-800 text-center">
+              Breakdown by guest: {contributorHeadcounts.size > 3 && <span className="text-xs">↕️ Scroll to see all</span>}
+            </p>
+            <div 
+              className="flex flex-col items-center space-y-2 mx-auto max-h-[50vh] md:max-h-[350px] overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100 px-2"
+              style={{ 
+                WebkitOverflowScrolling: 'touch',
+                touchAction: 'pan-y'
+              }}
+            >
                 {Array.from(contributorHeadcounts.entries())
                   .sort(([nameA], [nameB]) => nameA.localeCompare(nameB))
                   .map(([contributor, count]) => {
@@ -98,6 +110,7 @@ export function HeadcountDisplay() {
                       <div
                         key={contributor}
                         className="bg-white rounded-lg p-4 md:p-3 border border-blue-200 w-full max-w-md"
+                        style={{ touchAction: 'manipulation' }}
                       >
                         {!isEditing ? (
                           /* Display Mode - One line on all screens */
@@ -120,7 +133,7 @@ export function HeadcountDisplay() {
                         ) : (
                           /* Edit Mode - Stack on mobile, inline on desktop */
                           <div>
-                            {/* Contributor Name */}
+                            {/* Guest Name */}
                             <div className="mb-3 md:mb-0 md:flex md:items-center md:justify-between">
                               <span className="text-lg md:text-base font-medium text-gray-900 block md:inline">
                                 {contributor}
@@ -148,6 +161,7 @@ export function HeadcountDisplay() {
                                     onChange={(e) => handleHeadcountChange(contributor, e.target.value)}
                                     onFocus={(e) => e.target.select()}
                                     className="w-16 px-2 py-2 border-2 border-blue-300 rounded-md text-center text-base font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    style={{ touchAction: 'manipulation' }}
                                     disabled={isSaving}
                                     autoFocus
                                   />
@@ -203,6 +217,7 @@ export function HeadcountDisplay() {
                                   onChange={(e) => handleHeadcountChange(contributor, e.target.value)}
                                   onFocus={(e) => e.target.select()}
                                   className="w-20 px-3 py-3 border-2 border-blue-300 rounded-md text-center text-lg font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                  style={{ touchAction: 'manipulation' }}
                                   disabled={isSaving}
                                   autoFocus
                                 />
@@ -245,9 +260,11 @@ export function HeadcountDisplay() {
           </div>
         )}
 
-        <p className="text-base md:text-sm text-blue-700 mt-4 md:mt-3 text-center">
-          💡 Contributors can update their headcount by clicking "Edit" next to their name.
-        </p>
+        {!isOwner && (
+          <p className="text-base md:text-sm text-blue-700 mt-4 md:mt-3 text-center">
+            💡 Guests can update their headcount by clicking "Edit" next to their name.
+          </p>
+        )}
       </div>
     </div>
   )

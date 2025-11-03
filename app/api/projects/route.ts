@@ -180,12 +180,27 @@ export async function POST(request: NextRequest) {
     const sanitizedEventTime = eventTime ? sanitizeInput(eventTime) : null
     const sanitizedEventAttire = eventAttire ? sanitizeInput(eventAttire) : null
 
-    // Validate contributor limits
+    // Validate contributor limits per task
     if (maxContributorsPerTask && maxContributorsPerTask > 100) {
       return NextResponse.json({
         error: 'Invalid contributor limit',
         message: 'Maximum contributors per task cannot exceed 100.'
       }, { status: 400 })
+    }
+
+    // Validate total guest count against tier limits
+    if (contributors && Array.isArray(contributors)) {
+      const guestCount = contributors.length
+      if (planLimits.maxContributors !== -1 && guestCount > planLimits.maxContributors) {
+        return NextResponse.json({
+          error: 'Guest limit exceeded',
+          message: `Your ${subscriptionState.plan || 'free'} plan allows up to ${planLimits.maxContributors} guests per project. You're trying to add ${guestCount} guests.`,
+          code: 'GUEST_LIMIT_EXCEEDED',
+          limit: planLimits.maxContributors,
+          attempted: guestCount,
+          upgradePrompt: 'guests'
+        }, { status: 400 })
+      }
     }
 
     // Create project in database

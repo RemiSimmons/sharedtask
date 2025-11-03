@@ -197,21 +197,55 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       return
     }
 
+    const subscriptionId = (invoice as any).subscription as string
+
     // Update subscription status to past_due
-    const { error } = await supabase
+    const { data: subscriptionData, error } = await supabase
       .from('user_subscriptions')
       .update({
         status: 'past_due'
       })
-      .eq('stripe_subscription_id', (invoice as any).subscription as string)
+      .eq('stripe_subscription_id', subscriptionId)
+      .select('user_id, plan')
+      .single()
 
     if (error) {
       console.error('Error updating past due subscription:', error)
       throw error
     }
 
-    // TODO: Send payment failed email to user
-    console.log('✅ Successfully marked subscription as past due:', (invoice as any).subscription)
+    // Send payment failed email to user
+    if (subscriptionData) {
+      try {
+        // Get user details
+        const { data: userData } = await supabase
+          .from('users')
+          .select('id, email, name')
+          .eq('id', subscriptionData.user_id)
+          .single()
+
+        if (userData) {
+          // Import email service dynamically
+          const { sendPaymentFailedEmail } = await import('@/lib/email-service')
+          
+          await sendPaymentFailedEmail(
+            userData,
+            {
+              plan: subscriptionData.plan || 'basic',
+              amountDue: invoice.amount_due 
+                ? `$${(invoice.amount_due / 100).toFixed(2)}` 
+                : '$2.99'
+            },
+            subscriptionId
+          )
+        }
+      } catch (emailError) {
+        // Log but don't fail the webhook if email fails
+        console.error('Failed to send payment failed email:', emailError)
+      }
+    }
+
+    console.log('✅ Successfully marked subscription as past due:', subscriptionId)
   } catch (error) {
     console.error('Error handling invoice payment failed:', error)
     throw error

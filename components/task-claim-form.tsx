@@ -17,7 +17,8 @@ export default function TaskClaimForm() {
     currentContributorName,
     setCurrentContributorName,
     clearClaimingSelection,
-    claimSelectedTasks
+    claimSelectedTasks,
+    addAttendingOnlyRsvp
   } = useTask()
   const [selectedName, setSelectedName] = useState<string>("")
   const [selectedTask, setSelectedTask] = useState<string>("")
@@ -26,11 +27,12 @@ export default function TaskClaimForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [customName, setCustomName] = useState<string>("")
   const [customTask, setCustomTask] = useState<string>("")
+  const [isAttendingOnly, setIsAttendingOnly] = useState(false)
 
   const [showMultipleClaimPrompt, setShowMultipleClaimPrompt] = useState(false)
   const [claimedTaskName, setClaimedTaskName] = useState("")
 
-  // Get available tasks from context (including tasks that can accept more contributors)
+  // Get available tasks from context (including tasks that can accept more guests)
   const availableTasks = tasks.filter(task => {
     if (task.status === "available") {
       return true
@@ -66,13 +68,18 @@ export default function TaskClaimForm() {
     const finalName = selectedName === "new" ? customName : selectedName
     const finalTask = selectedTask === "custom" ? customTask : selectedTask
 
-    if (!finalName || !finalTask) {
+    if (!finalName) {
+      return
+    }
+    
+    // For attending only, task is not required
+    if (!isAttendingOnly && !finalTask) {
       return
     }
 
     setIsSubmitting(true)
 
-    // Update the shared contributor name
+    // Update the shared guest name
     setCurrentContributorName(finalName)
 
     try {
@@ -81,8 +88,12 @@ export default function TaskClaimForm() {
         throw new Error('You are not allowed to add new names to this project. Please select an existing name.')
       }
 
-      if (selectedTask === "custom") {
-        // Check if contributors are allowed to add tasks
+      // Handle attending only RSVP
+      if (isAttendingOnly) {
+        await addAttendingOnlyRsvp(finalName, headcount)
+        setClaimedTaskName("Attending Only")
+      } else if (selectedTask === "custom") {
+        // Check if guests are allowed to add tasks
         if (!projectSettings.allowContributorsAddTasks) {
           throw new Error('You are not allowed to add custom tasks to this project')
         }
@@ -108,11 +119,12 @@ export default function TaskClaimForm() {
           setSelectedTask("")
           setCustomName("")
           setCustomTask("")
+          setIsAttendingOnly(false)
         }, 3000)
       }
     } catch (error) {
       console.error('Failed to claim task:', error)
-      alert(`Couldn't claim task. Try again or refresh the page.`)
+      alert(`Couldn't complete your request. Try again or refresh the page.`)
     } finally {
       setIsSubmitting(false)
     }
@@ -166,6 +178,13 @@ export default function TaskClaimForm() {
 
   const isFormValid = () => {
     const hasValidName = selectedName && (selectedName !== "new" || customName.trim())
+    
+    // For attending only, only name is required
+    if (isAttendingOnly) {
+      return hasValidName
+    }
+    
+    // For task claiming, both name and task are required
     const hasValidTask = selectedTask && (selectedTask !== "custom" || customTask.trim())
     return hasValidName && hasValidTask
   }
@@ -180,7 +199,7 @@ export default function TaskClaimForm() {
           <h2 className="text-3xl md:text-2xl font-bold text-gray-900 text-center mb-0">Pick a Task</h2>
         </div>
         <div className="space-y-8 md:space-y-8">
-          {showSuccess ? (
+            {showSuccess ? (
             <div className="text-center py-10 md:py-8 space-y-5 md:space-y-4">
               <div className="w-20 h-20 md:w-16 md:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
                 <svg className="w-12 h-12 md:w-8 md:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,7 +207,9 @@ export default function TaskClaimForm() {
                 </svg>
               </div>
               <h3 className="text-3xl md:text-xl font-bold md:font-semibold text-gray-900">Success!</h3>
-              <p className="text-2xl md:text-lg text-gray-700 md:text-muted-foreground">You claimed the task</p>
+              <p className="text-2xl md:text-lg text-gray-700 md:text-muted-foreground">
+                {claimedTaskName === "Attending Only" ? "You're on the list!" : "You've been added to the list!"}
+              </p>
             </div>
           ) : showMultipleClaimPrompt ? (
             <div className="text-center py-10 md:py-8 space-y-7 md:space-y-6">
@@ -291,7 +312,7 @@ export default function TaskClaimForm() {
                   value={selectedName} 
                   onValueChange={(value) => {
                     setSelectedName(value)
-                    // Update shared name when selecting from existing contributors
+                    // Update shared name when selecting from existing guests
                     if (value !== "new") {
                       setCurrentContributorName(value)
                     }
@@ -309,7 +330,7 @@ export default function TaskClaimForm() {
                       ))
                     ) : (
                       <SelectItem value="placeholder" disabled className="text-base py-3 text-gray-500">
-                        No contributors yet - add your name below
+                        No guests yet - add your name below
                       </SelectItem>
                     )}
                     {projectSettings.allowContributorsAddNames && (
@@ -349,11 +370,11 @@ export default function TaskClaimForm() {
                   </div>
                 )}
                 
-                {/* Show message when contributors can't add names and list is empty */}
+                {/* Show message when guests can't add names and list is empty */}
                 {activeContributors.length === 0 && !projectSettings.allowContributorsAddNames && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <p className="text-sm text-yellow-800">
-                      ⚠️ Contact the host to add contributors
+                      ⚠️ Contact the host to add your name
                     </p>
                   </div>
                 )}
@@ -363,7 +384,16 @@ export default function TaskClaimForm() {
                 <label htmlFor="task-select" className="text-2xl md:text-lg font-bold md:font-semibold text-gray-900 block">
                   Pick a Task
                 </label>
-                <Select value={selectedTask} onValueChange={setSelectedTask}>
+                <Select 
+                  value={selectedTask} 
+                  onValueChange={(value) => {
+                    setSelectedTask(value)
+                    // If user selects a task, turn off attending-only mode
+                    if (value) {
+                      setIsAttendingOnly(false)
+                    }
+                  }}
+                >
                   <SelectTrigger className="select-trigger">
                     <SelectValue placeholder="Select a task to claim..." />
                   </SelectTrigger>
@@ -431,6 +461,49 @@ export default function TaskClaimForm() {
                 )}
               </div>
 
+              {/* OR Divider and Attending Only Button */}
+              {!isAttendingOnly && (
+                <>
+                  <div className="flex items-center gap-4 my-6 md:my-5">
+                    <div className="flex-1 border-t-2 border-gray-300"></div>
+                    <span className="text-gray-500 font-semibold text-xl md:text-base">OR</span>
+                    <div className="flex-1 border-t-2 border-gray-300"></div>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsAttendingOnly(true)
+                      setSelectedTask("")
+                    }}
+                    className="w-full text-xl md:text-base py-6 md:py-3 h-auto border-2 hover:bg-blue-50 hover:border-blue-500 transition-colors"
+                  >
+                    I'm just attending
+                  </Button>
+                </>
+              )}
+
+              {/* Show cancel attending only button */}
+              {isAttendingOnly && (
+                <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 md:p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-lg md:text-base text-blue-900 font-semibold">
+                      ✓ Attending only
+                    </p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsAttendingOnly(false)}
+                      className="text-blue-700 hover:text-blue-900 hover:bg-blue-100"
+                    >
+                      Change
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Headcount Input */}
               <div className="space-y-4 md:space-y-3">
                 <label htmlFor="headcount" className="text-2xl md:text-lg font-bold md:font-semibold text-gray-900 block">
@@ -457,7 +530,7 @@ export default function TaskClaimForm() {
                 disabled={!isFormValid() || isSubmitting}
                 className={`w-full btn-primary text-2xl md:text-base py-6 md:py-3 font-bold md:font-medium min-h-[64px] md:min-h-0 whitespace-nowrap ${(!isFormValid() || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {isSubmitting ? "Claiming..." : "Claim This Task"}
+                {isSubmitting ? "Submitting..." : (isAttendingOnly ? "Confirm Attendance" : "Claim This Task")}
               </button>
             </form>
             </div>
