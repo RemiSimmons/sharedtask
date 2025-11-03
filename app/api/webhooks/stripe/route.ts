@@ -215,7 +215,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     }
 
     // Send payment failed email to user
-    if (subscriptionData) {
+    if (subscriptionData && subscriptionData.user_id) {
       try {
         // Get user details
         const { data: userData } = await supabase
