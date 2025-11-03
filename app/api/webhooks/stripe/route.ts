@@ -220,7 +220,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
         // Get user details
         const { data: userData } = await supabase
           .from('users')
-          .select('id, email, name')
+          .select('*')
           .eq('id', subscriptionData.user_id)
           .single()
 
