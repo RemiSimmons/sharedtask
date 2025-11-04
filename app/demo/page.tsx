@@ -272,23 +272,23 @@ function CreateProjectStep({
   }
 
   return (
-    <div className="min-h-screen p-6 md:p-8">
+    <div className="min-h-screen p-3 md:p-8">
       <div className="max-w-2xl mx-auto">
         {/* Demo Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
-            <h1 className="text-3xl font-bold text-blue-900">Create Project Card</h1>
-            <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
+        <div className="text-center mb-6 md:mb-8">
+          <div className="flex items-center justify-center gap-2 md:gap-3 mb-3 md:mb-4">
+            <div className="w-2 h-2 md:w-3 md:h-3 bg-blue-600 rounded-full animate-pulse"></div>
+            <h1 className="text-xl md:text-3xl font-bold text-blue-900">Create Project Card</h1>
+            <div className="w-2 h-2 md:w-3 md:h-3 bg-blue-600 rounded-full animate-pulse"></div>
           </div>
-          <p className="text-lg text-gray-700 max-w-xl mx-auto">
+          <p className="text-sm md:text-lg text-gray-700 max-w-xl mx-auto px-2">
             Experience the exact same setup process as creating a real project. 
             Enter your project details to see how the demo adapts to your settings!
           </p>
         </div>
 
         {/* Create Project Form */}
-        <div className="card-form p-8">
+        <div className="card-form p-4 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Project Name */}
             <div>
@@ -457,23 +457,23 @@ function DemoExperienceStep({
     <div className="min-h-screen bg-gray-50">
       {/* Demo Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
-              <h1 className="text-2xl font-bold text-blue-900">Demo: {projectSettings.projectName}</h1>
-              <div className="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></div>
+        <div className="max-w-6xl mx-auto px-3 md:px-6 py-3 md:py-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-blue-600 rounded-full animate-pulse flex-shrink-0"></div>
+              <h1 className="text-lg md:text-2xl font-bold text-blue-900 truncate">Demo: {projectSettings.projectName}</h1>
+              <div className="w-2 h-2 md:w-3 md:h-3 bg-blue-600 rounded-full animate-pulse flex-shrink-0"></div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
               <button
                 onClick={onStartOver}
-                className="btn-outline text-sm py-2 px-4"
+                className="btn-outline text-xs md:text-sm py-1.5 md:py-2 px-3 md:px-4 flex-1 md:flex-none"
               >
                 🔄 Start Over
               </button>
               <button
                 onClick={onBackToHome}
-                className="btn-outline text-sm py-2 px-4"
+                className="btn-outline text-xs md:text-sm py-1.5 md:py-2 px-3 md:px-4 flex-1 md:flex-none"
               >
                 ← Back to Home
               </button>
@@ -482,18 +482,18 @@ function DemoExperienceStep({
         </div>
       </div>
 
-      <div className="p-6 md:p-8">
-        <div className="max-w-6xl mx-auto space-y-12">
+      <div className="p-3 md:p-8">
+        <div className="max-w-6xl mx-auto space-y-6 md:space-y-12">
 
           {/* Admin Dashboard Header */}
-          <div className="text-center py-6">
-            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg shadow-lg">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-4 md:py-6">
+            <div className="inline-flex items-center gap-2 md:gap-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 md:px-8 py-3 md:py-4 rounded-lg shadow-lg">
+              <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2V7a2 2 0 012-2h2a2 2 0 002-2V3a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 002 2h2a2 2 0 012 2v2a2 2 0 00-2 2h-2a2 2 0 00-2 2v6a2 2 0 01-2 2H11a2 2 0 01-2-2z" />
               </svg>
-              <h2 className="text-xl font-bold">Admin Dashboard</h2>
+              <h2 className="text-lg md:text-xl font-bold">Admin Dashboard</h2>
             </div>
-            <p className="text-gray-600 mt-3">The following cards are found on the admin dashboard</p>
+            <p className="text-sm md:text-base text-gray-600 mt-2 md:mt-3 px-2">The following cards are found on the admin dashboard</p>
           </div>
 
           {/* Step 2: Project Overview Card (from real admin dashboard) */}
@@ -503,8 +503,8 @@ function DemoExperienceStep({
           <ProjectSettingsCard />
 
           {/* Step 4: Task Management Card (from real admin dashboard) */}
-          <div className="card-beautiful p-8">
-            <div className="flex items-center gap-3 mb-6">
+          <div className="card-beautiful p-4 md:p-8">
+            <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
               <svg className="section-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
@@ -514,18 +514,18 @@ function DemoExperienceStep({
           </div>
 
           {/* Step 5: Preview Public View Button & Divider */}
-          <div className="text-center py-8">
+          <div className="text-center py-4 md:py-8">
             <button
               onClick={() => setShowPublicPreview(!showPublicPreview)}
-              className="btn-secondary text-lg py-3 px-8 mb-6"
+              className="btn-secondary text-base md:text-lg py-2.5 md:py-3 px-6 md:px-8 mb-4 md:mb-6"
             >
               👁️ {showPublicPreview ? "Hide" : "Preview"} Public View
             </button>
             
             {showPublicPreview && (
-              <div className="border-t-4 border-blue-300 pt-8">
-                <h2 className="text-2xl font-bold text-blue-900 mb-2">👥 Contributor Experience</h2>
-                <p className="text-gray-600">This is what your team members will see when they visit your project</p>
+              <div className="border-t-4 border-blue-300 pt-4 md:pt-8">
+                <h2 className="text-xl md:text-2xl font-bold text-blue-900 mb-2 px-2">👥 Contributor Experience</h2>
+                <p className="text-sm md:text-base text-gray-600 px-2">This is what your team members will see when they visit your project</p>
               </div>
             )}
           </div>
@@ -533,7 +533,7 @@ function DemoExperienceStep({
           {/* Step 6: Task Claim Form (from real public page) */}
           {showPublicPreview && (
             <div className="max-w-2xl mx-auto">
-              <div className="border-2 border-blue-200 bg-blue-50 rounded-lg p-6">
+              <div className="border-2 border-blue-200 bg-blue-50 rounded-lg p-3 md:p-6">
                 <DemoTaskClaimForm />
               </div>
             </div>
@@ -541,7 +541,7 @@ function DemoExperienceStep({
 
           {/* Step 7: Active Tasks List (from real public page) */}
           {showPublicPreview && (
-            <div className="border-2 border-green-200 bg-green-50 rounded-lg p-6">
+            <div className="border-2 border-green-200 bg-green-50 rounded-lg p-3 md:p-6">
               <div className="flex items-center justify-center mb-8">
                 <svg className="section-icon text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -553,23 +553,23 @@ function DemoExperienceStep({
           )}
 
           {/* Demo Actions */}
-          <div className="text-center py-8 border-t border-gray-200">
-            <div className="flex flex-wrap justify-center gap-4">
+          <div className="text-center py-6 md:py-8 border-t border-gray-200">
+            <div className="flex flex-col md:flex-row flex-wrap justify-center gap-3 md:gap-4 px-2">
                 <button
                   onClick={() => window.location.href = '/auth/signup'}
-                className="btn-primary px-6 py-3 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                className="btn-primary px-4 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 w-full md:w-auto"
               >
                 💾 Convert to Real Project
               </button>
               <button
                 onClick={onStartOver}
-                className="btn-outline px-6 py-3 text-base"
+                className="btn-outline px-4 md:px-6 py-2.5 md:py-3 text-sm md:text-base w-full md:w-auto"
               >
                 🔄 Start Over
                  </button>
                  <button
                 onClick={onBackToHome}
-                className="btn-outline px-6 py-3 text-base"
+                className="btn-outline px-4 md:px-6 py-2.5 md:py-3 text-sm md:text-base w-full md:w-auto"
               >
                 ← Back to Home
               </button>
@@ -578,8 +578,8 @@ function DemoExperienceStep({
 
 
           {/* Demo Features Note */}
-          <div className="text-center py-6 border-t border-gray-200 mt-8">
-            <p className="text-base text-gray-600 max-w-2xl mx-auto font-medium">
+          <div className="text-center py-4 md:py-6 border-t border-gray-200 mt-6 md:mt-8">
+            <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto font-medium px-2">
               Get the full app for bulk listing, multi-select, task descriptions, contributor management, and more
             </p>
           </div>
@@ -602,8 +602,8 @@ function ProjectSummary() {
   }
 
   return (
-    <div className="card-beautiful p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">📋 Project Overview</h2>
+    <div className="card-beautiful p-4 md:p-6">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">📋 Project Overview</h2>
       <div className="grid md:grid-cols-2 gap-6">
         <div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Project Details</h3>
@@ -656,9 +656,9 @@ function ProjectSettingsCard() {
   }
 
   return (
-    <div className="card-form p-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">⚙️ Project Setup</h2>
-      <p className="text-gray-600 mb-6">Add tasks and contributors, then adjust settings to see live changes throughout the demo!</p>
+    <div className="card-form p-4 md:p-6">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-3 md:mb-4">⚙️ Project Setup</h2>
+      <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">Add tasks and contributors, then adjust settings to see live changes throughout the demo!</p>
       
       <div className="space-y-8">
         {/* Bulk Add Section */}
@@ -920,9 +920,9 @@ function DemoTaskClaimForm() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="card-form p-8">
-        <div className="flex items-center justify-center mb-8">
-          <svg className="section-icon text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="card-form p-4 md:p-8">
+        <div className="flex items-center justify-center mb-6 md:mb-8">
+          <svg className="section-icon text-blue-600 mr-2 md:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
           <h2 className="header-section text-center mb-0">Claim a {projectSettings.taskLabel}</h2>

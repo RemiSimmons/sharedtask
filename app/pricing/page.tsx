@@ -91,7 +91,9 @@ function PricingContent() {
       ],
       cta: 'Start Pro Trial',
       popular: false,
-      color: 'green'
+      color: 'green',
+      disabled: true,
+      beta: true
     },
     {
       id: 'team',
@@ -124,8 +126,8 @@ function PricingContent() {
   const handlePlanSelect = async (planId: string, overrideActionType?: 'trial' | 'paid') => {
     const startType = overrideActionType || actionType
     
-    // Handle disabled plans (like Team in beta)
-    if (planId === 'team') {
+    // Handle disabled plans (like Pro and Team in beta)
+    if (planId === 'pro' || planId === 'team') {
       return // Don't allow selection of disabled plans
     }
     
@@ -201,54 +203,55 @@ function PricingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-3 md:p-6">
-      <div className="max-w-6xl mx-auto h-screen flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-3 md:p-6 pb-6">
+      <div className="max-w-6xl mx-auto md:h-screen flex flex-col">
         {/* Header */}
         <div className="text-center mb-4">
           {/* Logo and Home Button Row */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-start md:items-center justify-between mb-4">
             <button
               onClick={() => router.push('/')}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              className="flex items-center gap-1 md:gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors text-sm md:text-base flex-shrink-0"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Home
+              <span className="hidden md:inline">Home</span>
             </button>
             
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <img src="/logo.png" alt="SharedTask" className="h-40 w-auto" />
-              <h1 className="text-[35px] font-bold text-gray-900 mt-2">Pricing Plans</h1>
+            <div className="flex-1 flex flex-col items-center justify-center px-2">
+              <img src="/logo.png" alt="SharedTask" className="h-20 md:h-40 w-auto max-w-full object-contain" />
+              <h1 className="text-2xl md:text-[35px] font-bold text-gray-900 mt-1 md:mt-2">Pricing Plans</h1>
             </div>
             
             {/* Right side - Account/Support buttons for authenticated users */}
             {status === 'authenticated' && session ? (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col md:flex-row items-end md:items-center gap-1 md:gap-2 flex-shrink-0">
                 <button
                   onClick={() => router.push('/support')}
-                  className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  className="text-blue-600 hover:text-blue-800 font-medium transition-colors text-sm md:text-base"
                 >
                   Support
                 </button>
                 <button
                   onClick={() => router.push('/admin')}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="bg-blue-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base"
                 >
-                  Dashboard
+                  <span className="hidden md:inline">Dashboard</span>
+                  <span className="md:hidden">Sign In</span>
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col md:flex-row items-end md:items-center gap-1 md:gap-2 flex-shrink-0">
                 <button
                   onClick={() => router.push('/support')}
-                  className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                  className="text-blue-600 hover:text-blue-800 font-medium transition-colors text-sm md:text-base"
                 >
                   Support
                 </button>
                 <button
                   onClick={() => router.push('/auth/signin')}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="bg-blue-600 text-white px-3 md:px-4 py-1.5 md:py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base"
                 >
                   Sign In
                 </button>
@@ -324,7 +327,7 @@ function PricingContent() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 items-stretch mb-4 max-h-96">
+        <div className="md:flex-1 grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-6 items-stretch mb-3 md:mb-4 md:max-h-96">
           {plans.map((plan) => (
             <div
               key={plan.id}
@@ -472,29 +475,29 @@ function PricingContent() {
         </div>
 
         {/* Compact Footer */}
-        <div className="mt-auto">
-          <div className="text-center p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white">
-            <h3 className="text-lg font-bold mb-2">Ready to get started?</h3>
-            <p className="text-sm mb-4 opacity-90">
+        <div className="mt-4 md:mt-auto">
+          <div className="text-center p-3 md:p-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white">
+            <h3 className="text-base md:text-lg font-bold mb-2">Ready to get started?</h3>
+            <p className="text-xs md:text-sm mb-3 md:mb-4 opacity-90">
               SharedTask | The easiest collaboration tool | Cancel anytime | 14-day free trial
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-2 md:gap-3 justify-center">
               <button
                 onClick={() => handlePlanSelect('basic')}
                 disabled={loading}
-                className="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white text-blue-600 px-4 md:px-6 py-1.5 md:py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {actionType === 'trial' ? 'Start Basic Trial' : 'Subscribe to Basic'}
               </button>
               <button
                 onClick={() => router.push('/demo')}
-                className="border border-white text-white px-6 py-2 rounded-lg font-medium hover:bg-white hover:text-blue-600 transition-colors text-sm"
+                className="border border-white text-white px-4 md:px-6 py-1.5 md:py-2 rounded-lg font-medium hover:bg-white hover:text-blue-600 transition-colors text-xs md:text-sm"
               >
                 Try Demo First
               </button>
               <button
                 onClick={() => router.push('/')}
-                className="text-white hover:text-gray-200 font-medium text-sm"
+                className="text-white hover:text-gray-200 font-medium text-xs md:text-sm"
               >
                 ← Back to Home
               </button>
@@ -503,7 +506,7 @@ function PricingContent() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-16 pt-8 border-t border-gray-200">
+        <footer className="hidden md:block mt-16 pt-8 border-t border-gray-200">
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center gap-6 text-sm text-gray-600">
               <Link 

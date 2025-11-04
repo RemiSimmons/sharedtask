@@ -191,52 +191,52 @@ export default function TaskClaimForm() {
 
   return (
     <div className="max-w-2xl mx-auto px-3" data-task-claim-form="true">
-      <div className="card-form p-7 md:p-8">
-        <div className="flex items-center justify-center mb-8 md:mb-8">
-          <svg className="w-10 h-10 md:w-8 md:h-8 text-blue-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="card-form p-4 md:p-8">
+        <div className="flex items-center justify-center mb-4 md:mb-8">
+          <svg className="w-7 h-7 md:w-8 md:h-8 text-blue-600 mr-2 md:mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
-          <h2 className="text-3xl md:text-2xl font-bold text-gray-900 text-center mb-0">Pick a Task</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900 text-center mb-0">Pick a Task</h2>
         </div>
-        <div className="space-y-8 md:space-y-8">
+        <div className="space-y-4 md:space-y-8">
             {showSuccess ? (
-            <div className="text-center py-10 md:py-8 space-y-5 md:space-y-4">
-              <div className="w-20 h-20 md:w-16 md:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 md:w-8 md:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="text-center py-6 md:py-8 space-y-3 md:space-y-4">
+              <div className="w-14 h-14 md:w-16 md:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 md:w-8 md:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-3xl md:text-xl font-bold md:font-semibold text-gray-900">Success!</h3>
-              <p className="text-2xl md:text-lg text-gray-700 md:text-muted-foreground">
+              <h3 className="text-xl md:text-xl font-bold md:font-semibold text-gray-900">Success!</h3>
+              <p className="text-base md:text-lg text-gray-700 md:text-muted-foreground">
                 {claimedTaskName === "Attending Only" ? "You're on the list!" : "You've been added to the list!"}
               </p>
             </div>
           ) : showMultipleClaimPrompt ? (
-            <div className="text-center py-10 md:py-8 space-y-7 md:space-y-6">
-              <div className="w-20 h-20 md:w-16 md:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-12 h-12 md:w-8 md:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="text-center py-6 md:py-8 space-y-4 md:space-y-6">
+              <div className="w-14 h-14 md:w-16 md:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 md:w-8 md:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <div className="space-y-3 md:space-y-2">
-                <h3 className="text-3xl md:text-xl font-bold md:font-semibold text-gray-900">Success!</h3>
-                <p className="text-2xl md:text-lg text-gray-700 md:text-muted-foreground">
+              <div className="space-y-2 md:space-y-2">
+                <h3 className="text-xl md:text-xl font-bold md:font-semibold text-gray-900">Success!</h3>
+                <p className="text-base md:text-lg text-gray-700 md:text-muted-foreground">
                   You claimed: <span className="font-bold text-gray-900">{claimedTaskName}</span>
                 </p>
               </div>
-              <div className="space-y-5 md:space-y-3">
-                <p className="text-xl md:text-base text-gray-700 md:text-muted-foreground font-medium">Want to claim another?</p>
-                <div className="flex flex-col md:flex-row gap-4 md:gap-3 justify-center">
+              <div className="space-y-3 md:space-y-3">
+                <p className="text-sm md:text-base text-gray-700 md:text-muted-foreground font-medium">Want to claim another?</p>
+                <div className="flex flex-col md:flex-row gap-2 md:gap-3 justify-center">
                   <Button
                     onClick={handleClaimAnother}
-                    className="text-xl md:text-base px-8 py-6 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium bg-blue-600 text-white hover:bg-blue-700"
+                    className="text-base md:text-base px-6 py-3 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium bg-blue-600 text-white hover:bg-blue-700"
                   >
                     Claim Another Task
                   </Button>
                   <Button
                     onClick={handleFinishClaiming}
                     variant="outline"
-                    className="text-xl md:text-base px-8 py-6 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium border-2 md:border"
+                    className="text-base md:text-base px-6 py-3 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium border-2 md:border"
                   >
                     I'm Done
                   </Button>
@@ -244,11 +244,11 @@ export default function TaskClaimForm() {
               </div>
             </div>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-4">
 
               {/* Selected Tasks from Table */}
               {selectedTasksForClaiming.length > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 md:p-6">
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold text-blue-900 mb-2">
                       Selected Tasks ({selectedTasksForClaiming.length})
@@ -303,9 +303,9 @@ export default function TaskClaimForm() {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-8 md:space-y-8">
-              <div className="space-y-4 md:space-y-3">
-                <label htmlFor="name-select" className="text-2xl md:text-lg font-bold md:font-semibold text-gray-900 block">
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-8">
+              <div className="space-y-2 md:space-y-3">
+                <label htmlFor="name-select" className="text-base md:text-lg font-bold md:font-semibold text-gray-900 block">
                   Your Name
                 </label>
                 <Select 
@@ -342,8 +342,8 @@ export default function TaskClaimForm() {
                 </Select>
 
                 {(selectedName === "new" || (activeContributors.length === 0 && projectSettings.allowContributorsAddNames)) && (
-                  <div className="space-y-3 md:space-y-2">
-                    <label htmlFor="custom-name" className="text-xl md:text-base font-bold md:font-medium text-gray-900 block">
+                  <div className="space-y-2 md:space-y-2">
+                    <label htmlFor="custom-name" className="text-sm md:text-base font-bold md:font-medium text-gray-900 block">
                       Type Your Name
                     </label>
                     <input
@@ -356,14 +356,14 @@ export default function TaskClaimForm() {
                       }}
                       placeholder="Your name..."
                       maxLength={50}
-                      className="form-input text-xl md:text-base py-4 md:py-2 px-4 md:px-3"
+                      className="form-input text-base md:text-base py-2.5 md:py-2 px-3 md:px-3"
                       autoFocus={activeContributors.length === 0}
                     />
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-xs md:text-sm text-gray-600">
                       {customName.length}/50 characters
                     </p>
                     {activeContributors.length === 0 && (
-                      <p className="text-lg md:text-sm text-gray-700 md:text-gray-600 font-medium md:font-normal">
+                      <p className="text-sm md:text-sm text-gray-700 md:text-gray-600">
                         💡 You'll be the first person on this project
                       </p>
                     )}
@@ -380,8 +380,8 @@ export default function TaskClaimForm() {
                 )}
               </div>
 
-              <div className="space-y-4 md:space-y-3">
-                <label htmlFor="task-select" className="text-2xl md:text-lg font-bold md:font-semibold text-gray-900 block">
+              <div className="space-y-2 md:space-y-3">
+                <label htmlFor="task-select" className="text-base md:text-lg font-bold md:font-semibold text-gray-900 block">
                   Pick a Task
                 </label>
                 <Select 
@@ -441,8 +441,8 @@ export default function TaskClaimForm() {
                 )}
 
                 {selectedTask === "custom" && (
-                  <div className="space-y-3 md:space-y-2">
-                    <label htmlFor="custom-task" className="text-xl md:text-base font-bold md:font-medium text-gray-900 block">
+                  <div className="space-y-2 md:space-y-2">
+                    <label htmlFor="custom-task" className="text-sm md:text-base font-bold md:font-medium text-gray-900 block">
                       What task do you want to do?
                     </label>
                     <input
@@ -452,9 +452,9 @@ export default function TaskClaimForm() {
                       onChange={(e) => setCustomTask(e.target.value)}
                       placeholder="Type your task..."
                       maxLength={100}
-                      className="form-input text-xl md:text-base py-4 md:py-2 px-4 md:px-3"
+                      className="form-input text-base md:text-base py-2.5 md:py-2 px-3 md:px-3"
                     />
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-xs md:text-sm text-gray-600">
                       {customTask.length}/100 characters
                     </p>
                   </div>
@@ -464,10 +464,10 @@ export default function TaskClaimForm() {
               {/* OR Divider and Attending Only Button */}
               {!isAttendingOnly && (
                 <>
-                  <div className="flex items-center gap-4 my-6 md:my-5">
-                    <div className="flex-1 border-t-2 border-gray-300"></div>
-                    <span className="text-gray-500 font-semibold text-xl md:text-base">OR</span>
-                    <div className="flex-1 border-t-2 border-gray-300"></div>
+                  <div className="flex items-center gap-3 my-3 md:my-5">
+                    <div className="flex-1 border-t border-gray-300"></div>
+                    <span className="text-gray-500 font-semibold text-sm md:text-base">OR</span>
+                    <div className="flex-1 border-t border-gray-300"></div>
                   </div>
 
                   <Button
@@ -477,7 +477,7 @@ export default function TaskClaimForm() {
                       setIsAttendingOnly(true)
                       setSelectedTask("")
                     }}
-                    className="w-full text-xl md:text-base py-6 md:py-3 h-auto border-2 hover:bg-blue-50 hover:border-blue-500 transition-colors"
+                    className="w-full text-base md:text-base py-3 md:py-3 h-auto hover:bg-blue-50 hover:border-blue-500 transition-colors"
                   >
                     I'm just attending
                   </Button>
@@ -486,9 +486,9 @@ export default function TaskClaimForm() {
 
               {/* Show cancel attending only button */}
               {isAttendingOnly && (
-                <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 md:p-3">
+                <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-3 md:p-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-lg md:text-base text-blue-900 font-semibold">
+                    <p className="text-sm md:text-base text-blue-900 font-semibold">
                       ✓ Attending only
                     </p>
                     <Button
@@ -505,8 +505,8 @@ export default function TaskClaimForm() {
               )}
 
               {/* Headcount Input */}
-              <div className="space-y-4 md:space-y-3">
-                <label htmlFor="headcount" className="text-2xl md:text-lg font-bold md:font-semibold text-gray-900 block">
+              <div className="space-y-2 md:space-y-3">
+                <label htmlFor="headcount" className="text-base md:text-lg font-bold md:font-semibold text-gray-900 block">
                   How many attending?
                 </label>
                 <input
@@ -517,10 +517,10 @@ export default function TaskClaimForm() {
                   max="99"
                   value={headcount}
                   onChange={(e) => setHeadcount(Math.max(1, Math.min(99, parseInt(e.target.value) || 1)))}
-                  className="form-input text-xl md:text-base py-4 md:py-2 px-4 md:px-3 min-h-[56px] md:min-h-[44px]"
+                  className="form-input text-base md:text-base py-2.5 md:py-2 px-3 md:px-3"
                   placeholder="1"
                 />
-                <p className="text-lg md:text-sm text-gray-700 md:text-gray-600">
+                <p className="text-sm md:text-sm text-gray-700 md:text-gray-600">
                   💡 Including you
                 </p>
               </div>
@@ -528,7 +528,7 @@ export default function TaskClaimForm() {
               <button
                 type="submit"
                 disabled={!isFormValid() || isSubmitting}
-                className={`w-full btn-primary text-2xl md:text-base py-6 md:py-3 font-bold md:font-medium min-h-[64px] md:min-h-0 whitespace-nowrap ${(!isFormValid() || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-full btn-primary text-base md:text-base py-3 md:py-3 font-bold md:font-medium whitespace-nowrap ${(!isFormValid() || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {isSubmitting ? "Submitting..." : (isAttendingOnly ? "Confirm Attendance" : "Claim This Task")}
               </button>

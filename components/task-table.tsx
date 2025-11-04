@@ -162,7 +162,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
     }
   }
 
-  const getStatusBadge = (status: TaskStatus, claimedBy: string[] | null, maxContributors?: number) => {
+  const getStatusBadge = (status: TaskStatus, claimedBy: string[] | null, maxContributors?: number, isMobile = false) => {
     // Check if task is full (at maximum contributors)
     const isFull = maxContributors && claimedBy && claimedBy.length >= maxContributors
     const isPartiallyFilled = claimedBy && claimedBy.length > 0
@@ -170,8 +170,8 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
     // If task is full, show "Claimed"
     if (isFull) {
       return (
-        <Badge className="bg-green-500 text-white text-base px-4 py-1.5 font-medium whitespace-nowrap flex items-center gap-1">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <Badge className={`bg-green-500 text-white font-medium whitespace-nowrap flex items-center gap-1 ${isMobile ? 'text-xs px-2 py-0.5' : 'text-base px-4 py-1.5'}`}>
+          <svg className={isMobile ? 'w-3 h-3' : 'w-4 h-4'} fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
           Claimed
@@ -184,7 +184,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
       return (
         <Badge
           variant="outline"
-          className="bg-blue-50 text-blue-700 border-blue-200 text-base px-4 py-1.5 font-medium whitespace-nowrap"
+          className={`bg-blue-50 text-blue-700 border-blue-200 font-medium whitespace-nowrap ${isMobile ? 'text-xs px-2 py-0.5' : 'text-base px-4 py-1.5'}`}
         >
           Open ({claimedBy?.length || 0}/{maxContributors})
         </Badge>
@@ -194,7 +194,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
     return (
       <Badge
         variant="outline"
-        className="bg-blue-50 text-blue-700 border-blue-200 text-base px-4 py-1.5 font-medium whitespace-nowrap"
+        className={`bg-blue-50 text-blue-700 border-blue-200 font-medium whitespace-nowrap ${isMobile ? 'text-xs px-2 py-0.5' : 'text-base px-4 py-1.5'}`}
       >
         Open
       </Badge>
@@ -518,14 +518,14 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
       </div>
 
       {/* Mobile: Task cards without wrapper */}
-      <div className="md:hidden space-y-4 px-2">
+      <div className="md:hidden space-y-2 px-2">
           {tasks.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="text-center py-8 bg-gray-50 rounded-lg">
+              <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              <h3 className="text-xl font-medium text-gray-900 mb-2">No tasks yet</h3>
-              <p className="text-gray-600">{isOwner ? "Add tasks to get started" : "The host will add tasks soon"}</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No tasks yet</h3>
+              <p className="text-sm text-gray-600">{isOwner ? "Add tasks to get started" : "The host will add tasks soon"}</p>
             </div>
           ) : tasks.map((task) => {
             const isUnclaimed = !task.claimedBy || task.claimedBy.length === 0
@@ -533,7 +533,7 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
             const isPartiallyFilled = task.claimedBy && task.claimedBy.length > 0
             
             // Determine card styling based on task state
-            let cardClass = "bg-white border border-gray-200 rounded-lg p-5 space-y-4 shadow-sm"
+            let cardClass = "bg-white border border-gray-200 rounded-lg p-3 space-y-2 shadow-sm"
             if (isUnclaimed && isOwner) {
               cardClass += " bg-orange-50 border-l-4 border-orange-200" // Open (unclaimed) state
             } else if (isFull) {
@@ -545,27 +545,27 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
             return (
             <div key={task.id} className={cardClass}>
                   {editingTasks.has(task.id) ? (
-                    <div className="space-y-4">
+                    <div className="space-y-2">
                       <Input
                         value={editValues[task.id]?.name || ''}
                         onChange={(e) => setEditValues(prev => ({
                           ...prev,
                           [task.id]: { ...prev[task.id], name: e.target.value }
                         }))}
-                        className="text-xl font-bold py-4 px-4"
+                        className="text-base font-bold py-2 px-3"
                         placeholder="Task name"
                         maxLength={100}
                       />
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         <Textarea
                           value={editValues[task.id]?.description || ''}
                           onChange={(e) => setEditValues(prev => ({
                             ...prev,
                             [task.id]: { ...prev[task.id], description: e.target.value }
                           }))}
-                          className="text-lg resize-none py-3 px-4"
+                          className="text-sm resize-none py-2 px-3"
                           placeholder="Task description (optional)"
-                          rows={3}
+                          rows={2}
                         />
                         {editValues[task.id]?.description && (
                           <Button
@@ -575,53 +575,53 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                               ...prev,
                               [task.id]: { ...prev[task.id], description: '' }
                             }))}
-                            className="text-base text-muted-foreground hover:text-red-600 h-auto p-2 w-full justify-start"
+                            className="text-xs text-muted-foreground hover:text-red-600 h-auto p-1 w-full justify-start"
                           >
                             Clear description
                           </Button>
                         )}
                       </div>
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-2">
                         <Button
                           onClick={() => saveTaskEdit(task.id)}
                           size="sm"
-                          className="w-full text-xl py-5 h-auto min-h-[56px] font-bold"
+                          className="w-full text-sm py-2 h-auto font-semibold"
                         >
-                          <Save className="w-5 h-5 mr-2" />
+                          <Save className="w-4 h-4 mr-1" />
                           Save Changes
                         </Button>
                         <Button
                           onClick={() => cancelEditing(task.id)}
                           variant="outline"
                           size="sm"
-                          className="w-full text-xl py-5 h-auto min-h-[56px] font-bold border-2"
+                          className="w-full text-sm py-2 h-auto font-semibold"
                         >
-                          <X className="w-5 h-5 mr-2" />
+                          <X className="w-4 h-4 mr-1" />
                           Cancel
                         </Button>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-xl font-bold text-gray-900 task-name leading-tight">{task.name}</h3>
+                          <h3 className="text-base font-bold text-gray-900 task-name leading-tight">{task.name}</h3>
                           {task.description && (
-                            <div className="mt-2">
-                              <p className="text-base text-gray-700 leading-relaxed break-words">{task.description}</p>
+                            <div className="mt-1">
+                              <p className="text-xs text-gray-700 leading-snug break-words">{task.description}</p>
                             </div>
                           )}
                         </div>
-                        <div className="flex gap-2 flex-shrink-0">
+                        <div className="flex gap-1 flex-shrink-0">
                           {isOwner && (
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => startEditing(task.id, task.name, task.description)}
-                              className="p-3 h-auto min-w-[48px] min-h-[48px] border border-gray-200 hover:border-gray-300 rounded-lg"
+                              className="p-2 h-auto min-w-[36px] min-h-[36px] border border-gray-200 hover:border-gray-300 rounded"
                               title={!task.claimedBy || task.claimedBy.length === 0 ? "Add details" : "Edit task"}
                             >
-                              <Edit2 className="w-5 h-5" />
+                              <Edit2 className="w-4 h-4" />
                             </Button>
                           )}
                           {isOwner && (
@@ -629,77 +629,74 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDeleteTask(task.id, task.name, task.claimedBy)}
-                              className="p-3 h-auto min-w-[48px] min-h-[48px] text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 rounded-lg"
+                              className="p-2 h-auto min-w-[36px] min-h-[36px] text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-200 hover:border-red-300 rounded"
                               title="Delete task"
                             >
-                              <Trash2 className="w-5 h-5" />
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           )}
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-gray-200">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-600 mb-2">Claimed By</p>
+                      <div className="flex items-center justify-between gap-2 pt-1 border-t border-gray-200">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-gray-600 mb-1">Claimed By</p>
                           {task.claimedBy && task.claimedBy.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-1">
                               {task.claimedBy.map((name, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-center gap-1 bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-full transition-all duration-200"
+                                  className="flex items-center gap-0.5 bg-muted/50 hover:bg-muted px-2 py-0.5 rounded-full transition-all duration-200"
                                 >
-                                  <span className="text-base font-semibold text-gray-900">{name}</span>
+                                  <span className="text-xs font-semibold text-gray-900">{name}</span>
                                   {isOwner && (
                                     <button
                                       onClick={() => handleUnassignGuest(task.id, name)}
-                                      className="hover:bg-destructive/20 rounded-full p-1 active:scale-95 transition-all"
+                                      className="hover:bg-destructive/20 rounded-full p-0.5 active:scale-95 transition-all"
                                       title={`Remove ${name}`}
                                     >
-                                      <X className="w-4 h-4 text-destructive" />
+                                      <X className="w-3 h-3 text-destructive" />
                                     </button>
                                   )}
                                   {!isAdminView && !isOwner && (
                                     <button
                                       onClick={() => handleUnclaimTask(task.id, name, task.name)}
-                                      className="hover:bg-red-50 rounded-full p-1 active:scale-95 transition-all"
+                                      className="hover:bg-red-50 rounded-full p-0.5 active:scale-95 transition-all"
                                       title="Remove yourself"
                                     >
-                                      <X className="w-3.5 h-3.5 text-red-600" />
+                                      <X className="w-3 h-3 text-red-600" />
                                     </button>
                                   )}
                                 </div>
                               ))}
                               {task.maxContributors && (
-                                <span className="text-sm text-muted-foreground self-center">
+                                <span className="text-xs text-muted-foreground self-center">
                                   {task.claimedBy.length}/{task.maxContributors}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <p className="text-base text-muted-foreground">—</p>
+                            <p className="text-xs text-muted-foreground">—</p>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-600 mb-2">Status</p>
-                          <div className="flex flex-wrap gap-1">
-                            {getStatusBadge(task.status, task.claimedBy, task.maxContributors)}
-                          </div>
+                          {getStatusBadge(task.status, task.claimedBy, task.maxContributors, true)}
                         </div>
                       </div>
                       
-                      <div className="pt-2">
+                      <div>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => toggleComments(task.id)}
-                          className="text-base px-3 py-2 h-auto min-h-[44px] font-medium text-muted-foreground hover:text-gray-900 w-full justify-start border border-gray-200 hover:border-gray-300 rounded-lg"
+                          className="text-sm px-2 py-1 h-auto font-medium text-muted-foreground hover:text-gray-900 w-full justify-start border border-gray-200 hover:border-gray-300 rounded"
                         >
-                          <MessageCircle className="w-4 h-4 mr-2" />
+                          <MessageCircle className="w-3 h-3 mr-1" />
                           Comments ({task.comments.length})
                           {expandedComments.has(task.id) ? (
-                            <ChevronDown className="w-4 h-4 ml-auto" />
+                            <ChevronDown className="w-3 h-3 ml-auto" />
                           ) : (
-                            <ChevronRight className="w-4 h-4 ml-auto" />
+                            <ChevronRight className="w-3 h-3 ml-auto" />
                           )}
                         </Button>
                       </div>
@@ -707,26 +704,26 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                   )}
 
                 {expandedComments.has(task.id) && (
-                  <div className="space-y-4 pt-2 border-t border-gray-300">
+                  <div className="space-y-2 pt-2 border-t border-gray-300">
                     {task.comments.length > 0 && (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {task.comments.map((comment) => (
-                          <div key={comment.id} className="bg-muted/30 rounded-lg p-4">
-                            <div className="mb-2">
-                              <span className="text-sm font-medium text-gray-900">{comment.author}</span>
+                          <div key={comment.id} className="bg-muted/30 rounded p-2">
+                            <div className="mb-1">
+                              <span className="text-xs font-medium text-gray-900">{comment.author}</span>
                             </div>
-                            <p className="text-base text-gray-900">{comment.text}</p>
+                            <p className="text-sm text-gray-900">{comment.text}</p>
                           </div>
                         ))}
                       </div>
                     )}
 
-                    <div className="space-y-4">
-                      <div className="flex flex-col gap-1">
-                        <label htmlFor={`mobile-comment-${task.id}`} className="text-xl font-bold text-gray-900">
+                    <div className="space-y-2">
+                      <div className="flex flex-col gap-0.5">
+                        <label htmlFor={`mobile-comment-${task.id}`} className="text-sm font-bold text-gray-900">
                           Add a comment:
                         </label>
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           Posting as: {session?.user?.name || session?.user?.email || "You'll be asked for your name"}
                         </span>
                       </div>
@@ -735,13 +732,13 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                         value={newComments[task.id] || ""}
                         onChange={(e) => setNewComments((prev) => ({ ...prev, [task.id]: e.target.value }))}
                         placeholder="Type your comment..."
-                        className="w-full px-5 py-4 text-xl border-2 border-gray-300 rounded-lg bg-white text-gray-900 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
-                        rows={4}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded bg-white text-gray-900 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
+                        rows={3}
                       />
                       <Button
                         onClick={() => handleAddComment(task.id)}
                         disabled={!newComments[task.id]?.trim()}
-                        className="w-full text-xl py-5 h-auto min-h-[56px] font-bold"
+                        className="w-full text-sm py-2 h-auto font-semibold"
                       >
                         Post Comment
                       </Button>
@@ -750,16 +747,16 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                 )}
 
                 {!isAdminView && !editingTasks.has(task.id) && task.status === "available" && (
-                  <div className="pt-3 border-t border-gray-200">
+                  <div className="pt-2 border-t border-gray-200">
                     <Button
                       onClick={() => handleSelectTaskForClaiming(task.id)}
-                      className={`w-full text-lg py-4 h-auto min-h-[56px] font-semibold ${
+                      className={`w-full text-sm py-2 h-auto font-semibold ${
                         selectedTasksForClaiming.includes(task.id) 
                           ? 'btn-primary' 
                           : 'bg-blue-500 text-white hover:bg-blue-600 border-0'
                       }`}
                     >
-                      {selectedTasksForClaiming.includes(task.id) ? '✓ Selected' : 'Select This Task'}
+                      {selectedTasksForClaiming.includes(task.id) ? '✓ Selected' : 'Select'}
                     </Button>
                   </div>
                 )}
@@ -767,16 +764,16 @@ export default function TaskTable({ isAdminView = false }: TaskTableProps) {
                   projectSettings.allowMultipleContributors &&
                   task.claimedBy &&
                   (!task.maxContributors || task.claimedBy.length < task.maxContributors) && (
-                    <div className="pt-3 border-t border-gray-200">
+                    <div className="pt-2 border-t border-gray-200">
                       <Button
                         onClick={() => handleSelectTaskForClaiming(task.id)}
-                        className={`w-full text-base py-3 h-auto min-h-[48px] font-medium ${
+                        className={`w-full text-sm py-2 h-auto font-semibold ${
                           selectedTasksForClaiming.includes(task.id) 
                             ? 'btn-primary' 
                             : 'bg-blue-500 text-white hover:bg-blue-600 border-0'
                         }`}
                       >
-                        {selectedTasksForClaiming.includes(task.id) ? 'Selected' : 'Select to Join'}
+                        {selectedTasksForClaiming.includes(task.id) ? 'Selected' : 'Select'}
                       </Button>
                     </div>
                   )}
