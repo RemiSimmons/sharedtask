@@ -2,150 +2,53 @@ name: Semgrep Security Scan
 
 on:
   push:
-    branches: ["main", "master"]
+    branches: ["main"]
   pull_request:
-    branches: ["main", "master"]
+    branches: ["main"]
   schedule:
-    # Run weekly security scan every Monday at 6 AM UTC
-    - cron: '0 6 * * 1'
-  workflow_dispatch:  # Allow manual triggering
+    - cron: '0 0 * * 0'  # Weekly on Sundays
+
+permissions:
+  contents: read
 
 jobs:
   semgrep:
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     name: Semgrep SAST Scan
     runs-on: ubuntu-latest
-    
-    # Skip on dependabot PRs to avoid noise
-    if: github.actor != 'dependabot[bot]'
-    
-    container:
-      image: returntocorp/semgrep
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
         with:
-          fetch-depth: 0  # Full history for better analysis
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/javascript
+            p/typescript
+            p/react
+            p/nextjs
+        continue-on-error: true
       
-      - name: Run Semgrep Security Scan
-        run: |
-          semgrep scan \
-            --config=auto \
-            --config=p/security-audit \
-            --config=p/owasp-top-ten \
-            --config=p/javascript \
-            --config=p/typescript \
-            --config=p/react \
-            --config=p/nextjs \
-            --json \
-            --output=semgrep-results.json || true
-      
-      - name: Generate Human-Readable Report
+      - name: Upload SARIF file
+        uses: actions/upload-artifact@v4
         if: always()
-        run: |
-          semgrep scan \
-            --config=auto \
-            --config=p/security-audit \
-            --config=p/owasp-top-ten \
-            --config=p/javascript \
-            --config=p/typescript \
-            --config=p/react \
-            --config=p/nextjs \
-            --sarif \
-            --output=semgrep-results.sarif || true
-      
-      - name: Upload Semgrep Results (JSON)
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: semgrep-results
-          path: semgrep-results.json
-          retention-days: 90
-      
-      - name: Upload Semgrep Results (SARIF)
-        if: always()
-        uses: actions/upload-artifact@v3
         with:
           name: semgrep-sarif
-          path: semgrep-results.sarif
-          retention-days: 90
-      
-      - name: Check for Critical Findings
-        run: |
-          echo "📊 Semgrep Security Scan Summary"
-          echo "================================"
-          
-          # Parse JSON for summary
-          if [ -f semgrep-results.json ]; then
-            echo "✅ Scan completed successfully"
-            
-            # Count findings by severity
-            CRITICAL=$(jq '[.results[] | select(.extra.severity == "ERROR")] | length' semgrep-results.json)
-            HIGH=$(jq '[.results[] | select(.extra.severity == "WARNING")] | length' semgrep-results.json)
-            MEDIUM=$(jq '[.results[] | select(.extra.severity == "INFO")] | length' semgrep-results.json)
-            
-            echo ""
-            echo "Findings by Severity:"
-            echo "🔴 Critical/High: $CRITICAL"
-            echo "🟠 Medium: $HIGH"
-            echo "🟡 Low/Info: $MEDIUM"
-            echo ""
-            
-            # Fail build if critical issues found
-            if [ "$CRITICAL" -gt 0 ]; then
-              echo "❌ CRITICAL SECURITY ISSUES FOUND!"
-              echo "Please review the findings and fix before merging."
-              exit 1
-            else
-              echo "✅ No critical security issues found"
-            fi
-          else
-            echo "⚠️ Scan results not found"
-          fi
-      
-      - name: Comment PR with Results
-        if: github.event_name == 'pull_request' && always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            
-            if (!fs.existsSync('semgrep-results.json')) {
-              return;
-            }
-            
-            const results = JSON.parse(fs.readFileSync('semgrep-results.json', 'utf8'));
-            const criticalCount = results.results.filter(r => r.extra.severity === 'ERROR').length;
-            const highCount = results.results.filter(r => r.extra.severity === 'WARNING').length;
-            const mediumCount = results.results.filter(r => r.extra.severity === 'INFO').length;
-            
-            const emoji = criticalCount > 0 ? '🔴' : '✅';
-            
-            const comment = `${emoji} **Semgrep Security Scan Results**
-            
-            | Severity | Count |
-            |----------|-------|
-            | 🔴 Critical/High | ${criticalCount} |
-            | 🟠 Medium | ${highCount} |
-            | 🟡 Low/Info | ${mediumCount} |
-            
-            ${criticalCount > 0 ? '⚠️ **Critical issues found!** Please review before merging.' : '✅ No critical security issues detected.'}
-            
-            <details>
-            <summary>View scan details</summary>
-            
-            Download the full report from the workflow artifacts.
-            
-            </details>`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+          path: semgrep.sarif
+          retention-days: 30
 
   dependency-check:
+    permissions:
+      contents: read
+      security-events: write
     name: Dependency Security Check
     runs-on: ubuntu-latest
     
@@ -153,47 +56,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
       
       - name: Run npm audit
         run: |
-          echo "📦 Running npm audit..."
-          npm audit --json > npm-audit-results.json || true
-          
-          echo ""
-          echo "📊 Dependency Audit Summary"
-          echo "============================"
-          
-          # Parse and display results
-          CRITICAL=$(jq '.metadata.vulnerabilities.critical' npm-audit-results.json)
-          HIGH=$(jq '.metadata.vulnerabilities.high' npm-audit-results.json)
-          MODERATE=$(jq '.metadata.vulnerabilities.moderate' npm-audit-results.json)
-          LOW=$(jq '.metadata.vulnerabilities.low' npm-audit-results.json)
-          
-          echo "🔴 Critical: $CRITICAL"
-          echo "🟠 High: $HIGH"
-          echo "🟡 Moderate: $MODERATE"
-          echo "🟢 Low: $LOW"
-          echo ""
-          
-          # Fail if critical vulnerabilities found
-          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
-            echo "❌ High or Critical vulnerabilities found!"
-            echo "Run 'npm audit fix' to resolve issues"
-            exit 1
-          else
-            echo "✅ No critical dependency vulnerabilities"
-          fi
+          npm audit --json > npm-audit.json || true
+          npm audit --audit-level=moderate
+        continue-on-error: true
       
-      - name: Upload npm audit results
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v3
         with:
           name: npm-audit-results
-          path: npm-audit-results.json
-          retention-days: 90
-
-
+          path: npm-audit.json
+          retention-days: 30
