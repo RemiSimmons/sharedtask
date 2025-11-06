@@ -16,7 +16,7 @@ interface EventDetailsModalProps {
 }
 
 export function EventDetailsModal({ open, onOpenChange }: EventDetailsModalProps) {
-  const { projectSettings } = useTask()
+  const { projectSettings, activeContributors } = useTask()
   const isMobile = useIsMobile()
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
   const swipeStartY = useRef<number | null>(null)
@@ -76,7 +76,7 @@ export function EventDetailsModal({ open, onOpenChange }: EventDetailsModalProps
   const hasDescription = projectSettings.projectDescription && projectSettings.projectDescription.trim().length > 0
 
   // Calculate expected attendees count
-  const expectedAttendees = projectSettings.activeContributors?.length || 0
+  const expectedAttendees = activeContributors?.length || 0
 
   // Description truncation
   const descriptionText = projectSettings.projectDescription || ''
