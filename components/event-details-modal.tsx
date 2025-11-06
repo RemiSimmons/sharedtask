@@ -187,10 +187,9 @@ export function EventDetailsModal({ open, onOpenChange }: EventDetailsModalProps
   // Mobile drawer view
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
+      <Drawer open={open} onOpenChange={onOpenChange} direction="bottom">
         <DrawerContent 
           className="max-h-[70vh] rounded-t-2xl"
-          direction="bottom"
         >
           {/* Drag Handle - Swipeable area */}
           <div 
