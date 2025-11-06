@@ -47,7 +47,7 @@ export function MobileNav({ showHomeLink = true }: MobileNavProps) {
     )
   }
 
-  // Unauthenticated state
+  // Unauthenticated state - no Sign In/Sign Up buttons for shared events
   if (status === "unauthenticated" || !session?.user) {
     return (
       <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 md:hidden">
@@ -57,20 +57,6 @@ export function MobileNav({ showHomeLink = true }: MobileNavProps) {
               <Home className="w-6 h-6" />
             </Link>
           )}
-          <div className="flex items-center gap-3 ml-auto">
-            <Link
-              href="/auth/signin"
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors min-h-[44px] flex items-center"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm min-h-[44px] flex items-center"
-            >
-              Sign Up
-            </Link>
-          </div>
         </div>
       </div>
     )

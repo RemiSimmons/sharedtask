@@ -1,8 +1,9 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { X } from "lucide-react"
 import { useTask } from "@/contexts/TaskContextWithSupabase"
 
 export default function TaskClaimForm() {
@@ -31,6 +32,51 @@ export default function TaskClaimForm() {
 
   const [showMultipleClaimPrompt, setShowMultipleClaimPrompt] = useState(false)
   const [claimedTaskName, setClaimedTaskName] = useState("")
+  const [showFinalSummary, setShowFinalSummary] = useState(false)
+  const [claimedTasks, setClaimedTasks] = useState<string[]>([])
+  
+  // New state for name selection flow
+  const [nameConfirmed, setNameConfirmed] = useState(false)
+  const [showNameSuccess, setShowNameSuccess] = useState(false)
+  const [isFadingOut, setIsFadingOut] = useState(false)
+  const hasShownSuccessRef = useRef(false)
+
+  // Check if name is confirmed (either selected from dropdown or custom name entered)
+  const hasValidName = () => {
+    if (selectedName === "new") {
+      return customName.trim().length > 0
+    }
+    return selectedName.length > 0
+  }
+
+  // Handle name confirmation - show success message when name is first confirmed
+  useEffect(() => {
+    const isValid = hasValidName()
+    if (isValid && !hasShownSuccessRef.current) {
+      hasShownSuccessRef.current = true
+      setNameConfirmed(true)
+      setShowNameSuccess(true)
+      setIsFadingOut(false)
+      
+      // Auto-fade after 3 seconds
+      const fadeTimer = setTimeout(() => {
+        setIsFadingOut(true)
+        setTimeout(() => {
+          setShowNameSuccess(false)
+        }, 300) // Animation duration
+      }, 3000)
+      
+      return () => clearTimeout(fadeTimer)
+    }
+  }, [selectedName, customName])
+
+  // Handle manual dismiss of success message
+  const handleDismissNameSuccess = () => {
+    setIsFadingOut(true)
+    setTimeout(() => {
+      setShowNameSuccess(false)
+    }, 300)
+  }
 
   // Get available tasks from context (including tasks that can accept more guests)
   const availableTasks = tasks.filter(task => {
@@ -108,20 +154,12 @@ export default function TaskClaimForm() {
         setClaimedTaskName(taskName)
       }
 
-      if (projectSettings.allowMultipleClaims) {
-        setShowMultipleClaimPrompt(true)
-      } else {
-        setShowSuccess(true)
-        // Reset form after 3 seconds for single claim mode
-        setTimeout(() => {
-          setShowSuccess(false)
-          setSelectedName("")
-          setSelectedTask("")
-          setCustomName("")
-          setCustomTask("")
-          setIsAttendingOnly(false)
-        }, 3000)
-      }
+      // Update claimed tasks list
+      const newClaimedTasks = [...claimedTasks, claimedTaskName]
+      setClaimedTasks(newClaimedTasks)
+      
+      // Always show success modal after claiming
+      setShowMultipleClaimPrompt(true)
     } catch (error) {
       console.error('Failed to claim task:', error)
       alert(`Couldn't complete your request. Try again or refresh the page.`)
@@ -145,8 +183,26 @@ export default function TaskClaimForm() {
 
     try {
       await claimSelectedTasks()
-      setShowSuccess(true)
-      setTimeout(() => setShowSuccess(false), 3000)
+      
+      // Get names of claimed tasks for the summary
+      const claimedTaskNames = selectedTasksForClaiming
+        .map(taskId => tasks.find(t => t.id === taskId)?.name)
+        .filter(Boolean) as string[]
+      
+      // Update claimed tasks list
+      const newClaimedTasks = [...claimedTasks, ...claimedTaskNames]
+      setClaimedTasks(newClaimedTasks)
+      
+      // Set the latest claimed task name for display
+      if (claimedTaskNames.length > 0) {
+        setClaimedTaskName(claimedTaskNames[claimedTaskNames.length - 1])
+      }
+      
+      // Show success modal
+      setShowMultipleClaimPrompt(true)
+      
+      // Clear selection after claiming
+      clearClaimingSelection()
     } catch (error) {
       console.error('Failed to claim selected tasks:', error)
       alert(`Couldn't claim tasks. Try again or refresh the page.`)
@@ -157,23 +213,52 @@ export default function TaskClaimForm() {
 
   const handleClaimAnother = () => {
     setShowMultipleClaimPrompt(false)
-    // Only reset task selection, keep name and headcount
+    // Reset task selection, keep name and headcount
     setSelectedTask("")
     setCustomTask("")
+    setIsAttendingOnly(false)
+    
+    // Sync selectedName with currentContributorName if it exists in activeContributors
+    // If not, ensure customName is set if currentContributorName exists
+    if (currentContributorName) {
+      if (activeContributors.includes(currentContributorName)) {
+        setSelectedName(currentContributorName)
+        setCustomName("")
+      } else {
+        // It's a custom name
+        setSelectedName("new")
+        setCustomName(currentContributorName)
+      }
+      // Ensure nameConfirmed is true so task selection shows
+      setNameConfirmed(true)
+    }
+    
+    // Scroll to task list
+    setTimeout(() => {
+      const taskTableElement = document.querySelector('[data-task-table]')
+      if (taskTableElement) {
+        taskTableElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 100)
   }
 
   const handleFinishClaiming = () => {
     setShowMultipleClaimPrompt(false)
-    setShowSuccess(true)
-    // Reset entire form after 3 seconds
-    setTimeout(() => {
-      setShowSuccess(false)
-      setSelectedName("")
-      setSelectedTask("")
-      setHeadcount(1)
-      setCustomName("")
-      setCustomTask("")
-    }, 3000)
+    setShowFinalSummary(true)
+  }
+
+  const handleCloseFinalSummary = () => {
+    setShowFinalSummary(false)
+    // Reset entire form
+    setSelectedName("")
+    setSelectedTask("")
+    setHeadcount(1)
+    setCustomName("")
+    setCustomTask("")
+    setIsAttendingOnly(false)
+    setNameConfirmed(false)
+    hasShownSuccessRef.current = false
+    setClaimedTasks([])
   }
 
   const isFormValid = () => {
@@ -211,6 +296,42 @@ export default function TaskClaimForm() {
                 {claimedTaskName === "Attending Only" ? "You're on the list!" : "You've been added to the list!"}
               </p>
             </div>
+          ) : showFinalSummary ? (
+            <div className="text-center py-6 md:py-8 space-y-4 md:space-y-6">
+              <div className="w-14 h-14 md:w-16 md:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 md:w-8 md:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="space-y-3 md:space-y-4">
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900">You're All Set!</h3>
+                {claimedTasks.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-base md:text-lg font-semibold text-gray-900">You're bringing:</p>
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 md:p-6 max-w-md mx-auto">
+                      <ul className="space-y-2 text-left">
+                        {claimedTasks.map((task, index) => (
+                          <li key={index} className="flex items-center gap-2 text-base md:text-lg text-gray-900">
+                            <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>{task}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col md:flex-row gap-2 md:gap-3 justify-center pt-4">
+                <Button
+                  onClick={handleCloseFinalSummary}
+                  className="text-base md:text-base px-6 py-3 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
           ) : showMultipleClaimPrompt ? (
             <div className="text-center py-6 md:py-8 space-y-4 md:space-y-6">
               <div className="w-14 h-14 md:w-16 md:h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
@@ -218,29 +339,26 @@ export default function TaskClaimForm() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <div className="space-y-2 md:space-y-2">
-                <h3 className="text-xl md:text-xl font-bold md:font-semibold text-gray-900">Success!</h3>
+              <div className="space-y-2 md:space-y-3">
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900">✅ All set for this event!</h3>
                 <p className="text-base md:text-lg text-gray-700 md:text-muted-foreground">
-                  You claimed: <span className="font-bold text-gray-900">{claimedTaskName}</span>
+                  You can claim another or finish.
                 </p>
               </div>
-              <div className="space-y-3 md:space-y-3">
-                <p className="text-sm md:text-base text-gray-700 md:text-muted-foreground font-medium">Want to claim another?</p>
-                <div className="flex flex-col md:flex-row gap-2 md:gap-3 justify-center">
-                  <Button
-                    onClick={handleClaimAnother}
-                    className="text-base md:text-base px-6 py-3 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium bg-blue-600 text-white hover:bg-blue-700"
-                  >
-                    Claim Another Task
-                  </Button>
-                  <Button
-                    onClick={handleFinishClaiming}
-                    variant="outline"
-                    className="text-base md:text-base px-6 py-3 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium border-2 md:border"
-                  >
-                    I'm Done
-                  </Button>
-                </div>
+              <div className="flex flex-col md:flex-row gap-2 md:gap-3 justify-center pt-2">
+                <Button
+                  onClick={handleClaimAnother}
+                  className="text-base md:text-base px-6 py-3 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Claim Another
+                </Button>
+                <Button
+                  onClick={handleFinishClaiming}
+                  variant="outline"
+                  className="text-base md:text-base px-6 py-3 md:px-6 md:py-3 h-auto md:h-12 font-semibold md:font-medium border-2 md:border"
+                >
+                  I'm Done
+                </Button>
               </div>
             </div>
           ) : (
@@ -304,6 +422,7 @@ export default function TaskClaimForm() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4 md:space-y-8">
+              {/* NAME PICKER SECTION */}
               <div className="space-y-2 md:space-y-3">
                 <label htmlFor="name-select" className="text-base md:text-lg font-bold md:font-semibold text-gray-900 block">
                   Your Name
@@ -380,11 +499,38 @@ export default function TaskClaimForm() {
                 )}
               </div>
 
-              <div className="space-y-2 md:space-y-3">
-                <label htmlFor="task-select" className="text-base md:text-lg font-bold md:font-semibold text-gray-900 block">
-                  Pick a Task
-                </label>
-                <Select 
+              {/* SUCCESS MESSAGE - Shows after name selection */}
+              {showNameSuccess && (
+                <div 
+                  className={`bg-green-50 border border-green-200 rounded-lg p-4 md:p-4 transition-opacity duration-300 ${
+                    isFadingOut ? 'opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm md:text-base text-green-800 font-medium">
+                      ✅ You're added — now choose your contribution
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleDismissNameSuccess}
+                      className="flex-shrink-0 text-green-700 hover:text-green-900 hover:bg-green-100 rounded p-1 transition-colors"
+                      aria-label="Dismiss message"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* TASK SECTION - Shows after name is confirmed */}
+              {nameConfirmed && (
+                <div className="space-y-4 md:space-y-6">
+                  <h2 className="text-lg md:text-xl font-bold text-gray-900">
+                    Choose a task or item below
+                  </h2>
+
+                  <div className="space-y-2 md:space-y-3">
+                    <Select 
                   value={selectedTask} 
                   onValueChange={(value) => {
                     setSelectedTask(value)
@@ -461,77 +607,79 @@ export default function TaskClaimForm() {
                 )}
               </div>
 
-              {/* OR Divider and Attending Only Button */}
-              {!isAttendingOnly && (
-                <>
-                  <div className="flex items-center gap-3 my-3 md:my-5">
-                    <div className="flex-1 border-t border-gray-300"></div>
-                    <span className="text-gray-500 font-semibold text-sm md:text-base">OR</span>
-                    <div className="flex-1 border-t border-gray-300"></div>
-                  </div>
+                  {/* OR Divider and Attending Only Button */}
+                  {!isAttendingOnly && (
+                    <>
+                      <div className="flex items-center gap-3 my-3 md:my-5">
+                        <div className="flex-1 border-t border-gray-300"></div>
+                        <span className="text-gray-500 font-semibold text-sm md:text-base">OR</span>
+                        <div className="flex-1 border-t border-gray-300"></div>
+                      </div>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsAttendingOnly(true)
-                      setSelectedTask("")
-                    }}
-                    className="w-full text-base md:text-base py-3 md:py-3 h-auto hover:bg-blue-50 hover:border-blue-500 transition-colors"
-                  >
-                    I'm just attending
-                  </Button>
-                </>
-              )}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setIsAttendingOnly(true)
+                          setSelectedTask("")
+                        }}
+                        className="w-full text-base md:text-base py-3 md:py-3 h-auto border-2 hover:bg-blue-100 hover:border-blue-400 hover:text-blue-700 transition-all duration-200 font-medium"
+                      >
+                        No task — I'm just joining
+                      </Button>
+                    </>
+                  )}
 
-              {/* Show cancel attending only button */}
-              {isAttendingOnly && (
-                <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-3 md:p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm md:text-base text-blue-900 font-semibold">
-                      ✓ Attending only
+                  {/* Show cancel attending only button */}
+                  {isAttendingOnly && (
+                    <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-3 md:p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm md:text-base text-blue-900 font-semibold">
+                          ✓ Attending only
+                        </p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsAttendingOnly(false)}
+                          className="text-blue-700 hover:text-blue-900 hover:bg-blue-100"
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Headcount Input */}
+                  <div className="space-y-2 md:space-y-3">
+                    <label htmlFor="headcount" className="text-base md:text-lg font-bold md:font-semibold text-gray-900 block">
+                      How many attending?
+                    </label>
+                    <input
+                      id="headcount"
+                      type="number"
+                      inputMode="numeric"
+                      min="1"
+                      max="99"
+                      value={headcount}
+                      onChange={(e) => setHeadcount(Math.max(1, Math.min(99, parseInt(e.target.value) || 1)))}
+                      className="form-input text-base md:text-base py-2.5 md:py-2 px-3 md:px-3"
+                      placeholder="1"
+                    />
+                    <p className="text-sm md:text-sm text-gray-700 md:text-gray-600">
+                      💡 Including you
                     </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsAttendingOnly(false)}
-                      className="text-blue-700 hover:text-blue-900 hover:bg-blue-100"
-                    >
-                      Change
-                    </Button>
                   </div>
+
+                  <button
+                    type="submit"
+                    disabled={!isFormValid() || isSubmitting}
+                    className={`w-full btn-primary text-base md:text-base py-3 md:py-3 font-bold md:font-medium whitespace-nowrap ${(!isFormValid() || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {isSubmitting ? "Submitting..." : (isAttendingOnly ? "Confirm Attendance" : "Claim This Task")}
+                  </button>
                 </div>
               )}
-
-              {/* Headcount Input */}
-              <div className="space-y-2 md:space-y-3">
-                <label htmlFor="headcount" className="text-base md:text-lg font-bold md:font-semibold text-gray-900 block">
-                  How many attending?
-                </label>
-                <input
-                  id="headcount"
-                  type="number"
-                  inputMode="numeric"
-                  min="1"
-                  max="99"
-                  value={headcount}
-                  onChange={(e) => setHeadcount(Math.max(1, Math.min(99, parseInt(e.target.value) || 1)))}
-                  className="form-input text-base md:text-base py-2.5 md:py-2 px-3 md:px-3"
-                  placeholder="1"
-                />
-                <p className="text-sm md:text-sm text-gray-700 md:text-gray-600">
-                  💡 Including you
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={!isFormValid() || isSubmitting}
-                className={`w-full btn-primary text-base md:text-base py-3 md:py-3 font-bold md:font-medium whitespace-nowrap ${(!isFormValid() || isSubmitting) ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                {isSubmitting ? "Submitting..." : (isAttendingOnly ? "Confirm Attendance" : "Claim This Task")}
-              </button>
             </form>
             </div>
           )}
