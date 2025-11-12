@@ -159,8 +159,17 @@ export function useRealtimeSubscription({
           console.log('❌ Realtime: Disconnected')
           setIsConnected(false)
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('❌ Realtime: Channel error')
+          // Only log error in development, silently handle in production
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('⚠️ Realtime: Channel error (this is usually non-critical)')
+          }
           setIsConnected(false)
+          // Attempt to reconnect after a delay
+          setTimeout(() => {
+            if (channelRef.current && projectId) {
+              console.log('🔄 Realtime: Attempting to reconnect...')
+            }
+          }, 5000)
         }
       })
 

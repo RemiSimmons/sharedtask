@@ -40,10 +40,11 @@ export default function TaskClaimForm() {
   const [showNameSuccess, setShowNameSuccess] = useState(false)
   const [isFadingOut, setIsFadingOut] = useState(false)
   const hasShownSuccessRef = useRef(false)
+  const fadeTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Check if name is confirmed (either selected from dropdown or custom name entered)
   const hasValidName = () => {
-    if (selectedName === "new") {
+    if (selectedName === "new" || (selectedName === "" && customName.trim().length > 0)) {
       return customName.trim().length > 0
     }
     return selectedName.length > 0
@@ -58,20 +59,39 @@ export default function TaskClaimForm() {
       setShowNameSuccess(true)
       setIsFadingOut(false)
       
+      // Clear any existing timer
+      if (fadeTimerRef.current) {
+        clearTimeout(fadeTimerRef.current)
+        fadeTimerRef.current = null
+      }
+      
       // Auto-fade after 3 seconds
-      const fadeTimer = setTimeout(() => {
+      fadeTimerRef.current = setTimeout(() => {
         setIsFadingOut(true)
         setTimeout(() => {
           setShowNameSuccess(false)
         }, 300) // Animation duration
       }, 3000)
-      
-      return () => clearTimeout(fadeTimer)
     }
   }, [selectedName, customName])
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (fadeTimerRef.current) {
+        clearTimeout(fadeTimerRef.current)
+        fadeTimerRef.current = null
+      }
+    }
+  }, [])
+
   // Handle manual dismiss of success message
   const handleDismissNameSuccess = () => {
+    // Clear any existing timer
+    if (fadeTimerRef.current) {
+      clearTimeout(fadeTimerRef.current)
+      fadeTimerRef.current = null
+    }
     setIsFadingOut(true)
     setTimeout(() => {
       setShowNameSuccess(false)
@@ -111,8 +131,12 @@ export default function TaskClaimForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const finalName = selectedName === "new" ? customName : selectedName
-    const finalTask = selectedTask === "custom" ? customTask : selectedTask
+    // Determine final name: if "new" selected or if customName has value but selectedName is empty, use customName
+    const finalName = (selectedName === "new" || (selectedName === "" && customName.trim().length > 0)) 
+      ? customName 
+      : selectedName
+    // Determine final task: if customTask has value, use it; otherwise use selectedTask from dropdown
+    const finalTask = customTask.trim().length > 0 ? customTask : selectedTask
 
     if (!finalName) {
       return
@@ -130,15 +154,19 @@ export default function TaskClaimForm() {
 
     try {
       // Check if user is adding a new name and if they're allowed to
-      if (selectedName === "new" && !projectSettings.allowContributorsAddNames) {
+      const isAddingNewName = selectedName === "new" || (selectedName === "" && customName.trim().length > 0)
+      if (isAddingNewName && !projectSettings.allowContributorsAddNames) {
         throw new Error('You are not allowed to add new names to this project. Please select an existing name.')
       }
 
+      // Determine the task name that will be claimed
+      let taskNameToClaim = ""
+      
       // Handle attending only RSVP
       if (isAttendingOnly) {
         await addAttendingOnlyRsvp(finalName, headcount)
-        setClaimedTaskName("Attending Only")
-      } else if (selectedTask === "custom") {
+        taskNameToClaim = "Attending Only"
+      } else if (customTask.trim().length > 0) {
         // Check if guests are allowed to add tasks
         if (!projectSettings.allowContributorsAddTasks) {
           throw new Error('You are not allowed to add custom tasks to this project')
@@ -146,17 +174,17 @@ export default function TaskClaimForm() {
         
         // Add new custom task and claim it atomically
         await addTaskAndClaim(customTask, finalName)
-        setClaimedTaskName(customTask)
-      } else {
+        taskNameToClaim = customTask
+      } else if (selectedTask) {
         // Claim existing task with headcount
         await claimTask(selectedTask, finalName, headcount)
-        const taskName = availableTasks.find((t) => t.id === selectedTask)?.name || ""
-        setClaimedTaskName(taskName)
+        taskNameToClaim = availableTasks.find((t) => t.id === selectedTask)?.name || ""
       }
 
-      // Update claimed tasks list
-      const newClaimedTasks = [...claimedTasks, claimedTaskName]
+      // Update claimed tasks list using the actual task name (not state variable)
+      const newClaimedTasks = [...claimedTasks, taskNameToClaim]
       setClaimedTasks(newClaimedTasks)
+      setClaimedTaskName(taskNameToClaim)
       
       // Always show success modal after claiming
       setShowMultipleClaimPrompt(true)
@@ -259,10 +287,19 @@ export default function TaskClaimForm() {
     setNameConfirmed(false)
     hasShownSuccessRef.current = false
     setClaimedTasks([])
+    // Clear any existing fade timer
+    if (fadeTimerRef.current) {
+      clearTimeout(fadeTimerRef.current)
+      fadeTimerRef.current = null
+    }
+    setShowNameSuccess(false)
+    setIsFadingOut(false)
   }
 
   const isFormValid = () => {
-    const hasValidName = selectedName && (selectedName !== "new" || customName.trim())
+    // Check if name is valid: either selected from dropdown, or custom name entered
+    const hasValidName = selectedName && (selectedName !== "new" || customName.trim()) || 
+                        (selectedName === "" && customName.trim().length > 0 && projectSettings.allowContributorsAddNames)
     
     // For attending only, only name is required
     if (isAttendingOnly) {
@@ -270,7 +307,8 @@ export default function TaskClaimForm() {
     }
     
     // For task claiming, both name and task are required
-    const hasValidTask = selectedTask && (selectedTask !== "custom" || customTask.trim())
+    // Task is valid if: selectedTask is set (from dropdown) OR customTask has value
+    const hasValidTask = (selectedTask && selectedTask !== "custom") || (customTask.trim().length > 0)
     return hasValidName && hasValidTask
   }
 
@@ -427,51 +465,66 @@ export default function TaskClaimForm() {
                 <label htmlFor="name-select" className="text-base md:text-lg font-bold md:font-semibold text-gray-900 block">
                   Your Name
                 </label>
-                <Select 
-                  value={selectedName} 
-                  onValueChange={(value) => {
-                    setSelectedName(value)
-                    // Update shared name when selecting from existing guests
-                    if (value !== "new") {
-                      setCurrentContributorName(value)
-                    }
-                  }}
-                >
-                  <SelectTrigger className="select-trigger">
-                    <SelectValue placeholder="Choose your name..." />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-80 overflow-y-auto">
-                    {activeContributors.length > 0 ? (
-                      activeContributors.map((name) => (
+                {activeContributors.length > 0 ? (
+                  <Select 
+                    value={selectedName} 
+                    onValueChange={(value) => {
+                      setSelectedName(value)
+                      // Update shared name when selecting from existing guests
+                      if (value !== "new") {
+                        setCurrentContributorName(value)
+                        setCustomName("") // Clear custom name when selecting existing
+                      } else {
+                        setCustomName("") // Clear when selecting "new"
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="select-trigger">
+                      <SelectValue placeholder="Choose your name..." />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-80 overflow-y-auto">
+                      {activeContributors.map((name) => (
                         <SelectItem key={name} value={name} className="text-base py-3">
                           {name}
                         </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="placeholder" disabled className="text-base py-3 text-gray-500">
-                        No guests yet - add your name below
-                      </SelectItem>
-                    )}
-                    {projectSettings.allowContributorsAddNames && (
-                      <SelectItem value="new" className="text-base py-3 font-medium text-secondary">
-                        {activeContributors.length > 0 ? "Add New Name" : "Add Your Name"}
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
+                      ))}
+                      {projectSettings.allowContributorsAddNames && (
+                        <SelectItem value="new" className="text-base py-3 font-medium text-secondary">
+                          Add New Name
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                ) : null}
 
-                {(selectedName === "new" || (activeContributors.length === 0 && projectSettings.allowContributorsAddNames)) && (
+                {/* Show name input if: guests can add names, OR if no guests exist and adding is allowed, OR if "new" is selected */}
+                {(projectSettings.allowContributorsAddNames && (selectedName === "new" || selectedName === "" || activeContributors.length === 0)) && (
                   <div className="space-y-2 md:space-y-2">
                     <label htmlFor="custom-name" className="text-sm md:text-base font-bold md:font-medium text-gray-900 block">
-                      Type Your Name
+                      {activeContributors.length > 0 ? "Type Your Name" : "Type Your Name"}
                     </label>
                     <input
                       id="custom-name"
                       type="text"
                       value={customName}
                       onChange={(e) => {
-                        setCustomName(e.target.value)
-                        setCurrentContributorName(e.target.value)
+                        const value = e.target.value
+                        setCustomName(value)
+                        setCurrentContributorName(value)
+                        // Auto-select "new" when user starts typing (if not already selected and guests can add names)
+                        if (value.trim().length > 0 && selectedName !== "new" && projectSettings.allowContributorsAddNames) {
+                          setSelectedName("new")
+                        }
+                        // Clear selection if user deletes all text and there are existing contributors
+                        if (value.trim().length === 0 && activeContributors.length > 0) {
+                          setSelectedName("")
+                        }
+                      }}
+                      onFocus={() => {
+                        // Auto-select "new" when user focuses on the input (if guests can add names)
+                        if (projectSettings.allowContributorsAddNames && selectedName !== "new" && customName.trim().length === 0) {
+                          setSelectedName("new")
+                        }
                       }}
                       placeholder="Your name..."
                       maxLength={50}
@@ -522,92 +575,134 @@ export default function TaskClaimForm() {
                 </div>
               )}
 
-              {/* TASK SECTION - Shows after name is confirmed */}
-              {nameConfirmed && (
+              {/* TASK SECTION - Shows as soon as name is entered */}
+              {hasValidName() && (
                 <div className="space-y-4 md:space-y-6">
                   <h2 className="text-lg md:text-xl font-bold text-gray-900">
                     Choose a task or item below
                   </h2>
 
                   <div className="space-y-2 md:space-y-3">
-                    <Select 
-                  value={selectedTask} 
-                  onValueChange={(value) => {
-                    setSelectedTask(value)
-                    // If user selects a task, turn off attending-only mode
-                    if (value) {
-                      setIsAttendingOnly(false)
-                    }
-                  }}
-                >
-                  <SelectTrigger className="select-trigger">
-                    <SelectValue placeholder="Select a task to claim..." />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-80 overflow-y-auto">
-                    {availableTasks.map((task) => (
-                      <SelectItem key={task.id} value={task.id} className="text-base py-3" disabled={Boolean(task.isFull || task.alreadyJoined)}>
-                        <div className="flex items-center justify-between w-full gap-2">
-                          <span className={task.alreadyJoined ? "font-semibold" : ""}>{task.name}</span>
-                          <div className="flex items-center gap-2">
-                            {task.alreadyJoined && (
-                              <span className="text-xs text-green-600 font-semibold">✓ Joined</span>
-                            )}
-                            {task.isFull && !task.alreadyJoined && (
-                              <span className="text-xs text-red-600 font-semibold">FULL</span>
-                            )}
-                            {task.maxContributors && (
-                              <span className="text-xs text-muted-foreground">
-                                ({task.currentCount}/{task.maxContributors})
-                              </span>
-                            )}
-                            {!task.maxContributors && task.status === "claimed" && (
-                              <span className="text-xs text-muted-foreground">
-                                ({task.currentCount} joined)
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                    {projectSettings.allowContributorsAddTasks && (
-                      <SelectItem value="custom" className="text-base py-3 font-medium text-secondary">
-                        Add Custom Task
-                      </SelectItem>
+                    {/* Task dropdown - show when there are available tasks */}
+                    {tasks.length > 0 && availableTasks.length > 0 && (
+                      <div className="space-y-2 md:space-y-2">
+                        <label htmlFor="task-select" className="text-sm md:text-base font-bold md:font-medium text-gray-900 block">
+                          Select from existing tasks
+                        </label>
+                        <Select 
+                          value={selectedTask && selectedTask !== "custom" ? selectedTask : undefined} 
+                          onValueChange={(value) => {
+                            setSelectedTask(value)
+                            // If user selects a task from dropdown, turn off attending-only mode and clear custom task
+                            if (value) {
+                              setIsAttendingOnly(false)
+                              setCustomTask("")
+                            }
+                          }}
+                        >
+                          <SelectTrigger 
+                            className="select-trigger w-full bg-white border-2 border-gray-300 rounded-md px-3 py-2 text-base h-auto min-h-[44px] flex items-center justify-between" 
+                            id="task-select"
+                          >
+                            <SelectValue placeholder="Select a task to claim..." />
+                          </SelectTrigger>
+                          <SelectContent 
+                            className="max-h-80 overflow-y-auto z-[100] bg-white border-2 border-gray-200 shadow-xl rounded-md"
+                            position="popper"
+                            sideOffset={4}
+                          >
+                            {availableTasks.map((task) => (
+                              <SelectItem 
+                                key={task.id} 
+                                value={task.id} 
+                                className="text-base py-3 cursor-pointer hover:bg-gray-100" 
+                                disabled={Boolean(task.isFull || task.alreadyJoined)}
+                              >
+                                <div className="flex items-center justify-between w-full gap-2">
+                                  <span className={task.alreadyJoined ? "font-semibold" : ""}>{task.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    {task.alreadyJoined && (
+                                      <span className="text-xs text-green-600 font-semibold">✓ Joined</span>
+                                    )}
+                                    {task.isFull && !task.alreadyJoined && (
+                                      <span className="text-xs text-red-600 font-semibold">FULL</span>
+                                    )}
+                                    {task.maxContributors && (
+                                      <span className="text-xs text-muted-foreground">
+                                        ({task.currentCount}/{task.maxContributors})
+                                      </span>
+                                    )}
+                                    {!task.maxContributors && task.status === "claimed" && (
+                                      <span className="text-xs text-muted-foreground">
+                                        ({task.currentCount} joined)
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     )}
-                  </SelectContent>
-                </Select>
 
-                {/* Show message when no tasks available and can't add custom tasks */}
-                {availableTasks.length === 0 && !projectSettings.allowContributorsAddTasks && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <p className="text-sm text-yellow-800">
-                      ⚠️ No tasks available. Contact the host.
-                    </p>
-                  </div>
-                )}
+                    {/* Show message when no tasks available and can't add custom tasks */}
+                    {availableTasks.length === 0 && !projectSettings.allowContributorsAddTasks && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p className="text-sm text-yellow-800">
+                          ⚠️ No tasks available. Contact the host.
+                        </p>
+                      </div>
+                    )}
 
-                {selectedTask === "custom" && (
-                  <div className="space-y-2 md:space-y-2">
-                    <label htmlFor="custom-task" className="text-sm md:text-base font-bold md:font-medium text-gray-900 block">
-                      What task do you want to do?
-                    </label>
-                    <input
-                      id="custom-task"
-                      type="text"
-                      value={customTask}
-                      onChange={(e) => setCustomTask(e.target.value)}
-                      placeholder="Type your task..."
-                      maxLength={100}
-                      className="form-input text-base md:text-base py-2.5 md:py-2 px-3 md:px-3"
-                    />
-                    <p className="text-xs md:text-sm text-gray-600">
-                      {customTask.length}/100 characters
-                    </p>
+                    {/* Show custom task input field if guests can add tasks */}
+                    {projectSettings.allowContributorsAddTasks && (
+                      <div className="space-y-2 md:space-y-2">
+                        <label htmlFor="custom-task" className="text-sm md:text-base font-bold md:font-medium text-gray-900 block">
+                          {availableTasks.length > 0 ? "Or add a custom task" : "What task do you want to do?"}
+                        </label>
+                        <input
+                          id="custom-task"
+                          type="text"
+                          value={customTask}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            setCustomTask(value)
+                            // Auto-select "custom" when user starts typing (if not already selected and guests can add tasks)
+                            if (value.trim().length > 0 && selectedTask !== "custom" && projectSettings.allowContributorsAddTasks) {
+                              setSelectedTask("custom")
+                              // Clear any selected task from dropdown when typing custom task
+                              if (selectedTask && selectedTask !== "custom") {
+                                // Keep custom selected, dropdown will show empty
+                              }
+                            }
+                            // Clear custom selection if user deletes all text
+                            if (value.trim().length === 0 && selectedTask === "custom") {
+                              setSelectedTask("")
+                            }
+                          }}
+                          onFocus={() => {
+                            // Auto-select "custom" when user focuses on the input (if guests can add tasks)
+                            if (projectSettings.allowContributorsAddTasks && customTask.trim().length > 0 && selectedTask !== "custom") {
+                              setSelectedTask("custom")
+                            }
+                          }}
+                          placeholder="Type your task..."
+                          maxLength={100}
+                          className="form-input text-base md:text-base py-2.5 md:py-2 px-3 md:px-3"
+                        />
+                        <p className="text-xs md:text-sm text-gray-600">
+                          {customTask.length}/100 characters
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
               </div>
+              )}
 
-                  {/* OR Divider and Attending Only Button */}
+              {/* OR Divider and Attending Only Button - Only show when name is entered */}
+              {hasValidName() && (
+                <>
                   {!isAttendingOnly && (
                     <>
                       <div className="flex items-center gap-3 my-3 md:my-5">
@@ -678,7 +773,7 @@ export default function TaskClaimForm() {
                   >
                     {isSubmitting ? "Submitting..." : (isAttendingOnly ? "Confirm Attendance" : "Claim This Task")}
                   </button>
-                </div>
+                </>
               )}
             </form>
             </div>
