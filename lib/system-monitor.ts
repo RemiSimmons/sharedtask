@@ -69,21 +69,37 @@ export interface SystemMetrics {
 class SystemMonitor {
   private healthCheckInterval: NodeJS.Timeout | null = null
   private lastHealthCheck: SystemHealth | null = null
+  private lastHealthCheckTime: number = 0
+  private healthCheckCacheMs: number = 60000 // Cache health checks for 1 minute
 
   /**
    * Get current system health metrics
+   * Uses caching to prevent excessive database queries
    */
   async getSystemHealth(): Promise<SystemHealth> {
     try {
-      const [databaseHealth, memoryStats, cpuStats, diskStats] = await Promise.all([
-        this.checkDatabaseHealth(),
+      // Return cached result if available and recent
+      const now = Date.now()
+      if (this.lastHealthCheck && (now - this.lastHealthCheckTime) < this.healthCheckCacheMs) {
+        return this.lastHealthCheck
+      }
+
+      // Get memory and CPU stats immediately (no DB queries)
+      const [memoryStats, cpuStats, diskStats] = await Promise.all([
         this.getMemoryStats(),
         this.getCpuStats(),
         this.getDiskStats()
       ])
 
-      const errorRate = await this.calculateErrorRate()
-      const activeConnections = await this.getActiveConnections()
+      // Database health check (lightweight query)
+      const databaseHealth = await this.checkDatabaseHealth()
+
+      // Only calculate error rate and connections if cache expired
+      // These are the most expensive operations
+      const [errorRate, activeConnections] = await Promise.all([
+        this.calculateErrorRate(),
+        this.getActiveConnections()
+      ])
 
       const systemHealth: SystemHealth = {
         status: this.determineOverallStatus(databaseHealth, memoryStats, cpuStats, errorRate),
@@ -98,6 +114,7 @@ class SystemMonitor {
       }
 
       this.lastHealthCheck = systemHealth
+      this.lastHealthCheckTime = now
       return systemHealth
 
     } catch (error) {
@@ -168,10 +185,42 @@ class SystemMonitor {
       const memUsage = process.memoryUsage()
       
       // Convert bytes to MB
-      const used = Math.round(memUsage.heapUsed / 1024 / 1024)
-      const total = Math.round(memUsage.heapTotal / 1024 / 1024)
+      const heapUsed = Math.round(memUsage.heapUsed / 1024 / 1024)
+      const heapTotal = Math.round(memUsage.heapTotal / 1024 / 1024)
+      
+      // Get actual memory limit (for serverless environments like Vercel)
+      // Vercel sets AWS_LAMBDA_FUNCTION_MEMORY_SIZE or we can use NODE_OPTIONS
+      // Default to 1024 MB (1GB) for Hobby plan, or detect from environment
+      let actualMemoryLimitMB = 1024 // Default 1GB
+      
+      // Try to detect memory limit from environment
+      if (process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE) {
+        actualMemoryLimitMB = parseInt(process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE) || 1024
+      } else if (process.env.VERCEL) {
+        // Vercel Hobby: 1024MB, Pro: 3008MB, Enterprise: varies
+        // Check if we can detect from NODE_OPTIONS
+        const nodeOptions = process.env.NODE_OPTIONS || ''
+        const maxOldSpaceMatch = nodeOptions.match(/--max-old-space-size=(\d+)/)
+        if (maxOldSpaceMatch) {
+          actualMemoryLimitMB = parseInt(maxOldSpaceMatch[1]) || 1024
+        } else {
+          // Default based on Vercel plan (conservative estimate)
+          actualMemoryLimitMB = 1024
+        }
+      } else {
+        // For local development or other environments, use heapTotal as fallback
+        // but cap at reasonable limit to avoid false high percentages
+        actualMemoryLimitMB = Math.max(heapTotal, 512) // At least 512MB
+      }
+      
+      // Use the larger of heapTotal or actual limit to avoid false high percentages
+      const total = Math.max(heapTotal, actualMemoryLimitMB)
+      const used = heapUsed
       const available = total - used
-      const percentage = Math.round((used / total) * 100)
+      
+      // Calculate percentage based on actual limit, not just heapTotal
+      // This prevents false high percentages when heapTotal is small
+      const percentage = Math.min(Math.round((used / total) * 100), 100)
 
       return {
         percentage,
@@ -230,27 +279,25 @@ class SystemMonitor {
 
   /**
    * Calculate current error rate from logs
+   * Optimized to use a single query with better performance
    */
   private async calculateErrorRate(): Promise<number> {
     try {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
       
-      const [totalRequests, errorRequests] = await Promise.all([
-        // Total requests in last hour
-        supabaseAdmin
-          .from('application_logs')
-          .select('*', { count: 'exact' })
-          .gte('timestamp', oneHourAgo)
-          .then(({ count }: { count: any }) => count || 0),
-        
-        // Error requests in last hour
-        supabaseAdmin
-          .from('application_logs')
-          .select('*', { count: 'exact' })
-          .eq('level', 'error')
-          .gte('timestamp', oneHourAgo)
-          .then(({ count }: { count: any }) => count || 0)
-      ])
+      // Use a single query with aggregation instead of two separate queries
+      // This reduces database load
+      const { data, error } = await supabaseAdmin
+        .from('application_logs')
+        .select('level', { count: 'exact' })
+        .gte('timestamp', oneHourAgo)
+
+      if (error || !data) {
+        return 0
+      }
+
+      const totalRequests = data.length
+      const errorRequests = data.filter((log: any) => log.level === 'error').length
 
       return totalRequests > 0 ? Math.round((errorRequests / totalRequests) * 100) : 0
 
@@ -350,19 +397,21 @@ class SystemMonitor {
 
   /**
    * Get API endpoint performance
+   * Optimized to reduce data fetched and improve performance
    */
   async getApiPerformance(): Promise<SystemMetrics['apiPerformance']> {
     try {
       const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
 
-      // Get endpoint performance from logs
+      // Get endpoint performance from logs - only fetch necessary fields
+      // Reduced limit from 1000 to 500 to improve performance
       const { data: logs } = await supabaseAdmin
         .from('application_logs')
-        .select('*')
+        .select('endpoint, method, level, response_time, timestamp')
         .gte('timestamp', oneHourAgo)
         .not('endpoint', 'is', null)
         .order('timestamp', { ascending: false })
-        .limit(1000)
+        .limit(500)
 
       const endpointStats = new Map<string, {
         totalRequests: number
@@ -515,8 +564,10 @@ class SystemMonitor {
 
 export const systemMonitor = new SystemMonitor()
 
-// Auto-start monitoring in production
-if (process.env.NODE_ENV === 'production') {
-  systemMonitor.startHealthMonitoring(30000) // Check every 30 seconds in production
-}
+// DISABLED: Auto-start monitoring was causing performance issues
+// The monitoring should be triggered on-demand via API calls, not continuously
+// This prevents excessive database queries and memory usage
+// if (process.env.NODE_ENV === 'production') {
+//   systemMonitor.startHealthMonitoring(30000) // Check every 30 seconds in production
+// }
 
