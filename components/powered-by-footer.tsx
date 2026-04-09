@@ -26,14 +26,21 @@ export function PoweredByFooter({ show, className = '' }: PoweredByFooterProps) 
           </svg>
           SharedTask
         </a>
+        <span className="mx-1">•</span>
+        <span>Built by</span>
+        <a 
+          href="https://remisimmons.com" 
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 font-medium transition-colors cursor-pointer"
+        >
+          RemiSimmons.com
+        </a>
       </div>
     </div>
   )
 }
 
-/**
- * Compact version for smaller spaces
- */
 export function PoweredByFooterCompact({ show, className = '' }: PoweredByFooterProps) {
   if (!show) return null
   
@@ -50,20 +57,17 @@ export function PoweredByFooterCompact({ show, className = '' }: PoweredByFooter
       </a>
       <span className="mx-2">•</span>
       <a 
-        href="https://sharedtask.ai/pricing" 
+        href="https://remisimmons.com" 
         target="_blank"
         rel="noopener noreferrer"
         className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
       >
-        Upgrade
+        Built by RemiSimmons.com
       </a>
     </div>
   )
 }
 
-/**
- * Floating version for overlaying on content
- */
 export function PoweredByFloating({ show, className = '' }: PoweredByFooterProps) {
   if (!show) return null
   
@@ -80,17 +84,16 @@ export function PoweredByFloating({ show, className = '' }: PoweredByFooterProps
         >
           SharedTask
         </a>
+        <span className="mx-1">•</span>
         <a 
-          href="https://sharedtask.ai/pricing" 
+          href="https://remisimmons.com" 
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-2 bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
+          className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
         >
-          Upgrade
+          Built by RemiSimmons.com
         </a>
       </div>
     </div>
   )
 }
-
-

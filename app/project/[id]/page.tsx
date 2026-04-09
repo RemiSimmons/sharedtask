@@ -9,7 +9,6 @@ import AddTaskButton from "@/components/add-task-button"
 import { TaskProvider, useTask } from "@/contexts/TaskContextWithSupabase"
 import { LoadingErrorWrapper } from "@/components/loading-error-wrapper"
 import { PoweredByFooter } from "@/components/powered-by-footer"
-import { useFeatureFlags } from "@/hooks/use-subscription"
 import { Button } from "@/components/ui/button"
 import { RealtimeIndicator } from "@/components/realtime-indicator"
 import { HeadcountDisplay } from "@/components/headcount-display"
@@ -29,7 +28,6 @@ export default function ProjectPage() {
 
 function ProjectContent() {
   const { projectSettings, currentProject, realtimeConnected, lastRealtimeUpdate } = useTask()
-  const { featureFlags } = useFeatureFlags()
   const { data: session } = useSession()
   const router = useRouter()
   const params = useParams()
@@ -186,7 +184,7 @@ function ProjectContent() {
       </div>
       
       {/* Powered by SharedTask Footer - Only show if user can't remove branding */}
-      <PoweredByFooter show={!featureFlags?.canRemoveBranding} />
+      <PoweredByFooter show={true} />
       
       {/* Realtime connection indicator */}
       <RealtimeIndicator isConnected={realtimeConnected} lastUpdate={lastRealtimeUpdate} />

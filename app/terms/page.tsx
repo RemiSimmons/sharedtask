@@ -75,7 +75,7 @@ export default function TermsPage() {
                   <li><strong>Team:</strong> Unlimited projects, advanced features</li>
                 </ul>
                 <p className="text-gray-700 leading-relaxed mt-4">
-                  Billing is processed through Stripe. You may cancel your subscription at any time. Refunds are handled on a case-by-case basis.
+                  SharedTask is a free service. All features are available to all users at no cost.
                 </p>
               </section>
 

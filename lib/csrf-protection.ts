@@ -30,7 +30,7 @@ const PROTECTED_METHODS = ['POST', 'PUT', 'DELETE', 'PATCH']
 
 // Endpoints that are exempt from CSRF (webhooks, public APIs)
 const CSRF_EXEMPT_PATHS = [
-  '/api/webhooks/',      // Stripe webhooks
+  '/api/webhooks/',      // External webhooks
   '/api/cron/',          // Cron jobs
   '/api/auth/',          // NextAuth handles its own CSRF
 ]

@@ -1140,13 +1140,13 @@ function ConversionModal({
             </div>
             
             <div className="text-center pt-2 border-t border-gray-200">
-              <p className="text-xs text-gray-500 mb-2">Need more than 3 projects?</p>
+              <p className="text-xs text-gray-500 mb-2">Want to create more projects?</p>
               <button
                 type="button"
-                onClick={() => window.open('/pricing', '_blank')}
+                onClick={() => window.open('/', '_blank')}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium"
               >
-                💎 View Pricing Plans
+                Get Started Free
               </button>
             </div>
           </div>

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  // Only allow in development
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json(
       { error: 'Debug endpoint only available in development' },
@@ -14,15 +13,11 @@ export async function GET(request: NextRequest) {
     'NEXTAUTH_URL',
     'NEXT_PUBLIC_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    'STRIPE_SECRET_KEY',
   ]
 
   const optionalEnvVars = [
-    'STRIPE_WEBHOOK_SECRET',
-    'BASIC_PRICE_ID_MONTHLY',
-    'PRO_PRICE_ID_MONTHLY',
-    'TEAM_PRICE_ID_MONTHLY',
     'CRON_SECRET',
+    'RESEND_API_KEY',
   ]
 
   const envStatus = {
@@ -41,4 +36,3 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(envStatus)
 }
-

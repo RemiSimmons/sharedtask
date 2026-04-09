@@ -83,7 +83,6 @@ describe('Access Control Test Suite', () => {
         '/api/projects',
         '/api/account/update-profile',
         '/api/admin/dashboard/stats',
-        '/api/subscription/cancel'
       ]
       
       for (const endpoint of protectedEndpoints) {
@@ -100,7 +99,6 @@ describe('Access Control Test Suite', () => {
     test('should allow access to public routes', async () => {
       const publicRoutes = [
         '/',
-        '/pricing',
         '/auth/signin',
         '/auth/signup',
         '/terms',
@@ -118,16 +116,16 @@ describe('Access Control Test Suite', () => {
     })
     
     test('should allow webhooks without authentication', async () => {
-      const req = createMockRequest('https://sharedtask.ai/api/webhooks/stripe', {
+      const req = createMockRequest('https://sharedtask.ai/api/webhooks/test', {
         method: 'POST',
         session: mockUnauthenticated,
         headers: {
-          'stripe-signature': 'mock-signature'
+          'x-webhook-signature': 'mock-signature'
         }
       })
       
       // Webhooks use signature validation, not session auth
-      expect(req.headers.get('stripe-signature')).toBeTruthy()
+      expect(req.headers.get('x-webhook-signature')).toBeTruthy()
     })
   })
   
@@ -397,11 +395,11 @@ describe('Access Control Test Suite', () => {
     })
     
     test('should exempt webhooks from CSRF checks', async () => {
-      const req = createMockRequest('https://sharedtask.ai/api/webhooks/stripe', {
+      const req = createMockRequest('https://sharedtask.ai/api/webhooks/test', {
         method: 'POST',
         session: mockUnauthenticated,
         headers: {
-          'stripe-signature': 'mock-signature'
+          'x-webhook-signature': 'mock-signature'
         }
       })
       

@@ -188,8 +188,6 @@ export default function SupportPage() {
                       <SelectItem value="general-inquiry">General Inquiry</SelectItem>
                       <SelectItem value="technical-support">Technical Support</SelectItem>
                       <SelectItem value="feature-request">Feature Request</SelectItem>
-                      <SelectItem value="billing-question">Billing Question</SelectItem>
-                      <SelectItem value="cancel-subscription">Cancel Subscription Request</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

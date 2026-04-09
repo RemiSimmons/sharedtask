@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
-import { getUserSubscriptionState, getPlanLimits } from '@/lib/subscription-service'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,10 +11,6 @@ export async function GET(request: NextRequest) {
         error: 'Authentication required'
       }, { status: 401 })
     }
-
-    // Get user's subscription state and limits
-    const subscriptionState = await getUserSubscriptionState(session.user.id)
-    const planLimits = getPlanLimits(subscriptionState)
 
     // Get project count
     const { data: projects, error: projectError } = await supabaseAdmin
@@ -43,58 +38,24 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Calculate active projects (not expired)
-    const activeProjects = projects?.filter((p: any) => {
-      const createdDate = new Date(p.created_at || new Date())
-      const expiryDate = new Date(createdDate)
-      expiryDate.setDate(expiryDate.getDate() + planLimits.projectActiveWindow)
-      return new Date() <= expiryDate
-    }) || []
-
-    // Get detailed subscription info for paid users
-    let subscriptionDetails = null
-    if (subscriptionState.hasActiveSubscription || subscriptionState.hasActiveTrial) {
-      const { data: subData } = await supabaseAdmin
-        .from('user_subscriptions')
-        .select('id, interval, ends_at, renews_at')
-        .eq('user_id', session.user.id)
-        .single()
-      
-      subscriptionDetails = subData
-    }
-
     return NextResponse.json({
-      subscription: {
-        plan: subscriptionState.plan || 'free',
-        accessLevel: subscriptionState.accessLevel,
-        hasActiveTrial: subscriptionState.hasActiveTrial,
-        hasActiveSubscription: subscriptionState.hasActiveSubscription,
-        trialDaysRemaining: subscriptionState.trialDaysRemaining,
-        interval: subscriptionDetails?.interval || 'monthly',
-        renewsAt: subscriptionDetails?.renews_at || subscriptionDetails?.ends_at || null,
-        subscriptionId: subscriptionDetails?.id || null
-      },
       usage: {
         projects: {
           total: projects?.length || 0,
-          active: activeProjects.length,
-          max: planLimits.maxProjects
+          active: projects?.length || 0,
+          max: -1
         },
         tasks: {
           total: taskCount,
-          // For now, we'll use a monthly estimate
-          thisMonth: Math.min(taskCount, 100), // Rough estimate
-          max: planLimits.maxContributors * 10 // Rough calculation
         },
         storage: {
-          used: Math.floor(Math.random() * 50), // Placeholder - would need actual calculation
-          max: 100 // MB
+          used: 0,
+          max: -1
         },
         contributors: {
-          max: planLimits.maxContributors
+          max: -1
         }
-      },
-      limits: planLimits
+      }
     })
 
   } catch (error) {

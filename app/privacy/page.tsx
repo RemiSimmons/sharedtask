@@ -45,7 +45,6 @@ export default function PrivacyPage() {
                 <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4 mb-6">
                   <li>Name and email address when you create an account</li>
                   <li>Profile information and preferences</li>
-                  <li>Payment information (processed securely through Stripe)</li>
                   <li>Communications with our support team</li>
                   <li>Content you create, including projects, tasks, and comments</li>
                 </ul>
@@ -84,7 +83,7 @@ export default function PrivacyPage() {
                   We do not sell, trade, or rent your personal information to third parties. We may share your information in the following circumstances:
                 </p>
                 <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                  <li><strong>Service Providers:</strong> With trusted third parties who assist in operating our Service (e.g., Stripe for payments, Resend for emails)</li>
+                  <li><strong>Service Providers:</strong> With trusted third parties who assist in operating our Service (e.g., Resend for emails)</li>
                   <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
                   <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
                   <li><strong>Consent:</strong> When you have given explicit consent</li>
@@ -143,7 +142,6 @@ export default function PrivacyPage() {
                   Our Service integrates with third-party services:
                 </p>
                 <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                  <li><strong>Stripe:</strong> Payment processing (see Stripe's Privacy Policy)</li>
                   <li><strong>Resend:</strong> Email delivery (see Resend's Privacy Policy)</li>
                   <li><strong>Supabase:</strong> Database and authentication (see Supabase's Privacy Policy)</li>
                   <li><strong>Vercel Analytics:</strong> Usage analytics (see Vercel's Privacy Policy)</li>

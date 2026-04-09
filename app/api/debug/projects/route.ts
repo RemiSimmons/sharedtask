@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
-import { getUserSubscriptionState, getPlanLimits, isProjectExpired } from '@/lib/subscription-service'
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,10 +11,6 @@ export async function GET(request: NextRequest) {
         error: 'Authentication required'
       }, { status: 401 })
     }
-
-    // Get user's subscription state
-    const subscriptionState = await getUserSubscriptionState(session.user.id)
-    const planLimits = getPlanLimits(subscriptionState)
 
     // Get all user's projects
     const { data: projects, error } = await supabaseAdmin
@@ -29,14 +24,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 })
     }
 
-    // Check which projects are active vs expired
     const projectsWithStatus = projects?.map((project: any) => ({
       ...project,
-      isExpired: isProjectExpired(project.created_at || new Date().toISOString(), planLimits.projectActiveWindow),
+      isExpired: false,
       daysOld: Math.floor((new Date().getTime() - new Date(project.created_at || new Date()).getTime()) / (1000 * 60 * 60 * 24))
     })) || []
-
-    const activeProjects = projectsWithStatus.filter((p: any) => !p.isExpired)
 
     return NextResponse.json({
       user: {
@@ -44,14 +36,10 @@ export async function GET(request: NextRequest) {
         email: session.user.email,
         name: session.user.name
       },
-      subscriptionState,
-      planLimits,
       projects: projectsWithStatus,
-      activeProjects,
-      canCreateProject: subscriptionState.accessLevel !== 'free' || activeProjects.length === 0,
-      blockingReason: subscriptionState.accessLevel === 'free' && activeProjects.length > 0 
-        ? `Free tier allows only 1 active project. You have ${activeProjects.length} active project(s).`
-        : null
+      activeProjects: projectsWithStatus,
+      canCreateProject: true,
+      blockingReason: null
     })
   } catch (error) {
     console.error('Debug projects error:', error)

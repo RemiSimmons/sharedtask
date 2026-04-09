@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 import AppHeader from "@/components/app-header"
 
 export default function AccountManagementPage() {
@@ -40,11 +39,6 @@ export default function AccountManagementPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState("")
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
-  
-  
-  // Usage data state
-  const [usageData, setUsageData] = useState<any>(null)
-  const [isLoadingUsage, setIsLoadingUsage] = useState(true)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -57,8 +51,6 @@ export default function AccountManagementPage() {
       setEmail(session.user.email || "")
       // Fetch email verification status from database
       fetchEmailVerificationStatus()
-      // Load usage data
-      loadUsageData()
     }
   }, [session, status, router])
 
@@ -73,23 +65,6 @@ export default function AccountManagementPage() {
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to fetch email verification status:', error)
       }
-    }
-  }
-
-  const loadUsageData = async () => {
-    try {
-      setIsLoadingUsage(true)
-      const response = await fetch('/api/account/usage')
-      if (response.ok) {
-        const data = await response.json()
-        setUsageData(data)
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to load usage data:', error)
-      }
-    } finally {
-      setIsLoadingUsage(false)
     }
   }
 
@@ -676,213 +651,6 @@ export default function AccountManagementPage() {
               </button>
             </form>
           </div>
-
-          {/* Billing & Usage Card */}
-          <div className="card-beautiful p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <svg className="section-icon text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <h2 className="header-section">Billing & Usage</h2>
-            </div>
-
-            {isLoadingUsage ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-2 text-gray-600 text-sm">Loading usage data...</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Current Plan & Status */}
-                <div>
-                  <label className="block text-lg font-semibold text-gray-900 mb-3">
-                    💳 Current Plan
-                  </label>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                          usageData?.subscription?.accessLevel === 'free' 
-                            ? 'bg-gray-100 text-gray-800' 
-                            : usageData?.subscription?.accessLevel === 'trial'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {usageData?.subscription?.hasActiveTrial 
-                            ? `${usageData.subscription.plan || 'Pro'} Trial` 
-                            : usageData?.subscription?.hasActiveSubscription
-                            ? `${usageData.subscription.plan || 'Pro'} Plan`
-                            : 'Free Plan'
-                          }
-                        </span>
-                        {usageData?.subscription?.hasActiveTrial && usageData?.subscription?.trialDaysRemaining && (
-                          <span className="text-sm text-blue-600 font-medium">
-                            {usageData.subscription.trialDaysRemaining} days left
-                          </span>
-                        )}
-                        {usageData?.subscription?.hasActiveSubscription && (
-                          <span className="text-sm text-green-600 font-medium">
-                            ✓ Active
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Subscription Details */}
-                    {usageData?.subscription?.hasActiveSubscription && (
-                      <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Billing Interval:</span>
-                          <span className="font-medium capitalize">{usageData.subscription.interval || 'Monthly'}</span>
-                        </div>
-                        {usageData.subscription.renewsAt && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Next Billing Date:</span>
-                            <span className="font-medium">{new Date(usageData.subscription.renewsAt).toLocaleDateString()}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Payment Management Actions */}
-                <div className="border-t border-gray-200 pt-6">
-                  <label className="block text-lg font-semibold text-gray-900 mb-4">
-                    ⚙️ Manage Subscription
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Upgrade Button */}
-                    {(usageData?.subscription?.accessLevel === 'free' || usageData?.subscription?.hasActiveTrial) && (
-                      <Link 
-                        href="/pricing"
-                        className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                        Upgrade Plan
-                      </Link>
-                    )}
-
-                    {/* Update Payment Method */}
-                    {usageData?.subscription?.hasActiveSubscription && (
-                      <Link
-                        href="/account/billing"
-                        className="inline-flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-4 py-3 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                        Update Payment
-                      </Link>
-                    )}
-
-                    {/* View All Plans */}
-                    {usageData?.subscription?.hasActiveSubscription && (
-                      <Link
-                        href="/pricing"
-                        className="inline-flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-4 py-3 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                        Change Plan
-                      </Link>
-                    )}
-
-                    {/* Billing Portal - Full Management */}
-                    {usageData?.subscription?.hasActiveSubscription && (
-                      <Link
-                        href="/account/billing"
-                        className="inline-flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 px-4 py-3 rounded-lg font-medium transition-all shadow-sm hover:shadow-md"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        View Invoices
-                      </Link>
-                    )}
-                  </div>
-
-                  {/* Cancel Subscription Link */}
-                  {usageData?.subscription?.hasActiveSubscription && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <Link
-                        href="/account/billing?action=cancel"
-                        className="inline-flex items-center gap-2 text-red-600 hover:text-red-700 font-medium text-sm"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Cancel Subscription
-                      </Link>
-                    </div>
-                  )}
-                </div>
-
-                {/* Usage Stats */}
-                <div className="border-t border-gray-200 pt-6">
-                  <label className="block text-lg font-semibold text-gray-900 mb-4">
-                    📊 Usage Stats
-                  </label>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Projects:</span>
-                      <div className="text-right">
-                        <span className="font-medium block">
-                          {usageData?.usage?.projects?.active || 0} active
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {usageData?.usage?.projects?.total || 0} total
-                          {usageData?.usage?.projects?.max !== -1 && ` / ${usageData.usage.projects.max} max`}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Total Tasks:</span>
-                      <span className="font-medium">{usageData?.usage?.tasks?.total || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Storage Used:</span>
-                      <span className="font-medium">{usageData?.usage?.storage?.used || 0} MB / {usageData?.usage?.storage?.max || 100} MB</span>
-                    </div>
-                    {usageData?.usage?.contributors && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Guests Limit:</span>
-                        <span className="font-medium">
-                          {usageData.usage.contributors.max === -1 ? 'Unlimited' : `${usageData.usage.contributors.max} per project`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Feature Summary */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div className="text-sm">
-                      <p className="text-gray-700 font-medium mb-1">Plan Features:</p>
-                      <ul className="text-gray-600 space-y-1">
-                        <li>✓ {usageData?.usage?.projects?.max === -1 ? 'Unlimited' : usageData?.usage?.projects?.max || 1} Project{usageData?.usage?.projects?.max !== 1 && 's'}</li>
-                        <li>✓ {usageData?.usage?.contributors?.max === -1 ? 'Unlimited' : usageData?.usage?.contributors?.max || 10} Guest{usageData?.usage?.contributors?.max !== 1 && 's'} per project</li>
-                        {usageData?.subscription?.hasActiveSubscription && (
-                          <>
-                            <li>✓ Priority Support</li>
-                            <li>✓ Advanced Features</li>
-                          </>
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
 
           {/* Account Actions Card */}
           <div className="card-beautiful p-8">

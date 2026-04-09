@@ -198,25 +198,6 @@ export const updateProfileSchema = z.object({
 })
 
 // ============================================================================
-// SUBSCRIPTION SCHEMAS
-// ============================================================================
-
-export const subscriptionSchema = z.object({
-  plan: z.enum(['basic', 'pro', 'team'], {
-    errorMap: () => ({ message: 'Plan must be basic, pro, or team' })
-  }),
-  interval: z.enum(['monthly', 'yearly'], {
-    errorMap: () => ({ message: 'Interval must be monthly or yearly' })
-  }),
-})
-
-export const trialSchema = z.object({
-  plan: z.enum(['basic', 'pro', 'team'], {
-    errorMap: () => ({ message: 'Plan must be basic, pro, or team' })
-  }),
-})
-
-// ============================================================================
 // CONTACT/SUPPORT SCHEMAS
 // ============================================================================
 
@@ -294,26 +275,6 @@ export const verifyEmailSchema = z.object({
   token: z.string()
     .min(1, 'Token is required')
     .max(255, 'Invalid token format'),
-})
-
-export const subscriptionCancelSchema = z.object({
-  subscriptionId: z.string()
-    .min(1, 'Subscription ID is required')
-    .max(255, 'Invalid subscription ID format'),
-})
-
-export const checkoutSchema = z.object({
-  priceId: z.string()
-    .min(1, 'Price ID is required')
-    .max(255, 'Invalid price ID format'),
-  successUrl: z.string()
-    .url('Invalid success URL')
-    .max(2000, 'URL is too long')
-    .optional(),
-  cancelUrl: z.string()
-    .url('Invalid cancel URL')
-    .max(2000, 'URL is too long')
-    .optional(),
 })
 
 export const adminUserActionSchema = z.object({

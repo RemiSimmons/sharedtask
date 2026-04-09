@@ -26,8 +26,8 @@ function getContentSecurityPolicy(isDev: boolean = false): string {
     
     // Scripts: Allow self, inline scripts (for Next.js), and specific domains
     isDev 
-      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com"
-      : "script-src 'self' 'unsafe-inline' https://js.stripe.com https://va.vercel-scripts.com",
+      ? "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com"
+      : "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
     
     // Styles: Allow self, inline styles (for styled-components/CSS-in-JS), and Google Fonts
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -38,11 +38,11 @@ function getContentSecurityPolicy(isDev: boolean = false): string {
     // Fonts: Allow self and Google Fonts
     "font-src 'self' data: https://fonts.gstatic.com",
     
-    // Connect: Allow self, Supabase, Stripe, and analytics
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://vitals.vercel-insights.com",
+    // Connect: Allow self, Supabase, and analytics
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://vitals.vercel-insights.com",
     
-    // Frames: Allow Stripe checkout
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+    // Frames: Disallow all
+    "frame-src 'self'",
     
     // Objects: Disallow plugins (Flash, Java, etc.)
     "object-src 'none'",
@@ -81,8 +81,8 @@ function getPermissionsPolicy(): string {
     // Geolocation: Deny all
     "geolocation=()",
     
-    // Payment: Allow same origin only (for Stripe)
-    "payment=(self)",
+    // Payment: Deny all
+    "payment=()",
     
     // USB: Deny all
     "usb=()",

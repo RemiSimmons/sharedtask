@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { supabaseAdmin } from '@/lib/supabase'
-import { getUserSubscriptionState, getPlanLimits, isProjectExpired } from '@/lib/subscription-service'
 import bcrypt from 'bcryptjs'
 import { projectSchema } from '@/lib/validation'
 import { validateRequest } from '@/lib/validation-middleware'
@@ -26,11 +25,11 @@ export async function POST(request: NextRequest) {
     const validation = await validateRequest(request, {
       bodySchema: projectSchema,
       rateLimit: {
-        identifier: session.user.id, // Rate limit per user
-        maxRequests: 10, // 10 project creation attempts per 15 minutes
+        identifier: session.user.id,
+        maxRequests: 10,
         windowMs: 15 * 60 * 1000
       },
-      maxBodySize: 2048, // 2KB max for project creation requests
+      maxBodySize: 2048,
     })
 
     if (!validation.success) {
@@ -55,120 +54,9 @@ export async function POST(request: NextRequest) {
       projectPassword
     } = validation.data.body!
 
-    // Get user's subscription state and limits
-    console.log('Getting subscription state...')
-    const subscriptionState = await getUserSubscriptionState(session.user.id)
-    console.log('Subscription state:', subscriptionState)
-    const planLimits = getPlanLimits(subscriptionState)
-    console.log('Plan limits:', planLimits)
-
-    // Check current project count and active projects for free tier
-    console.log('Checking existing projects...')
-    const { data: existingProjects, error: countError } = await supabaseAdmin
-      .from('projects')
-      .select('id, created_at, name')
-      .eq('user_id', session.user.id)
-
-    if (countError) {
-      console.error('Error counting projects:', countError)
-      return NextResponse.json(
-        { error: 'Failed to check project limits. Please try again.' },
-        { status: 500 }
-      )
-    }
-    console.log('Existing projects:', existingProjects)
-
-    const currentProjectCount = existingProjects?.length || 0
-
-    // Special handling for free tier - only 1 active project at a time
-    if (subscriptionState.accessLevel === 'free') {
-      const activeProject = existingProjects?.find((p: any) => 
-        !isProjectExpired(p.created_at || new Date().toISOString(), planLimits.projectActiveWindow)
-      )
-      
-      if (activeProject) {
-        return NextResponse.json({
-          error: 'Free tier project limit reached',
-          message: 'Free users can only have 1 active project at a time. You can either upgrade your plan or delete an existing project to create a new one.',
-          code: 'FREE_TIER_ACTIVE_PROJECT_LIMIT',
-          upgradePrompt: 'multiproject',
-          currentActiveProjects: 1,
-          maxActiveProjects: 1,
-          activeProject: {
-            id: activeProject.id,
-            name: activeProject.name,
-            created_at: activeProject.created_at
-          },
-          solutions: [
-            {
-              type: 'upgrade',
-              title: 'Upgrade to Pro',
-              description: 'Get unlimited active projects and advanced features',
-              action: 'upgrade_plan'
-            },
-            {
-              type: 'delete',
-              title: 'Delete Existing Project',
-              description: `Delete "${activeProject.name}" to create a new project`,
-              action: 'delete_project',
-              projectId: activeProject.id
-            }
-          ]
-        }, { status: 403 })
-      }
-    }
-
-    // Check project limits (unless unlimited)
-    if (planLimits.maxProjects !== -1 && currentProjectCount >= planLimits.maxProjects) {
-      const planName = subscriptionState.plan || 'free'
-      const activeProjects = existingProjects?.filter((p: any) => 
-        !isProjectExpired(p.created_at || new Date().toISOString(), planLimits.projectActiveWindow)
-      ) || []
-      
-      return NextResponse.json(
-        { 
-          error: 'Project limit reached',
-          message: `Your ${planName} plan allows up to ${planLimits.maxProjects} project${planLimits.maxProjects === 1 ? '' : 's'}. You currently have ${currentProjectCount} projects.`,
-          code: 'PROJECT_LIMIT_REACHED',
-          currentCount: currentProjectCount,
-          maxProjects: planLimits.maxProjects,
-          planName,
-          activeProjects: activeProjects.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            created_at: p.created_at
-          })),
-          solutions: [
-            {
-              type: 'upgrade',
-              title: 'Upgrade Your Plan',
-              description: 'Get more projects and advanced features',
-              action: 'upgrade_plan'
-            },
-            {
-              type: 'manage',
-              title: 'Manage Existing Projects',
-              description: 'Delete old projects to make room for new ones',
-              action: 'manage_projects'
-            }
-          ]
-        },
-        { status: 403 }
-      )
-    }
-
     // Validate project password requirements
     let hashedPassword = null
     if (projectPassword) {
-      if (!planLimits.hasAdvancedFeatures) {
-        return NextResponse.json({
-          error: 'Feature not available',
-          message: 'Project passwords are only available for Pro and Team plans. Upgrade to use this feature.',
-          code: 'FEATURE_REQUIRES_UPGRADE'
-        }, { status: 403 })
-      }
-      
-      // Hash the password securely
       hashedPassword = await bcrypt.hash(projectPassword, 12)
     }
 
@@ -180,27 +68,11 @@ export async function POST(request: NextRequest) {
     const sanitizedEventTime = eventTime ? sanitizeInput(eventTime) : null
     const sanitizedEventAttire = eventAttire ? sanitizeInput(eventAttire) : null
 
-    // Validate contributor limits per task
     if (maxContributorsPerTask && maxContributorsPerTask > 100) {
       return NextResponse.json({
         error: 'Invalid contributor limit',
         message: 'Maximum contributors per task cannot exceed 100.'
       }, { status: 400 })
-    }
-
-    // Validate total guest count against tier limits
-    if (contributors && Array.isArray(contributors)) {
-      const guestCount = contributors.length
-      if (planLimits.maxContributors !== -1 && guestCount > planLimits.maxContributors) {
-        return NextResponse.json({
-          error: 'Guest limit exceeded',
-          message: `Your ${subscriptionState.plan || 'free'} plan allows up to ${planLimits.maxContributors} guests per project. You're trying to add ${guestCount} guests.`,
-          code: 'GUEST_LIMIT_EXCEEDED',
-          limit: planLimits.maxContributors,
-          attempted: guestCount,
-          upgradePrompt: 'guests'
-        }, { status: 400 })
-      }
     }
 
     // Create project in database
@@ -227,8 +99,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Database error during project creation:', error)
       
-      // Handle specific database errors
-      if (error.code === '23505') { // Unique constraint violation
+      if (error.code === '23505') {
         return NextResponse.json(
           { error: 'A project with this name already exists for your account.' },
           { status: 409 }
@@ -241,18 +112,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Log successful project creation for monitoring
     console.log(`Project created: "${project.name}" by user ${session.user.id}`)
 
     return NextResponse.json({
       ...project,
-      // Add computed fields
       hasPassword: !!hashedPassword,
-      planLimits: {
-        currentProjects: currentProjectCount + 1,
-        maxProjects: planLimits.maxProjects,
-        hasAdvancedFeatures: planLimits.hasAdvancedFeatures
-      }
     }, { status: 201 })
   } catch (error) {
     console.error('=== PROJECT CREATION ERROR ===')
