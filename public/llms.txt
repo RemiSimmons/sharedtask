@@ -1,0 +1,18 @@
+# SharedTask
+> Free collaborative task management for small teams.
+
+## About
+SharedTask is a free task management platform built for small teams who need to collaborate simply. Create projects, assign tasks, and track progress together with no subscription required. Built by Remi Simmons at RemiSimmons.com.
+
+## Features
+- Project creation and management
+- Task assignment and tracking
+- Real-time collaboration
+- Google Maps integration
+- Event and RSVP management
+- Demo mode for trying before signup
+
+## Contact
+- Website: https://sharedtask.ai
+- App: https://sharedtask.app
+- Built by: https://remisimmons.com
