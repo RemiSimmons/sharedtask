@@ -138,8 +138,6 @@ function LandingPageContent() {
         // Close current dialog first
         setConfirmDialogOpen(false)
         
-        // Close modal if open and reload projects list
-        setShowProjectLimitModal(false)
         await loadUserProjects()
 
         // Small delay to ensure previous dialog closes before showing success
