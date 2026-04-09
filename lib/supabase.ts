@@ -60,5 +60,5 @@ export function handleSupabaseError(error: any, context: string) {
 }
 
 // Note: getOrCreateDefaultProject function removed to improve UX and security
-// Users must now create projects through the proper UI flow with subscription limits
+// Users must now create projects through the proper UI flow
 

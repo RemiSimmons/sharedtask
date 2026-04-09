@@ -45,7 +45,7 @@ export default function TermsPage() {
                   <li>Invite team members and collaborators</li>
                   <li>Track task progress and completion</li>
                   <li>Share project links for easy collaboration</li>
-                  <li>Access premium features through subscription plans</li>
+                  <li>Access all features at no cost</li>
                 </ul>
               </section>
 
@@ -64,18 +64,9 @@ export default function TermsPage() {
               </section>
 
               <section className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Subscription Plans and Billing</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Service Terms</h2>
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  SharedTask offers multiple subscription tiers:
-                </p>
-                <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                  <li><strong>Free:</strong> 1 project, up to 10 contributors, 14-day project window</li>
-                  <li><strong>Basic:</strong> 5 active projects, 60-day project window</li>
-                  <li><strong>Pro:</strong> 10 projects, password protection, custom templates</li>
-                  <li><strong>Team:</strong> Unlimited projects, advanced features</li>
-                </ul>
-                <p className="text-gray-700 leading-relaxed mt-4">
-                  SharedTask is a free service. All features are available to all users at no cost.
+                  SharedTask is provided as a free service. All features are available to all registered users at no cost. We reserve the right to introduce optional paid features in the future, but existing free functionality will remain available.
                 </p>
               </section>
 
