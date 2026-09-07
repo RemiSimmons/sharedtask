@@ -3,7 +3,6 @@
 import React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import TaskClaimForm from "@/components/task-claim-form"
 import ContributorTaskList from "@/components/contributor-task-list"
 import { TaskProvider, useTask } from "@/contexts/TaskContextWithSupabase"
 import { LoadingErrorWrapper } from "@/components/loading-error-wrapper"
@@ -45,7 +44,6 @@ function ProjectContent() {
     realtimeConnected,
     lastRealtimeUpdate,
     currentContributorName,
-    setCurrentContributorName,
     claimTask,
     addTaskAndClaim,
   } = useTask()
@@ -54,9 +52,6 @@ function ProjectContent() {
   const params = useParams()
   const projectId = params.id as string
   const [isEventDetailsOpen, setIsEventDetailsOpen] = React.useState(false)
-  const [claimSheetOpen, setClaimSheetOpen] = React.useState(false)
-  const [pendingTaskId, setPendingTaskId] = React.useState<string | null>(null)
-  const [pendingCustomTask, setPendingCustomTask] = React.useState<string | null>(null)
 
   const isOwner = session?.user?.id && currentProject?.user_id === session.user.id
   const { plural } = getTaskLabels(projectSettings.taskLabel, projectSettings.taskLabelPlural)
@@ -70,35 +65,21 @@ function ProjectContent() {
   }
 
   const handleClaimTask = async (taskId: string) => {
-    if (storedName) {
-      try {
-        await claimTask(taskId, storedName)
-      } catch (error) {
-        console.error("Failed to claim task:", error)
-      }
-      return
+    if (!storedName) return
+    try {
+      await claimTask(taskId, storedName)
+    } catch (error) {
+      console.error("Failed to claim task:", error)
     }
-    setPendingCustomTask(null)
-    setPendingTaskId(taskId)
-    setClaimSheetOpen(true)
   }
 
   const handleAddOwnTask = async (taskName: string) => {
-    if (storedName) {
-      try {
-        await addTaskAndClaim(taskName, storedName)
-      } catch (error) {
-        console.error("Failed to add task:", error)
-      }
-      return
+    if (!storedName) return
+    try {
+      await addTaskAndClaim(taskName, storedName)
+    } catch (error) {
+      console.error("Failed to add task:", error)
     }
-    setPendingTaskId(null)
-    setPendingCustomTask(taskName)
-    setClaimSheetOpen(true)
-  }
-
-  const handleClearName = () => {
-    setCurrentContributorName("")
   }
 
   return (
@@ -141,19 +122,6 @@ function ProjectContent() {
               {total} {plural} needed
             </p>
 
-            {storedName && (
-              <p className="text-center text-sm text-gray-500">
-                {storedName}{" "}
-                <button
-                  type="button"
-                  onClick={handleClearName}
-                  className="text-blue-600 hover:text-blue-800 underline-offset-2 hover:underline"
-                >
-                  Not you?
-                </button>
-              </p>
-            )}
-
             <div className="space-y-1.5">
               <div className="h-1 w-full rounded-full bg-gray-200 overflow-hidden">
                 <div
@@ -182,19 +150,6 @@ function ProjectContent() {
           <EventDetailsModal open={isEventDetailsOpen} onOpenChange={setIsEventDetailsOpen} />
 
           <ContributorTaskList onClaimTask={handleClaimTask} onAddOwnTask={handleAddOwnTask} />
-
-          <TaskClaimForm
-            open={claimSheetOpen}
-            onOpenChange={(open) => {
-              setClaimSheetOpen(open)
-              if (!open) {
-                setPendingTaskId(null)
-                setPendingCustomTask(null)
-              }
-            }}
-            pendingTaskId={pendingTaskId}
-            pendingCustomTask={pendingCustomTask}
-          />
 
           <div className="text-center pt-4">
             <a
