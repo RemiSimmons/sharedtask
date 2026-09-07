@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Check, MessageCircle, Plus } from "lucide-react"
 import { useTask } from "@/contexts/TaskContextWithSupabase"
 import { getInitials, getTaskLabels } from "@/lib/task-labels"
@@ -11,11 +11,24 @@ interface ContributorTaskListProps {
 }
 
 export default function ContributorTaskList({ onClaimTask, onAddOwnTask }: ContributorTaskListProps) {
-  const { tasks, projectSettings, addComment, currentContributorName } = useTask()
+  const { tasks, projectSettings, addComment, currentContributorName, unclaimTask } = useTask()
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [newComments, setNewComments] = useState<Record<string, string>>({})
   const [showAddInput, setShowAddInput] = useState(false)
   const [newTaskName, setNewTaskName] = useState("")
+  const [pendingUnclaimId, setPendingUnclaimId] = useState<string | null>(null)
+  const storedName = currentContributorName.trim()
+
+  useEffect(() => {
+    if (!pendingUnclaimId) return
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null
+      if (target?.closest(`[data-unclaim-row="${pendingUnclaimId}"]`)) return
+      setPendingUnclaimId(null)
+    }
+    document.addEventListener("pointerdown", onPointerDown)
+    return () => document.removeEventListener("pointerdown", onPointerDown)
+  }, [pendingUnclaimId])
 
   const { singular } = getTaskLabels(projectSettings.taskLabel, projectSettings.taskLabelPlural)
 
@@ -61,18 +74,26 @@ export default function ContributorTaskList({ onClaimTask, onAddOwnTask }: Contr
           const isAvailable = task.status === "available"
           const isClaimed = task.status === "claimed" || task.status === "completed"
           const claimant = task.claimedBy?.[0]
+          const isMine = Boolean(storedName && task.claimedBy?.includes(storedName))
+          const isPendingUnclaim = pendingUnclaimId === task.id
+          const isInteractive = isAvailable || isMine
 
           return (
-            <div key={task.id}>
+            <div key={task.id} data-unclaim-row={isMine ? task.id : undefined}>
               <div className="flex w-full items-center gap-3 min-h-[44px]">
                 <button
                   type="button"
                   onClick={() => {
-                    if (isAvailable) onClaimTask(task.id)
+                    if (isAvailable) {
+                      onClaimTask(task.id)
+                      return
+                    }
+                    if (!isMine) return
+                    setPendingUnclaimId(isPendingUnclaim ? null : task.id)
                   }}
-                  disabled={!isAvailable}
+                  disabled={!isInteractive}
                   className={`flex flex-1 items-center gap-3 min-h-[44px] py-2.5 px-1 text-left ${
-                    isAvailable ? "cursor-pointer active:bg-gray-50" : "cursor-default"
+                    isInteractive ? "cursor-pointer active:bg-gray-50" : "cursor-default"
                   }`}
                 >
                   <span
@@ -95,7 +116,7 @@ export default function ContributorTaskList({ onClaimTask, onAddOwnTask }: Contr
                     {task.name}
                   </span>
 
-                  {isClaimed && claimant && (
+                  {isClaimed && claimant && !isPendingUnclaim && (
                     <span
                       className="flex-shrink-0 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 text-[10px] font-semibold"
                       style={{ width: 26, height: 26 }}
@@ -105,6 +126,34 @@ export default function ContributorTaskList({ onClaimTask, onAddOwnTask }: Contr
                     </span>
                   )}
                 </button>
+
+                {isPendingUnclaim && (
+                  <div className="flex items-center gap-2 pr-1">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!storedName) return
+                        try {
+                          await unclaimTask(task.id, storedName)
+                        } catch (error) {
+                          console.error("Failed to unclaim task:", error)
+                        } finally {
+                          setPendingUnclaimId(null)
+                        }
+                      }}
+                      className="text-sm font-medium text-red-600 min-h-[44px] px-1"
+                    >
+                      Remove?
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPendingUnclaimId(null)}
+                      className="text-sm text-gray-500 min-h-[44px] px-1"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
 
                 {isAvailable && (
                   <button

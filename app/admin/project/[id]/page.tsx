@@ -12,6 +12,7 @@ import { useTask } from "@/contexts/TaskContextWithSupabase"
 import Link from "next/link"
 import { ShareProjectButton } from "@/components/share-project-button"
 import { MobileNav } from "@/components/mobile-nav"
+import { Trash2 } from "lucide-react"
 
 export default function AdminProjectPage() {
   const { data: session, status } = useSession()
@@ -296,6 +297,141 @@ function DynamicContentLayout({
   }
 }
 
+function ActiveGuestRow({
+  name,
+  claimedCount,
+  otherNames,
+}: {
+  name: string
+  claimedCount: number
+  otherNames: string[]
+}) {
+  const { data: session } = useSession()
+  const { currentProject, renameContributorName, removeContributorName } = useTask()
+  const isOwner = Boolean(session?.user?.id && currentProject?.user_id === session.user.id)
+  const [isEditing, setIsEditing] = useState(false)
+  const [draft, setDraft] = useState(name)
+  const [error, setError] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const skipBlurRef = React.useRef(false)
+
+  useEffect(() => {
+    if (!isEditing) setDraft(name)
+  }, [name, isEditing])
+
+  const cancelEdit = () => {
+    skipBlurRef.current = true
+    setDraft(name)
+    setError(null)
+    setIsEditing(false)
+  }
+
+  const saveEdit = async () => {
+    if (skipBlurRef.current) {
+      skipBlurRef.current = false
+      return
+    }
+    const next = draft.trim()
+    if (!next || next === name) {
+      setDraft(name)
+      setError(null)
+      setIsEditing(false)
+      return
+    }
+    if (otherNames.some((existing) => existing !== name && existing === next)) {
+      setError("That name is already on this project")
+      return
+    }
+
+    setIsSaving(true)
+    setError(null)
+    try {
+      await renameContributorName(name, next)
+      setIsEditing(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to rename guest")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleRemove = async () => {
+    const confirmMessage = claimedCount > 0
+      ? `Remove ${name}? ${name} has ${claimedCount} claimed task${claimedCount === 1 ? "" : "s"}`
+      : `Remove ${name}?`
+    if (!confirm(confirmMessage)) return
+    try {
+      await removeContributorName(name)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to remove guest")
+    }
+  }
+
+  return (
+    <div
+      className="flex items-center justify-between bg-white rounded-lg p-4 md:p-3 shadow-sm hover:shadow-md transition-shadow min-h-[60px] md:min-h-0"
+      style={{ touchAction: "manipulation" }}
+    >
+      <div className="flex-1 min-w-0 pr-2">
+        {isOwner && isEditing ? (
+          <input
+            value={draft}
+            onChange={(e) => {
+              setDraft(e.target.value)
+              setError(null)
+            }}
+            onBlur={saveEdit}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                e.currentTarget.blur()
+              }
+              if (e.key === "Escape") {
+                e.preventDefault()
+                cancelEdit()
+              }
+            }}
+            autoFocus
+            disabled={isSaving}
+            className="w-full text-base md:text-sm font-medium text-gray-900 border border-green-300 rounded px-2 py-1"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              if (!isOwner) return
+              setIsEditing(true)
+              setError(null)
+            }}
+            className={`text-gray-900 font-medium text-base md:text-sm break-words text-left ${
+              isOwner ? "hover:underline" : "cursor-default"
+            }`}
+          >
+            {name}
+          </button>
+        )}
+        {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      </div>
+      <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+        <span className="text-green-600 text-sm font-semibold whitespace-nowrap">
+          {claimedCount} task{claimedCount !== 1 ? "s" : ""}
+        </span>
+        {isOwner && (
+          <button
+            type="button"
+            onClick={handleRemove}
+            className="p-1.5 text-gray-400 hover:text-red-600 min-w-[36px] min-h-[36px] flex items-center justify-center"
+            aria-label={`Remove ${name}`}
+            title={`Remove ${name}`}
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // Bulk Add Section Component
 function BulkAddSection() {
   const { addTasks, tasks, addContributorNames } = useTask()
@@ -516,16 +652,12 @@ function BulkAddSection() {
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pr-2">
               {activeContributors.map((contributor) => (
-                <div 
-                  key={contributor} 
-                  className="flex items-center justify-between bg-white rounded-lg p-4 md:p-3 shadow-sm hover:shadow-md transition-shadow min-h-[60px] md:min-h-0"
-                  style={{ touchAction: 'manipulation' }}
-                >
-                  <span className="text-gray-900 font-medium text-base md:text-sm break-words pr-2 flex-1">{contributor}</span>
-                  <span className="text-green-600 text-sm font-semibold whitespace-nowrap ml-2">
-                    {tasks.filter(t => t.claimedBy?.includes(contributor)).length} task{tasks.filter(t => t.claimedBy?.includes(contributor)).length !== 1 ? 's' : ''}
-                  </span>
-                </div>
+                <ActiveGuestRow
+                  key={contributor}
+                  name={contributor}
+                  claimedCount={tasks.filter(t => t.claimedBy?.includes(contributor)).length}
+                  otherNames={activeContributors}
+                />
               ))}
             </div>
           </div>

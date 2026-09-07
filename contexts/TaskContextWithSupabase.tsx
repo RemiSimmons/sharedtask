@@ -82,6 +82,7 @@ interface TaskContextType {
   addContributorName: (name: string, isHostAction?: boolean) => Promise<void>
   addContributorNames: (names: string[]) => Promise<void>
   removeContributorName: (name: string) => Promise<void>
+  renameContributorName: (oldName: string, newName: string) => Promise<void>
   
   // Headcount functions
   updateContributorHeadcount: (contributorName: string, headcount: number) => Promise<void>
@@ -917,13 +918,43 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
   }
 
   const removeContributorName = async (name: string) => {
-    const currentNames = projectSettings.contributorNames
-    const updatedNames = currentNames.filter(n => n !== name)
-    
+    if (!currentProject?.id) throw new Error('No project loaded')
+
     try {
-      await updateProjectSettings({ contributorNames: updatedNames })
+      const response = await fetch(`/api/projects/${currentProject.id}/contributors`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to remove guest')
+      }
+      await refreshProjectSettings()
+      await refreshTasks()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove contributor name')
+      throw err
+    }
+  }
+
+  const renameContributorName = async (oldName: string, newName: string) => {
+    if (!currentProject?.id) throw new Error('No project loaded')
+
+    try {
+      const response = await fetch(`/api/projects/${currentProject.id}/contributors`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldName, newName }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to rename guest')
+      }
+      await refreshProjectSettings()
+      await refreshTasks()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to rename guest')
       throw err
     }
   }
@@ -1073,6 +1104,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     addContributorName,
     addContributorNames,
     removeContributorName,
+    renameContributorName,
     
     // Headcount functions
     updateContributorHeadcount,

@@ -591,6 +591,18 @@ export type Database = {
           project_count: number
         }[]
       }
+      parse_contributor_names: {
+        Args: { raw: Json }
+        Returns: string[]
+      }
+      rename_project_contributor: {
+        Args: { p_project_id: string; p_old_name: string; p_new_name: string }
+        Returns: undefined
+      }
+      remove_project_contributor: {
+        Args: { p_project_id: string; p_name: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
