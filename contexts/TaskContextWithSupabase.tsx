@@ -29,6 +29,7 @@ interface ProjectSettings {
   projectName: string
   projectDescription?: string
   taskLabel: string
+  taskLabelPlural: string
   allowMultipleClaims: boolean
   allowMultipleContributors: boolean
   maxContributorsPerTask?: number
@@ -113,6 +114,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     projectName: "",
     projectDescription: undefined,
     taskLabel: "",
+    taskLabelPlural: "tasks",
     allowMultipleClaims: false,
     allowMultipleContributors: false,
     maxContributorsPerTask: undefined,
@@ -137,6 +139,17 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
   // Quick claiming state
   const [selectedTasksForClaiming, setSelectedTasksForClaiming] = useState<string[]>([])
   const [currentContributorName, setCurrentContributorName] = useState<string>("")
+
+  const contributorStorageKey = projectId ? `sharedtask:contributor:${projectId}` : null
+
+  // Hydrate contributor name from localStorage (client only)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !contributorStorageKey) return
+    const stored = window.localStorage.getItem(contributorStorageKey)
+    if (stored?.trim()) {
+      setCurrentContributorName(stored.trim())
+    }
+  }, [contributorStorageKey])
 
   // Helper function to convert database task to UI task
   const convertDatabaseTaskToUITask = (
@@ -179,7 +192,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     try {
       const { data: project, error } = await supabase
         .from('projects')
-        .select('id, user_id, name, task_label, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, share_message, created_at')
+        .select('id, user_id, name, task_label, task_label_plural, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, share_message, created_at')
         .eq('id', currentProject.id)
         .maybeSingle() // Use maybeSingle() instead of single() to handle cases where no rows are found
 
@@ -201,6 +214,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
           projectName: project.name || "My Project",
           projectDescription: project.description || undefined,
           taskLabel: project.task_label || "Task Name",
+          taskLabelPlural: project.task_label_plural || "tasks",
           allowMultipleClaims: project.allow_multiple_tasks || false,
           allowMultipleContributors: project.allow_multiple_contributors || false,
           maxContributorsPerTask: project.max_contributors_per_task || undefined,
@@ -244,7 +258,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         const client = getSupabaseClient()
         const { data: projectData, error: projectError } = await client
           .from('projects')
-          .select('id, user_id, name, task_label, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, share_message, created_at')
+          .select('id, user_id, name, task_label, task_label_plural, description, event_location, event_time, event_attire, allow_multiple_tasks, allow_multiple_contributors, max_contributors_per_task, allow_contributors_add_names, allow_contributors_add_tasks, contributor_names, share_message, created_at')
           .eq('id', projectId)
           .maybeSingle() // Use maybeSingle() to handle cases where project doesn't exist
 
@@ -280,6 +294,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
         projectName: project.name || "My Project",
         projectDescription: project.description || undefined,
         taskLabel: project.task_label || "Task Name",
+        taskLabelPlural: project.task_label_plural || "tasks",
         allowMultipleClaims: project.allow_multiple_tasks || false,
         allowMultipleContributors: project.allow_multiple_contributors || false,
         maxContributorsPerTask: project.max_contributors_per_task || undefined,
@@ -789,6 +804,9 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
       if (settings.taskLabel !== undefined) {
         updateData.task_label = settings.taskLabel
       }
+      if (settings.taskLabelPlural !== undefined) {
+        updateData.task_label_plural = settings.taskLabelPlural
+      }
       if (settings.allowMultipleClaims !== undefined) {
         updateData.allow_multiple_tasks = settings.allowMultipleClaims
       }
@@ -912,7 +930,14 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
 
   // Quick claiming functions
   const setCurrentContributorNameHandler = (name: string) => {
-    setCurrentContributorName(name)
+    const trimmed = name.trim()
+    setCurrentContributorName(trimmed)
+    if (typeof window === 'undefined' || !contributorStorageKey) return
+    if (trimmed) {
+      window.localStorage.setItem(contributorStorageKey, trimmed)
+    } else {
+      window.localStorage.removeItem(contributorStorageKey)
+    }
   }
 
   const addTaskToClaimingSelection = (taskId: string) => {

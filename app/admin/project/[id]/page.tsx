@@ -835,6 +835,25 @@ function ProjectSettingsSection() {
           </p>
         </div>
 
+        {/* Task Label Plural */}
+        <div>
+          <label htmlFor="task-label-plural-setting" className="block text-base font-medium text-gray-900 mb-2">
+            🏷️ Task Label (plural)
+          </label>
+          <input
+            id="task-label-plural-setting"
+            type="text"
+            value={projectSettings.taskLabelPlural}
+            onChange={(e) => updateProjectSettings({ taskLabelPlural: e.target.value })}
+            placeholder="e.g., dishes, roles, items"
+            maxLength={30}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <p className="text-sm text-gray-600 mt-1">
+            {(projectSettings.taskLabelPlural || "").length}/30 characters - Used in guest-facing copy like "2 of 5 dishes claimed"
+          </p>
+        </div>
+
         {/* Project Description */}
         <div>
           <label htmlFor="project-description-setting" className="block text-base font-medium text-gray-900 mb-2">

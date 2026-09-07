@@ -230,6 +230,7 @@ export type Database = {
           name: string
           share_message: string | null
           task_label: string | null
+          task_label_plural: string | null
           user_id: string | null
         }
         Insert: {
@@ -249,6 +250,7 @@ export type Database = {
           name?: string
           share_message?: string | null
           task_label?: string | null
+          task_label_plural?: string | null
           user_id?: string | null
         }
         Update: {
@@ -268,6 +270,7 @@ export type Database = {
           name?: string
           share_message?: string | null
           task_label?: string | null
+          task_label_plural?: string | null
           user_id?: string | null
         }
         Relationships: [

@@ -3,17 +3,16 @@
 import React from "react"
 import { useParams, useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import TaskTable from "@/components/task-table"
 import TaskClaimForm from "@/components/task-claim-form"
-import AddTaskButton from "@/components/add-task-button"
+import ContributorTaskList from "@/components/contributor-task-list"
 import { TaskProvider, useTask } from "@/contexts/TaskContextWithSupabase"
 import { LoadingErrorWrapper } from "@/components/loading-error-wrapper"
 import { PoweredByFooter } from "@/components/powered-by-footer"
 import { Button } from "@/components/ui/button"
 import { RealtimeIndicator } from "@/components/realtime-indicator"
-import { HeadcountDisplay } from "@/components/headcount-display"
 import { EventDetailsModal } from "@/components/event-details-modal"
 import { Info } from "lucide-react"
+import { getTaskLabels } from "@/lib/task-labels"
 
 export default function ProjectPage() {
   const params = useParams()
@@ -26,169 +25,192 @@ export default function ProjectPage() {
   )
 }
 
+function formatEventTime(eventTime?: string | null) {
+  if (!eventTime?.trim()) return null
+  const date = new Date(eventTime)
+  if (isNaN(date.getTime())) return eventTime
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  })
+}
+
 function ProjectContent() {
-  const { projectSettings, currentProject, realtimeConnected, lastRealtimeUpdate } = useTask()
+  const {
+    tasks,
+    projectSettings,
+    currentProject,
+    realtimeConnected,
+    lastRealtimeUpdate,
+    currentContributorName,
+    setCurrentContributorName,
+    claimTask,
+    addTaskAndClaim,
+  } = useTask()
   const { data: session } = useSession()
   const router = useRouter()
   const params = useParams()
   const projectId = params.id as string
-  const [isEventDetailsModalOpen, setIsEventDetailsModalOpen] = React.useState(false)
-  
-  // Check if current user is the project owner
+  const [isEventDetailsOpen, setIsEventDetailsOpen] = React.useState(false)
+  const [claimSheetOpen, setClaimSheetOpen] = React.useState(false)
+  const [pendingTaskId, setPendingTaskId] = React.useState<string | null>(null)
+  const [pendingCustomTask, setPendingCustomTask] = React.useState<string | null>(null)
+
   const isOwner = session?.user?.id && currentProject?.user_id === session.user.id
-  
+  const { plural } = getTaskLabels(projectSettings.taskLabel, projectSettings.taskLabelPlural)
+  const total = tasks.length
+  const claimed = tasks.filter((task) => task.status === "claimed" || task.status === "completed").length
+  const eventTimeLabel = formatEventTime(projectSettings.eventTime)
+  const storedName = currentContributorName.trim()
+
   const goToHostDashboard = () => {
     router.push(`/admin/project/${projectId}`)
   }
 
+  const handleClaimTask = async (taskId: string) => {
+    if (storedName) {
+      try {
+        await claimTask(taskId, storedName)
+      } catch (error) {
+        console.error("Failed to claim task:", error)
+      }
+      return
+    }
+    setPendingCustomTask(null)
+    setPendingTaskId(taskId)
+    setClaimSheetOpen(true)
+  }
+
+  const handleAddOwnTask = async (taskName: string) => {
+    if (storedName) {
+      try {
+        await addTaskAndClaim(taskName, storedName)
+      } catch (error) {
+        console.error("Failed to add task:", error)
+      }
+      return
+    }
+    setPendingTaskId(null)
+    setPendingCustomTask(taskName)
+    setClaimSheetOpen(true)
+  }
+
+  const handleClearName = () => {
+    setCurrentContributorName("")
+  }
+
   return (
     <LoadingErrorWrapper>
-      <div className="min-h-screen p-4 md:p-8 pt-4 md:pt-8">
-        <div className="max-w-6xl mx-auto space-y-10 md:space-y-12">
-          {/* Logo Section */}
-          <div className="text-center">
-            <div className="flex flex-col items-center gap-2 md:gap-2">
-              <a 
-                href="https://sharedtask.ai" 
+      <div className="min-h-screen px-4 pt-6 pb-10">
+        <div className="max-w-xl mx-auto space-y-6">
+          <header className="space-y-3">
+            <div className="flex justify-center">
+              <a
+                href="https://sharedtask.ai"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="cursor-pointer hover:opacity-80 transition-opacity"
                 title="Visit SharedTask.ai homepage"
               >
-                <img 
-                  src="/logo.png" 
-                  alt="SharedTask Logo" 
-                  className="h-48 md:h-40 w-auto"
+                <img
+                  src="/logo.png"
+                  alt="SharedTask Logo"
+                  className="h-14 w-auto"
                 />
               </a>
-              
-              {/* Project Title */}
-              <div className="space-y-3 w-full px-3">
-                <h1 className="text-4xl md:text-4xl font-bold text-gray-900 leading-tight">
-                  {projectSettings.projectName || "SharedTask Project"}
-                </h1>
-                
-                {/* Event Details Button */}
-                <div className="flex justify-center">
-                  <Button
-                    onClick={() => setIsEventDetailsModalOpen(true)}
-                    variant="secondary"
-                    className="h-10 px-4 rounded-full bg-gray-100 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-700 text-gray-700 font-medium min-w-[44px] min-h-[44px] flex items-center justify-center border border-gray-200 transition-all duration-200"
-                    aria-label="View Event Details"
-                  >
-                    <Info className="w-4 h-4 mr-2" />
-                    Event Details
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Host Dashboard Button - Only visible to owner */}
-              {isOwner && (
-                <Button
-                  onClick={goToHostDashboard}
-                  className="w-full md:w-auto text-lg md:text-sm px-6 py-5 md:px-4 md:py-2 h-auto font-semibold md:font-medium bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all min-h-[60px] md:min-h-0"
+            </div>
+
+            <div className="flex items-start justify-center gap-2">
+              <h1 className="text-[28px] font-bold text-gray-900 leading-tight text-center">
+                {projectSettings.projectName || "SharedTask Project"}
+              </h1>
+              <button
+                type="button"
+                onClick={() => setIsEventDetailsOpen(true)}
+                className="mt-1 flex-shrink-0 w-11 h-11 flex items-center justify-center text-gray-400 hover:text-gray-700"
+                aria-label="Event details"
+              >
+                <Info className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-center text-sm text-gray-500">
+              {eventTimeLabel ? `${eventTimeLabel} · ` : ""}
+              {total} {plural} needed
+            </p>
+
+            {storedName && (
+              <p className="text-center text-sm text-gray-500">
+                {storedName}{" "}
+                <button
+                  type="button"
+                  onClick={handleClearName}
+                  className="text-blue-600 hover:text-blue-800 underline-offset-2 hover:underline"
                 >
-                  <svg className="w-5 h-5 md:w-4 md:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Host Dashboard
-                </Button>
-              )}
-            </div>
-          </div>
-          
-          {/* Event Details Modal */}
-          <EventDetailsModal open={isEventDetailsModalOpen} onOpenChange={setIsEventDetailsModalOpen} />
-          
-          {/* Main Content */}
-          <div className="text-center space-y-6 md:space-y-6">
-            {projectSettings.projectDescription && (
-              <div className="max-w-3xl mx-auto px-2">
-                <div className="bg-blue-50 border-2 md:border border-blue-200 rounded-lg p-6 md:p-6 mb-4">
-                  <div className="flex items-start gap-4 md:gap-3">
-                    <svg className="w-8 h-8 md:w-6 md:h-6 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                      <h3 className="text-2xl md:text-lg font-bold md:font-semibold text-blue-900 mb-3 md:mb-2">About This Project</h3>
-                      <p className="text-xl md:text-base text-blue-800 leading-relaxed">
-                        {projectSettings.projectDescription}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Headcount Display */}
-            <div className="max-w-3xl mx-auto px-2">
-              <HeadcountDisplay isOwner={!!isOwner} />
-            </div>
-
-            {!projectSettings.projectDescription && (
-              <p className="text-2xl md:text-xl text-gray-700 max-w-2xl mx-auto font-medium leading-relaxed px-4">
-                Choose what you'd like to bring
+                  Not you?
+                </button>
               </p>
             )}
-          </div>
 
-          {/* Task Claim Form */}
-          <TaskClaimForm />
-
-          {/* Task Table */}
-          <TaskTable />
-
-          {/* Add Task Button (Owner Only) */}
-          <div className="max-w-2xl mx-auto px-3 flex justify-center">
-            <AddTaskButton />
-          </div>
-
-          {/* Become a Host Section */}
-          <div className="max-w-2xl mx-auto px-3">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 md:border border-blue-200 rounded-lg p-7 md:p-6">
-              <div className="text-center">
-                <div className="flex justify-center mb-5 md:mb-4">
-                  <div className="w-16 h-16 md:w-12 md:h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                    <svg className="w-8 h-8 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  </div>
-                </div>
-                <h3 className="text-2xl md:text-lg font-bold md:font-semibold text-gray-900 mb-3 md:mb-2">Want to create your own project?</h3>
-                <p className="text-xl md:text-base text-gray-700 md:text-gray-600 mb-6 md:mb-4 leading-relaxed">
-                  Create your own project
-                </p>
-                <a 
-                  href="https://sharedtask.ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-5 md:px-6 md:py-3 rounded-lg font-semibold md:font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg text-xl md:text-base min-h-[60px] md:min-h-0"
-                >
-                  <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  Create Your Own Project
-                </a>
+            <div className="space-y-1.5">
+              <div className="h-1 w-full rounded-full bg-gray-200 overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 transition-all"
+                  style={{ width: `${total === 0 ? 0 : Math.round((claimed / total) * 100)}%` }}
+                />
               </div>
+              <p className="text-center text-xs text-gray-500">
+                {claimed} of {total} {plural} claimed
+              </p>
             </div>
-          </div>
 
-          {/* Footer Info */}
-          <div className="text-center border-t border-gray-200 pt-8 px-4">
-            <p className="text-lg md:text-base text-gray-600 md:text-gray-500 leading-relaxed">
-              All updates save automatically
-            </p>
+            {isOwner && (
+              <div className="flex justify-center">
+                <Button
+                  onClick={goToHostDashboard}
+                  variant="outline"
+                  className="h-11 px-4 text-sm"
+                >
+                  Host Dashboard
+                </Button>
+              </div>
+            )}
+          </header>
+
+          <EventDetailsModal open={isEventDetailsOpen} onOpenChange={setIsEventDetailsOpen} />
+
+          <ContributorTaskList onClaimTask={handleClaimTask} onAddOwnTask={handleAddOwnTask} />
+
+          <TaskClaimForm
+            open={claimSheetOpen}
+            onOpenChange={(open) => {
+              setClaimSheetOpen(open)
+              if (!open) {
+                setPendingTaskId(null)
+                setPendingCustomTask(null)
+              }
+            }}
+            pendingTaskId={pendingTaskId}
+            pendingCustomTask={pendingCustomTask}
+          />
+
+          <div className="text-center pt-4">
+            <a
+              href="https://sharedtask.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              Create your own list
+            </a>
           </div>
         </div>
       </div>
-      
-      {/* Powered by SharedTask Footer - Only show if user can't remove branding */}
+
       <PoweredByFooter show={true} />
-      
-      {/* Realtime connection indicator */}
       <RealtimeIndicator isConnected={realtimeConnected} lastUpdate={lastRealtimeUpdate} />
     </LoadingErrorWrapper>
   )
 }
-
