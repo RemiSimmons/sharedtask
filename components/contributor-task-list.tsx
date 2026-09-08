@@ -5,6 +5,7 @@ import { Check, MessageCircle, Minus, Plus, Users } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTask } from "@/contexts/TaskContextWithSupabase"
 import { getInitials, getTaskLabels } from "@/lib/task-labels"
+import { getTaskIcon } from "@/lib/task-icons"
 import type { Task } from "@/contexts/TaskContextWithSupabase"
 
 interface ContributorTaskListProps {
@@ -384,6 +385,7 @@ export default function ContributorTaskList({
     const isPendingUnclaim = pendingUnclaimId === task.id
     const isInteractive = hasName && (isAvailable || isMine)
     const commentsOpen = expandedComments.has(task.id)
+    const { icon: TaskIcon, matched: iconMatched } = getTaskIcon(task.name)
 
     const tileStyle: React.CSSProperties = {
       padding: 12,
@@ -440,11 +442,20 @@ export default function ContributorTaskList({
               {isClaimed && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
             </span>
 
-            <span
-              className={`flex-1 text-[15px] leading-snug ${isClaimed ? "claimed-name" : ""}`}
-              style={isClaimed ? undefined : { color: "#111827" }}
-            >
-              {task.name}
+            <span className="flex min-w-0 flex-1 items-center" style={{ gap: 11 }}>
+              <TaskIcon
+                className={iconMatched ? "task-food-icon" : "task-food-icon-fallback"}
+                width={19}
+                height={19}
+                stroke={1.75}
+                aria-hidden
+              />
+              <span
+                className={`flex-1 text-[15px] leading-snug ${isClaimed ? "claimed-name" : ""}`}
+                style={isClaimed ? undefined : { color: "#111827" }}
+              >
+                {task.name}
+              </span>
             </span>
 
             {isClaimed && claimant && !isPendingUnclaim && (
