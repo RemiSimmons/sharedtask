@@ -134,7 +134,7 @@ function ProjectContent() {
                   style={{
                     width: `${total === 0 ? 0 : Math.round((claimed / total) * 100)}%`,
                     borderRadius: 999,
-                    backgroundColor: "var(--text-accent, #2563eb)",
+                    backgroundColor: "var(--claimed-solid)",
                   }}
                 />
               </div>
@@ -154,7 +154,7 @@ function ProjectContent() {
                           zIndex: visibleClaimants.length - index,
                           border: "1.5px solid var(--surface-1, #ffffff)",
                           backgroundColor: isYou
-                            ? "var(--fill-accent, #2563eb)"
+                            ? "var(--claimed-solid)"
                             : "var(--fill-control, #e2e8f0)",
                           color: isYou ? "#ffffff" : "var(--text-secondary, #64748b)",
                         }}

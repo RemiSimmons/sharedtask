@@ -260,9 +260,7 @@ export default function ContributorTaskList({
     const tileStyle: React.CSSProperties = {
       padding: 12,
       borderRadius: 10,
-      backgroundColor: isMine
-        ? "var(--bg-accent, #eff6ff)"
-        : "var(--surface-1, #ffffff)",
+      backgroundColor: isClaimed ? undefined : "var(--surface-1, #ffffff)",
       border: isClaimed ? "none" : "0.5px solid var(--border, #e2e8f0)",
     }
 
@@ -271,6 +269,12 @@ export default function ContributorTaskList({
         key={task.id}
         data-unclaim-row={isMine ? task.id : undefined}
         className={`group ${
+          isMine
+            ? "claimed-tile-mine"
+            : isClaimed
+              ? "claimed-tile-other"
+              : ""
+        } ${
           isAvailable && hasName
             ? "cursor-pointer hover:[border-color:var(--border-strong,#64748b)]"
             : ""
@@ -295,45 +299,28 @@ export default function ContributorTaskList({
             }`}
           >
             <span
-              className={`flex-shrink-0 flex items-center justify-center rounded-full ${
+              className={`claimed-circle flex-shrink-0 flex items-center justify-center rounded-full ${
                 isAvailable && hasName ? "group-hover:border-[var(--text-accent,#2563eb)]" : ""
               }`}
               style={{
                 width: 20,
                 height: 20,
                 border: isAvailable ? "1.5px solid var(--border-strong, #94a3b8)" : "none",
-                backgroundColor: isClaimed
-                  ? isMine
-                    ? "var(--fill-accent, #2563eb)"
-                    : "var(--fill-control, #e2e8f0)"
-                  : "transparent",
-                color: isMine ? "#ffffff" : "var(--text-secondary, #64748b)",
+                backgroundColor: isClaimed ? undefined : "transparent",
               }}
             >
               {isClaimed && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
             </span>
 
             <span
-              className="flex-1 text-[15px] leading-snug"
-              style={{
-                color: isMine
-                  ? "var(--text-accent, #2563eb)"
-                  : isClaimed
-                    ? "var(--text-secondary, #64748b)"
-                    : "#111827",
-              }}
+              className={`flex-1 text-[15px] leading-snug ${isClaimed ? "claimed-name" : ""}`}
+              style={isClaimed ? undefined : { color: "#111827" }}
             >
               {task.name}
             </span>
 
             {isClaimed && claimant && !isPendingUnclaim && (
-              <span
-                className="flex-shrink-0"
-                style={{
-                  fontSize: 11,
-                  color: isMine ? "var(--text-accent, #2563eb)" : "var(--text-secondary, #64748b)",
-                }}
-              >
+              <span className="claimed-label flex-shrink-0" style={{ fontSize: 11 }}>
                 {isMine ? "You" : firstName(claimant)}
               </span>
             )}
@@ -370,7 +357,9 @@ export default function ContributorTaskList({
           <button
             type="button"
             onClick={(e) => toggleComments(task.id, e)}
-            className="relative flex-shrink-0 flex items-center justify-center w-11 h-11 text-gray-400 hover:text-gray-700"
+            className={`claimed-comment relative flex-shrink-0 flex items-center justify-center w-11 h-11 ${
+              isClaimed ? "" : "text-gray-400 hover:text-gray-700"
+            }`}
             aria-label={`${task.comments.length} comments`}
           >
             <MessageCircle className="w-4 h-4" />

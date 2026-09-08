@@ -52,6 +52,52 @@
   --input: #e2e8f0;
   --ring: #2563eb;
   --radius: 0.5rem;
+  --claimed-solid: #639922;
+  --claimed-solid-dark: #3B6D11;
+  --claimed-tint: #EAF3DE;
+  --claimed-tint-mid: #97C459;
+  --claimed-text-dark: #27500A;
+  --claimed-other-bg: var(--claimed-tint);
+  --claimed-other-text: var(--claimed-text-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --claimed-other-bg: #173404;
+    --claimed-other-text: #C0DD97;
+  }
+}
+
+.claimed-tile-mine {
+  background: var(--claimed-solid);
+  border: none;
+}
+.claimed-tile-mine .claimed-name {
+  color: #ffffff;
+}
+.claimed-tile-mine .claimed-label,
+.claimed-tile-mine .claimed-comment {
+  color: var(--claimed-tint);
+}
+.claimed-tile-mine .claimed-circle {
+  background: #ffffff;
+  color: var(--claimed-solid-dark);
+}
+
+.claimed-tile-other {
+  background: var(--claimed-other-bg);
+  border: none;
+}
+.claimed-tile-other .claimed-name {
+  color: var(--claimed-other-text);
+}
+.claimed-tile-other .claimed-label,
+.claimed-tile-other .claimed-comment {
+  color: var(--claimed-solid-dark);
+}
+.claimed-tile-other .claimed-circle {
+  background: var(--claimed-tint-mid);
+  color: #ffffff;
 }
 
 @layer base {
