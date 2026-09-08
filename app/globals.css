@@ -271,6 +271,34 @@
   border: 0.5px solid var(--border);
 }
 
+.name-select-trigger[data-slot="select-trigger"],
+.name-select-trigger[data-slot="select-trigger"]:hover,
+.name-select-trigger[data-slot="select-trigger"]:focus,
+.name-select-trigger[data-slot="select-trigger"]:focus-visible {
+  height: 34px;
+  min-height: 34px;
+  padding-left: 12px;
+  padding-right: 12px;
+  background: var(--claimed-solid);
+  border: none;
+  box-shadow: none;
+  color: var(--primary-foreground);
+  font-weight: 500;
+}
+
+.name-select-trigger[data-slot="select-trigger"][data-placeholder],
+.name-select-trigger[data-slot="select-trigger"] [data-slot="select-value"] {
+  color: var(--primary-foreground);
+  font-weight: 500;
+}
+
+.name-select-trigger[data-slot="select-trigger"] svg {
+  width: 15px;
+  height: 15px;
+  color: var(--claimed-tint);
+  opacity: 1;
+}
+
 .name-chip .chip-avatar {
   background: var(--claimed-solid);
   color: #ffffff;

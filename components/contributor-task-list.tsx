@@ -265,7 +265,7 @@ export default function ContributorTaskList({
         <div
           className="name-chip flex items-center min-w-0"
           style={{
-            height: compact ? 28 : 36,
+            height: compact ? 28 : 34,
             gap: compact ? 6 : 8,
           }}
         >
@@ -313,7 +313,7 @@ export default function ContributorTaskList({
           maxLength={50}
           autoFocus
           className="w-full min-w-0 px-3 text-sm rounded-lg"
-          style={{ height: compact ? 28 : 36, border: "1px solid var(--border)" }}
+          style={{ height: compact ? 28 : 34, border: "1px solid var(--border)" }}
         />
       )
     }
@@ -329,7 +329,7 @@ export default function ContributorTaskList({
           setCurrentContributorName(value)
         }}
       >
-        <SelectTrigger className="text-sm" style={{ height: compact ? 28 : 36, minHeight: compact ? 28 : 36 }}>
+        <SelectTrigger className="name-select-trigger text-sm w-full">
           <SelectValue placeholder="Choose your name…" />
         </SelectTrigger>
         <SelectContent className="max-h-80 overflow-y-auto">
@@ -360,7 +360,7 @@ export default function ContributorTaskList({
         disabled={!hasName}
         className="flex items-center justify-center flex-shrink-0"
         style={{
-          height: compact ? 28 : 36,
+          height: hasName && compact ? 28 : 34,
           padding: "0 10px",
           gap: 6,
           borderRadius: 8,
