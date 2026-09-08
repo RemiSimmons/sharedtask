@@ -573,7 +573,7 @@ export default function ContributorTaskList({
             type="text"
             value={newTaskName}
             onChange={(e) => setNewTaskName(e.target.value)}
-            placeholder={`Add a ${singular}`}
+            placeholder={`Add a ${singular} or Just Coming`}
             maxLength={100}
             autoFocus
             className="flex-1 min-h-[44px] text-[15px] border-0 border-b border-gray-200 rounded-none px-0 focus:outline-none focus:border-blue-500 bg-transparent"
