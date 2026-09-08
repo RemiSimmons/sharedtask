@@ -611,7 +611,7 @@ export default function ContributorTaskList({
                 fontSize: 12,
                 fontWeight: 600,
                 letterSpacing: "0.06em",
-                marginTop: 0,
+                marginTop: 20,
                 marginBottom: 10,
                 color: "var(--text-secondary, #64748b)",
               }}
@@ -632,7 +632,7 @@ export default function ContributorTaskList({
                 fontSize: 12,
                 fontWeight: 600,
                 letterSpacing: "0.06em",
-                marginTop: stillNeeded.length > 0 ? 20 : 0,
+                marginTop: 20,
                 marginBottom: 10,
                 color: "var(--claimed-solid-dark)",
               }}
