@@ -10,6 +10,7 @@ import { PoweredByFooter } from "@/components/powered-by-footer"
 import { Button } from "@/components/ui/button"
 import { RealtimeIndicator } from "@/components/realtime-indicator"
 import { EventDetailsModal } from "@/components/event-details-modal"
+import { getInitials } from "@/lib/task-labels"
 
 export default function ProjectPage() {
   const params = useParams()
@@ -56,6 +57,13 @@ function ProjectContent() {
   const claimed = tasks.filter((task) => task.status === "claimed" || task.status === "completed").length
   const eventTimeLabel = formatEventTime(projectSettings.eventTime)
   const storedName = currentContributorName.trim()
+  const claimantNames = Array.from(
+    new Set(
+      tasks.flatMap((task) => (task.status === "available" ? [] : task.claimedBy || []))
+    )
+  )
+  const visibleClaimants = claimantNames.slice(0, 4)
+  const extraClaimants = Math.max(0, claimantNames.length - 4)
 
   const goToHostDashboard = () => {
     router.push(`/admin/project/${projectId}`)
@@ -130,6 +138,49 @@ function ProjectContent() {
                   }}
                 />
               </div>
+              {claimantNames.length > 0 && (
+                <div className="flex items-center flex-shrink-0">
+                  {visibleClaimants.map((name, index) => {
+                    const isYou = storedName.length > 0 && name === storedName
+                    return (
+                      <span
+                        key={`${name}-${index}`}
+                        className="flex items-center justify-center rounded-full text-[9px] font-semibold"
+                        title={name}
+                        style={{
+                          width: 20,
+                          height: 20,
+                          marginLeft: index === 0 ? 0 : -6,
+                          zIndex: visibleClaimants.length - index,
+                          border: "1.5px solid var(--surface-1, #ffffff)",
+                          backgroundColor: isYou
+                            ? "var(--fill-accent, #2563eb)"
+                            : "var(--fill-control, #e2e8f0)",
+                          color: isYou ? "#ffffff" : "var(--text-secondary, #64748b)",
+                        }}
+                      >
+                        {getInitials(name)}
+                      </span>
+                    )
+                  })}
+                  {extraClaimants > 0 && (
+                    <span
+                      className="flex items-center justify-center rounded-full text-[9px] font-semibold"
+                      style={{
+                        width: 20,
+                        height: 20,
+                        marginLeft: -6,
+                        zIndex: 0,
+                        border: "1.5px solid var(--surface-1, #ffffff)",
+                        backgroundColor: "var(--fill-control, #e2e8f0)",
+                        color: "var(--text-secondary, #64748b)",
+                      }}
+                    >
+                      +{extraClaimants}
+                    </span>
+                  )}
+                </div>
+              )}
               <span
                 className="whitespace-nowrap"
                 style={{ fontSize: 12, color: "var(--text-secondary, #64748b)" }}

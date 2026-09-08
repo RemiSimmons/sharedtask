@@ -232,8 +232,7 @@ export default function ContributorTaskList({
         className="flex items-center justify-center flex-shrink-0"
         style={{
           height: compact ? 28 : 36,
-          width: compact ? 28 : undefined,
-          padding: compact ? 0 : "0 10px",
+          padding: "0 10px",
           gap: 6,
           borderRadius: 8,
           border: "1px solid var(--border, #e2e8f0)",
@@ -244,26 +243,41 @@ export default function ContributorTaskList({
         aria-label={`Add a ${singular}`}
       >
         <Plus className="w-4 h-4" strokeWidth={2.5} />
-        {!compact && <span className="text-sm font-medium whitespace-nowrap">Add a {singular}</span>}
+        <span className="text-sm font-medium whitespace-nowrap">Add a {singular}</span>
       </button>
     )
   }
 
-  const renderTaskRow = (task: Task, isLast: boolean) => {
+  const renderTaskRow = (task: Task) => {
     const isAvailable = task.status === "available"
     const isClaimed = task.status === "claimed" || task.status === "completed"
     const claimant = task.claimedBy?.[0]
     const isMine = Boolean(storedName && task.claimedBy?.includes(storedName))
     const isPendingUnclaim = pendingUnclaimId === task.id
     const isInteractive = hasName && (isAvailable || isMine)
+    const commentsOpen = expandedComments.has(task.id)
+
+    const tileStyle: React.CSSProperties = {
+      padding: 12,
+      borderRadius: 10,
+      backgroundColor: isMine
+        ? "var(--bg-accent, #eff6ff)"
+        : "var(--surface-1, #ffffff)",
+      border: isClaimed ? "none" : "0.5px solid var(--border, #e2e8f0)",
+    }
 
     return (
       <div
         key={task.id}
         data-unclaim-row={isMine ? task.id : undefined}
-        style={!isLast ? { borderBottom: "0.5px solid var(--border, #e2e8f0)" } : undefined}
+        className={`group ${
+          isAvailable && hasName
+            ? "cursor-pointer hover:[border-color:var(--border-strong,#64748b)]"
+            : ""
+        }`}
+        style={tileStyle}
       >
-        <div className="flex w-full items-center">
+        <div className="flex w-full items-center gap-2">
           <button
             type="button"
             onClick={() => {
@@ -276,38 +290,37 @@ export default function ContributorTaskList({
               setPendingUnclaimId(isPendingUnclaim ? null : task.id)
             }}
             disabled={!isInteractive}
-            className={`group flex flex-1 items-center gap-3 text-left ${
-              isAvailable && hasName
-                ? "cursor-pointer hover:bg-[var(--bg-accent,#eff6ff)] -mx-5 px-5 rounded-lg"
-                : isInteractive
-                  ? "cursor-pointer"
-                  : "cursor-default"
+            className={`flex flex-1 items-center gap-3 text-left min-h-[44px] ${
+              isInteractive ? "cursor-pointer" : "cursor-default"
             }`}
-            style={{ paddingTop: 13, paddingBottom: 13 }}
           >
             <span
               className={`flex-shrink-0 flex items-center justify-center rounded-full ${
                 isAvailable && hasName ? "group-hover:border-[var(--text-accent,#2563eb)]" : ""
               }`}
               style={{
-                width: 22,
-                height: 22,
-                border: isAvailable ? "1px solid #d1d5db" : "none",
+                width: 20,
+                height: 20,
+                border: isAvailable ? "1.5px solid var(--border-strong, #94a3b8)" : "none",
                 backgroundColor: isClaimed
                   ? isMine
-                    ? "var(--text-accent, #2563eb)"
-                    : "var(--fill-control, #94a3b8)"
+                    ? "var(--fill-accent, #2563eb)"
+                    : "var(--fill-control, #e2e8f0)"
                   : "transparent",
-                color: "white",
+                color: isMine ? "#ffffff" : "var(--text-secondary, #64748b)",
               }}
             >
-              {isClaimed && <Check className="w-3 h-3" strokeWidth={3} />}
+              {isClaimed && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
             </span>
 
             <span
               className="flex-1 text-[15px] leading-snug"
               style={{
-                color: isClaimed ? "var(--text-secondary, #64748b)" : "#111827",
+                color: isMine
+                  ? "var(--text-accent, #2563eb)"
+                  : isClaimed
+                    ? "var(--text-secondary, #64748b)"
+                    : "#111827",
               }}
             >
               {task.name}
@@ -317,7 +330,7 @@ export default function ContributorTaskList({
               <span
                 className="flex-shrink-0"
                 style={{
-                  fontSize: 12,
+                  fontSize: 11,
                   color: isMine ? "var(--text-accent, #2563eb)" : "var(--text-secondary, #64748b)",
                 }}
               >
@@ -327,7 +340,7 @@ export default function ContributorTaskList({
           </button>
 
           {isPendingUnclaim && (
-            <div className="flex items-center gap-2 pr-1">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={async () => {
@@ -354,25 +367,23 @@ export default function ContributorTaskList({
             </div>
           )}
 
-          {isAvailable && (
-            <button
-              type="button"
-              onClick={(e) => toggleComments(task.id, e)}
-              className="relative flex-shrink-0 flex items-center justify-center w-11 h-11 text-gray-400 hover:text-gray-700"
-              aria-label={`${task.comments.length} comments`}
-            >
-              <MessageCircle className="w-4 h-4" />
-              {task.comments.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                  {task.comments.length > 9 ? "9+" : task.comments.length}
-                </span>
-              )}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={(e) => toggleComments(task.id, e)}
+            className="relative flex-shrink-0 flex items-center justify-center w-11 h-11 text-gray-400 hover:text-gray-700"
+            aria-label={`${task.comments.length} comments`}
+          >
+            <MessageCircle className="w-4 h-4" />
+            {task.comments.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                {task.comments.length > 9 ? "9+" : task.comments.length}
+              </span>
+            )}
+          </button>
         </div>
 
-        {isAvailable && expandedComments.has(task.id) && (
-          <div className="pb-3 space-y-2" style={{ paddingLeft: 34 }}>
+        {commentsOpen && (
+          <div className="pt-3 space-y-2">
             {task.comments.map((comment) => (
               <div key={comment.id} className="text-sm">
                 <span className="font-medium text-gray-800">{comment.author}</span>
@@ -476,8 +487,8 @@ export default function ContributorTaskList({
             >
               Still needed · {stillNeeded.length}
             </p>
-            <div>
-              {stillNeeded.map((task, index) => renderTaskRow(task, index === stillNeeded.length - 1))}
+            <div className="flex flex-col" style={{ gap: 7 }}>
+              {stillNeeded.map((task) => renderTaskRow(task))}
             </div>
           </div>
         )}
@@ -490,8 +501,8 @@ export default function ContributorTaskList({
             >
               Covered · {covered.length}
             </p>
-            <div>
-              {covered.map((task, index) => renderTaskRow(task, index === covered.length - 1))}
+            <div className="flex flex-col" style={{ gap: 7 }}>
+              {covered.map((task) => renderTaskRow(task))}
             </div>
           </div>
         )}
