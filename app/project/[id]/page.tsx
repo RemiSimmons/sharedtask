@@ -10,8 +10,6 @@ import { PoweredByFooter } from "@/components/powered-by-footer"
 import { Button } from "@/components/ui/button"
 import { RealtimeIndicator } from "@/components/realtime-indicator"
 import { EventDetailsModal } from "@/components/event-details-modal"
-import { Info } from "lucide-react"
-import { getTaskLabels } from "@/lib/task-labels"
 
 export default function ProjectPage() {
   const params = useParams()
@@ -53,8 +51,7 @@ function ProjectContent() {
   const projectId = params.id as string
   const [isEventDetailsOpen, setIsEventDetailsOpen] = React.useState(false)
 
-  const isOwner = session?.user?.id && currentProject?.user_id === session.user.id
-  const { plural } = getTaskLabels(projectSettings.taskLabel, projectSettings.taskLabelPlural)
+  const isOwner = Boolean(session?.user?.id && currentProject?.user_id === session.user.id)
   const total = tasks.length
   const claimed = tasks.filter((task) => task.status === "claimed" || task.status === "completed").length
   const eventTimeLabel = formatEventTime(projectSettings.eventTime)
@@ -85,61 +82,68 @@ function ProjectContent() {
   return (
     <LoadingErrorWrapper>
       <div className="min-h-screen px-4 pt-6 pb-10">
-        <div className="max-w-xl mx-auto space-y-6">
-          <header className="space-y-3">
-            <div className="flex justify-center">
-              <a
-                href="https://sharedtask.ai"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="cursor-pointer hover:opacity-80 transition-opacity"
-                title="Visit SharedTask.ai homepage"
-              >
-                <img
-                  src="/logo.png"
-                  alt="SharedTask Logo"
-                  className="h-14 w-auto"
-                />
-              </a>
-            </div>
+        <div
+          className="mx-auto bg-white"
+          style={{
+            maxWidth: 460,
+            border: "0.5px solid var(--border, #e2e8f0)",
+            borderRadius: 16,
+          }}
+        >
+          <header className="text-left" style={{ padding: "1.25rem 1.25rem 1rem" }}>
+            <h1 className="font-semibold text-gray-900 leading-tight" style={{ fontSize: 19 }}>
+              {projectSettings.projectName || "SharedTask Project"}
+            </h1>
 
-            <div className="flex items-start justify-center gap-2">
-              <h1 className="text-[28px] font-bold text-gray-900 leading-tight text-center">
-                {projectSettings.projectName || "SharedTask Project"}
-              </h1>
+            <p className="mt-1 text-sm text-gray-500">
+              {eventTimeLabel && (
+                <>
+                  {eventTimeLabel}
+                  <span className="mx-1.5">·</span>
+                </>
+              )}
               <button
                 type="button"
                 onClick={() => setIsEventDetailsOpen(true)}
-                className="mt-1 flex-shrink-0 w-11 h-11 flex items-center justify-center text-gray-400 hover:text-gray-700"
-                aria-label="Event details"
+                className="font-medium"
+                style={{ color: "var(--text-accent, #2563eb)" }}
               >
-                <Info className="w-5 h-5" />
+                Details
               </button>
-            </div>
-
-            <p className="text-center text-sm text-gray-500">
-              {eventTimeLabel ? `${eventTimeLabel} · ` : ""}
-              {total} {plural} needed
             </p>
 
-            <div className="space-y-1.5">
-              <div className="h-1 w-full rounded-full bg-gray-200 overflow-hidden">
+            <div className="mt-3 flex items-center gap-3">
+              <div
+                className="flex-1 overflow-hidden"
+                style={{
+                  height: 6,
+                  borderRadius: 999,
+                  backgroundColor: "var(--fill-control, #e2e8f0)",
+                }}
+              >
                 <div
-                  className="h-full bg-blue-600 transition-all"
-                  style={{ width: `${total === 0 ? 0 : Math.round((claimed / total) * 100)}%` }}
+                  className="h-full"
+                  style={{
+                    width: `${total === 0 ? 0 : Math.round((claimed / total) * 100)}%`,
+                    borderRadius: 999,
+                    backgroundColor: "var(--text-accent, #2563eb)",
+                  }}
                 />
               </div>
-              <p className="text-center text-xs text-gray-500">
-                {claimed} of {total} {plural} claimed
-              </p>
+              <span
+                className="whitespace-nowrap"
+                style={{ fontSize: 12, color: "var(--text-secondary, #64748b)" }}
+              >
+                {claimed} of {total}
+              </span>
             </div>
 
             {isOwner && (
-              <div className="flex justify-center">
+              <div className="mt-3">
                 <Button
                   onClick={goToHostDashboard}
                   variant="outline"
-                  className="h-11 px-4 text-sm"
+                  className="h-9 px-3 text-sm"
                 >
                   Host Dashboard
                 </Button>
@@ -149,14 +153,27 @@ function ProjectContent() {
 
           <EventDetailsModal open={isEventDetailsOpen} onOpenChange={setIsEventDetailsOpen} />
 
-          <ContributorTaskList onClaimTask={handleClaimTask} onAddOwnTask={handleAddOwnTask} />
+          <ContributorTaskList
+            onClaimTask={handleClaimTask}
+            onAddOwnTask={handleAddOwnTask}
+            claimedCount={claimed}
+            totalCount={total}
+          />
 
-          <div className="text-center pt-4">
+          <div
+            className="text-center"
+            style={{
+              padding: 14,
+              borderTop: "0.5px solid var(--border, #e2e8f0)",
+              backgroundColor: "var(--bg-accent, #eff6ff)",
+            }}
+          >
             <a
               href="https://sharedtask.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              className="font-medium"
+              style={{ fontSize: 13, color: "var(--text-accent, #2563eb)" }}
             >
               Create your own list
             </a>
