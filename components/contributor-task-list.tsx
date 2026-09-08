@@ -131,20 +131,17 @@ export default function ContributorTaskList({
     if (hasName) {
       return (
         <div
-          className="flex items-center min-w-0"
+          className="name-chip flex items-center min-w-0"
           style={{
             height: compact ? 28 : 36,
             gap: compact ? 6 : 8,
-            color: "var(--text-accent, #2563eb)",
           }}
         >
           <span
-            className="flex-shrink-0 flex items-center justify-center rounded-full text-[10px] font-semibold"
+            className="chip-avatar flex-shrink-0 flex items-center justify-center rounded-full text-[10px] font-semibold"
             style={{
               width: compact ? 20 : 24,
               height: compact ? 20 : 24,
-              backgroundColor: "var(--bg-accent, #bfdbfe)",
-              color: "var(--text-accent, #1d4ed8)",
             }}
           >
             {getInitials(storedName)}
@@ -154,7 +151,7 @@ export default function ContributorTaskList({
             <button
               type="button"
               onClick={clearName}
-              className="ml-1 flex-shrink-0 text-xs underline-offset-2 hover:underline"
+              className="chip-not-you ml-1 flex-shrink-0 text-xs underline-offset-2 hover:underline"
             >
               Not you?
             </button>
@@ -406,10 +403,9 @@ export default function ContributorTaskList({
     <div className="w-full text-left" data-task-table>
       <div ref={sentinelRef} className="h-px w-full" aria-hidden />
       <div
-        className="sticky top-0"
+        className="identity-strip sticky top-0"
         style={{
           zIndex: 20,
-          backgroundColor: isStuck ? "white" : "var(--bg-accent, #eff6ff)",
           borderTop: "0.5px solid var(--border, #e2e8f0)",
           borderBottom: "0.5px solid var(--border, #e2e8f0)",
         }}

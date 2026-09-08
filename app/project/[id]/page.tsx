@@ -212,19 +212,18 @@ function ProjectContent() {
           />
 
           <div
-            className="text-center"
+            className="footer-strip text-center"
             style={{
               padding: 14,
               borderTop: "0.5px solid var(--border, #e2e8f0)",
-              backgroundColor: "var(--bg-accent, #eff6ff)",
             }}
           >
             <a
               href="https://sharedtask.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium"
-              style={{ fontSize: 13, color: "var(--text-accent, #2563eb)" }}
+              className="footer-strip-link font-medium"
+              style={{ fontSize: 13 }}
             >
               Create your own list
             </a>
