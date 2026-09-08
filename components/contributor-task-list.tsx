@@ -388,74 +388,65 @@ export default function ContributorTaskList({
     const { icon: TaskIcon, matched: iconMatched } = getTaskIcon(task.name)
 
     const tileStyle: React.CSSProperties = {
-      padding: 12,
-      borderRadius: 10,
+      padding: 11,
+      borderRadius: 9,
       backgroundColor: isClaimed ? undefined : "var(--surface-1, #ffffff)",
       border: isClaimed ? "none" : "0.5px solid var(--border, #e2e8f0)",
+    }
+
+    const handleRowActivate = () => {
+      if (!hasName) return
+      if (isAvailable) {
+        onClaimTask(task.id)
+        return
+      }
+      if (!isMine) return
+      setPendingUnclaimId(isPendingUnclaim ? null : task.id)
     }
 
     return (
       <div
         key={task.id}
         data-unclaim-row={isMine ? task.id : undefined}
-        className={`group ${
-          isMine
-            ? "claimed-tile-mine"
-            : isClaimed
-              ? "claimed-tile-other"
-              : ""
-        } ${
-          isAvailable && hasName
-            ? "cursor-pointer hover:[border-color:var(--border-strong,#64748b)]"
-            : ""
+        onClick={isInteractive ? handleRowActivate : undefined}
+        className={`flex items-center min-w-0 ${
+          isMine ? "claimed-row-mine" : isClaimed ? "claimed-row-other" : ""
+        } ${isAvailable && hasName ? "task-row-unclaimed" : ""} ${
+          isInteractive ? "cursor-pointer" : ""
         }`}
-        style={tileStyle}
+        style={{ gap: 12 }}
       >
-        <div className="flex w-full items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              if (!hasName) return
-              if (isAvailable) {
-                onClaimTask(task.id)
-                return
-              }
-              if (!isMine) return
-              setPendingUnclaimId(isPendingUnclaim ? null : task.id)
-            }}
-            disabled={!isInteractive}
-            className={`flex flex-1 items-center gap-3 text-left min-h-[44px] ${
-              isInteractive ? "cursor-pointer" : "cursor-default"
-            }`}
-          >
-            <span
-              className={`claimed-circle flex-shrink-0 flex items-center justify-center rounded-full ${
-                isAvailable && hasName ? "group-hover:border-[var(--text-accent,#2563eb)]" : ""
-              }`}
-              style={{
-                width: 20,
-                height: 20,
-                border: isAvailable ? "1.5px solid var(--border-strong, #94a3b8)" : "none",
-                backgroundColor: isClaimed ? undefined : "transparent",
-              }}
-            >
-              {isClaimed && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
-            </span>
+        <span
+          className="claimed-circle flex-shrink-0 flex items-center justify-center rounded-full"
+          style={{
+            width: 21,
+            height: 21,
+            border: isAvailable ? "1.5px solid var(--border-strong, #94a3b8)" : "none",
+            backgroundColor: isClaimed ? undefined : "transparent",
+          }}
+        >
+          {isClaimed && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
+        </span>
 
-            <span className="flex min-w-0 flex-1 items-center" style={{ gap: 11 }}>
-              <TaskIcon
-                className={iconMatched ? "task-food-icon" : "task-food-icon-fallback"}
-                width={19}
-                height={19}
-                stroke={1.75}
-                aria-hidden
-              />
-              <span
-                className={`flex-1 text-[15px] leading-snug ${isClaimed ? "claimed-name" : ""}`}
-                style={isClaimed ? undefined : { color: "#111827" }}
-              >
-                {task.name}
-              </span>
+        <div
+          className={`task-tile min-w-0 flex-1 ${
+            isMine ? "claimed-tile-mine" : isClaimed ? "claimed-tile-other" : ""
+          }`}
+          style={tileStyle}
+        >
+          <div className="flex w-full items-center gap-2">
+            <TaskIcon
+              className={iconMatched ? "task-food-icon" : "task-food-icon-fallback"}
+              width={19}
+              height={19}
+              stroke={1.75}
+              aria-hidden
+            />
+            <span
+              className={`min-w-0 flex-1 text-[15px] leading-snug ${isClaimed ? "claimed-name" : ""}`}
+              style={isClaimed ? undefined : { color: "#111827" }}
+            >
+              {task.name}
             </span>
 
             {isClaimed && claimant && !isPendingUnclaim && (
@@ -463,80 +454,80 @@ export default function ContributorTaskList({
                 {isMine ? "You" : firstName(claimant)}
               </span>
             )}
-          </button>
 
-          {isPendingUnclaim && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={async () => {
-                  if (!storedName) return
-                  try {
-                    await unclaimTask(task.id, storedName)
-                  } catch (error) {
-                    console.error("Failed to unclaim task:", error)
-                  } finally {
-                    setPendingUnclaimId(null)
-                  }
-                }}
-                className="text-sm font-medium text-red-600 min-h-[44px] px-1"
-              >
-                Remove?
-              </button>
-              <button
-                type="button"
-                onClick={() => setPendingUnclaimId(null)}
-                className="text-sm text-gray-500 min-h-[44px] px-1"
-              >
-                Cancel
-              </button>
+            {isPendingUnclaim && (
+              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!storedName) return
+                    try {
+                      await unclaimTask(task.id, storedName)
+                    } catch (error) {
+                      console.error("Failed to unclaim task:", error)
+                    } finally {
+                      setPendingUnclaimId(null)
+                    }
+                  }}
+                  className="text-sm font-medium text-red-600 min-h-[44px] px-1"
+                >
+                  Remove?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPendingUnclaimId(null)}
+                  className="text-sm text-gray-500 min-h-[44px] px-1"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={(e) => toggleComments(task.id, e)}
+              className={`claimed-comment relative flex-shrink-0 flex items-center justify-center w-11 h-11 ${
+                isClaimed ? "" : "text-gray-400 hover:text-gray-700"
+              }`}
+              aria-label={`${task.comments.length} comments`}
+            >
+              <MessageCircle className="w-4 h-4" />
+              {task.comments.length > 0 && (
+                <span className="absolute top-1.5 right-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {task.comments.length > 9 ? "9+" : task.comments.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {commentsOpen && (
+            <div className="pt-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+              {task.comments.map((comment) => (
+                <div key={comment.id} className="text-sm">
+                  <span className="font-medium text-gray-800">{comment.author}</span>
+                  <p className="text-gray-600">{comment.text}</p>
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newComments[task.id] || ""}
+                  onChange={(e) => setNewComments((prev) => ({ ...prev, [task.id]: e.target.value }))}
+                  placeholder="Add a comment"
+                  className="flex-1 min-h-[44px] px-3 text-sm border border-gray-200 rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddComment(task.id)}
+                  disabled={!newComments[task.id]?.trim()}
+                  className="text-sm font-medium text-blue-600 disabled:text-gray-300 min-h-[44px] px-2"
+                >
+                  Post
+                </button>
+              </div>
             </div>
           )}
-
-          <button
-            type="button"
-            onClick={(e) => toggleComments(task.id, e)}
-            className={`claimed-comment relative flex-shrink-0 flex items-center justify-center w-11 h-11 ${
-              isClaimed ? "" : "text-gray-400 hover:text-gray-700"
-            }`}
-            aria-label={`${task.comments.length} comments`}
-          >
-            <MessageCircle className="w-4 h-4" />
-            {task.comments.length > 0 && (
-              <span className="absolute top-1.5 right-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                {task.comments.length > 9 ? "9+" : task.comments.length}
-              </span>
-            )}
-          </button>
         </div>
-
-        {commentsOpen && (
-          <div className="pt-3 space-y-2">
-            {task.comments.map((comment) => (
-              <div key={comment.id} className="text-sm">
-                <span className="font-medium text-gray-800">{comment.author}</span>
-                <p className="text-gray-600">{comment.text}</p>
-              </div>
-            ))}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newComments[task.id] || ""}
-                onChange={(e) => setNewComments((prev) => ({ ...prev, [task.id]: e.target.value }))}
-                placeholder="Add a comment"
-                className="flex-1 min-h-[44px] px-3 text-sm border border-gray-200 rounded-lg"
-              />
-              <button
-                type="button"
-                onClick={() => handleAddComment(task.id)}
-                disabled={!newComments[task.id]?.trim()}
-                className="text-sm font-medium text-blue-600 disabled:text-gray-300 min-h-[44px] px-2"
-              >
-                Post
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     )
   }

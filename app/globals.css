@@ -85,7 +85,8 @@
 .claimed-tile-mine .claimed-comment {
   color: var(--claimed-tint);
 }
-.claimed-tile-mine .claimed-circle {
+.claimed-tile-mine .claimed-circle,
+.claimed-row-mine .claimed-circle {
   background: #ffffff;
   color: var(--claimed-solid-dark);
 }
@@ -101,9 +102,18 @@
 .claimed-tile-other .claimed-comment {
   color: var(--claimed-solid-dark);
 }
-.claimed-tile-other .claimed-circle {
+.claimed-tile-other .claimed-circle,
+.claimed-row-other .claimed-circle {
   background: var(--claimed-tint-mid);
   color: #ffffff;
+}
+
+.task-row-unclaimed:hover .claimed-circle {
+  border-color: var(--text-accent, #2563eb);
+}
+
+.task-row-unclaimed:hover .task-tile {
+  border-color: var(--text-accent, #2563eb);
 }
 
 .task-food-icon {
