@@ -604,10 +604,17 @@ export default function ContributorTaskList({
         style={!hasName ? { opacity: 0.45, pointerEvents: "none" } : undefined}
       >
         {stillNeeded.length > 0 && (
-          <div className="pt-3">
+          <div>
             <p
-              className="uppercase tracking-wide"
-              style={{ fontSize: 11, color: "var(--text-secondary, #64748b)" }}
+              className="uppercase"
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                marginTop: 0,
+                marginBottom: 10,
+                color: "var(--text-secondary, #64748b)",
+              }}
             >
               Still needed · {stillNeeded.length}
             </p>
@@ -618,10 +625,17 @@ export default function ContributorTaskList({
         )}
 
         {covered.length > 0 && (
-          <div className="pt-3">
+          <div>
             <p
-              className="uppercase tracking-wide"
-              style={{ fontSize: 11, color: "var(--text-secondary, #64748b)" }}
+              className="uppercase"
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.06em",
+                marginTop: stillNeeded.length > 0 ? 20 : 0,
+                marginBottom: 10,
+                color: "var(--claimed-solid-dark)",
+              }}
             >
               Covered · {covered.length}
             </p>
