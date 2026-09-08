@@ -11,31 +11,35 @@ export function PoweredByFooter({ show, className = '' }: PoweredByFooterProps) 
   if (!show) return null
   
   return (
-    <div className={`text-center py-3 px-4 text-sm text-gray-500 border-t bg-gray-50 ${className}`}>
-      <div className="flex items-center justify-center gap-2">
-        <span>Powered by</span>
-        <a 
-          href="https://sharedtask.ai" 
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 font-medium transition-colors inline-flex items-center gap-1 cursor-pointer"
-          title="Visit SharedTask.ai homepage"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          SharedTask
-        </a>
-        <span className="mx-1">•</span>
-        <span>Built by</span>
-        <a 
-          href="https://remisimmons.com" 
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 font-medium transition-colors cursor-pointer"
-        >
-          RemiSimmons.com
-        </a>
+    <div className={`w-full max-w-full overflow-x-hidden text-center py-3 px-4 text-xs sm:text-sm text-gray-500 border-t bg-gray-50 ${className}`}>
+      <div className="flex flex-col items-center sm:flex-row sm:justify-center sm:items-center gap-1 sm:gap-2 min-w-0 max-w-full">
+        <span className="inline-flex flex-nowrap items-center justify-center gap-2 min-w-0 max-w-full">
+          <span className="whitespace-nowrap">Powered by</span>
+          <a 
+            href="https://sharedtask.ai" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 font-medium transition-colors inline-flex items-center gap-1 cursor-pointer min-w-0 min-h-0 sm:min-h-[48px] [overflow-wrap:anywhere]"
+            title="Visit SharedTask.ai homepage"
+          >
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            SharedTask
+          </a>
+        </span>
+        <span className="hidden sm:inline mx-1">•</span>
+        <span className="inline-flex flex-nowrap items-center justify-center gap-2 min-w-0 max-w-full">
+          <span className="whitespace-nowrap">Built by</span>
+          <a 
+            href="https://remisimmons.com" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 font-medium transition-colors cursor-pointer min-w-0 min-h-0 sm:min-h-[48px] [overflow-wrap:anywhere]"
+          >
+            RemiSimmons.com
+          </a>
+        </span>
       </div>
     </div>
   )
