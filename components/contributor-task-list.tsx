@@ -95,7 +95,7 @@ function GuestRow({
       style={{
         padding: "8px 1.25rem",
         gap: 8,
-        borderTop: "0.5px solid var(--border, #e2e8f0)",
+        borderTop: "0.5px solid var(--border)",
       }}
     >
       <Users
@@ -113,7 +113,7 @@ function GuestRow({
         <span className="font-medium" style={{ color: "var(--claimed-solid)" }}>
           {" "}guests{" "}
         </span>
-        <span style={{ color: "var(--text-secondary, #64748b)" }}>coming</span>
+        <span style={{ color: "var(--text-secondary)" }}>coming</span>
       </p>
       <span className="guest-row-label">Your guests</span>
       <div className="guest-stepper" role="group" aria-label="Guests accompanying you">
@@ -129,8 +129,8 @@ function GuestRow({
           className="guest-stepper-value"
           style={
             count === 0
-              ? { fontSize: 11, color: "var(--text-secondary, #64748b)" }
-              : { fontSize: 12, color: "var(--foreground, #1e293b)", fontWeight: 500 }
+              ? { fontSize: 11, color: "var(--text-secondary)" }
+              : { fontSize: 12, color: "var(--foreground)", fontWeight: 500 }
           }
         >
           {count === 0 ? "Just me" : `+${count}`}
@@ -312,8 +312,8 @@ export default function ContributorTaskList({
           placeholder="Type your name…"
           maxLength={50}
           autoFocus
-          className="w-full min-w-0 px-3 text-sm border border-gray-300 rounded-lg"
-          style={{ height: compact ? 28 : 36 }}
+          className="w-full min-w-0 px-3 text-sm rounded-lg"
+          style={{ height: compact ? 28 : 36, border: "1px solid var(--border)" }}
         />
       )
     }
@@ -364,10 +364,10 @@ export default function ContributorTaskList({
           padding: "0 10px",
           gap: 6,
           borderRadius: 8,
-          border: "1px solid var(--border, #e2e8f0)",
-          color: hasName ? "var(--text-accent, #2563eb)" : "var(--text-disabled, #94a3b8)",
+          border: "1px solid var(--border)",
+          color: hasName ? "var(--text-accent)" : "var(--text-disabled)",
           pointerEvents: hasName ? "auto" : "none",
-          backgroundColor: "white",
+          backgroundColor: "var(--strip-chip-bg)",
         }}
         aria-label={`Add a ${singular}`}
       >
@@ -390,8 +390,6 @@ export default function ContributorTaskList({
     const tileStyle: React.CSSProperties = {
       padding: 11,
       borderRadius: 9,
-      backgroundColor: isClaimed ? undefined : "var(--surface-1, #ffffff)",
-      border: isClaimed ? "none" : "0.5px solid var(--border, #e2e8f0)",
     }
 
     const handleRowActivate = () => {
@@ -410,7 +408,7 @@ export default function ContributorTaskList({
         data-unclaim-row={isMine ? task.id : undefined}
         onClick={isInteractive ? handleRowActivate : undefined}
         className={`flex items-center min-w-0 w-full ${
-          isMine ? "claimed-row-mine" : isClaimed ? "claimed-row-other" : ""
+          isMine ? "claimed-row-mine" : isClaimed ? "claimed-row-other" : "open-row"
         } ${isAvailable && hasName ? "task-row-unclaimed" : ""} ${
           isInteractive ? "cursor-pointer" : ""
         }`}
@@ -424,13 +422,6 @@ export default function ContributorTaskList({
             minWidth: 21,
             minHeight: 21,
             boxSizing: "border-box",
-            border: isAvailable ? "1.5px solid var(--border-strong, #94a3b8)" : "none",
-            backgroundColor: isMine
-              ? "var(--claimed-solid)"
-              : isClaimed
-                ? "var(--claimed-tint-mid)"
-                : "transparent",
-            color: isClaimed ? "#ffffff" : undefined,
           }}
         >
           {isClaimed && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
@@ -438,7 +429,7 @@ export default function ContributorTaskList({
 
         <div
           className={`task-tile min-w-0 flex-1 ${
-            isMine ? "claimed-tile-mine" : isClaimed ? "claimed-tile-other" : ""
+            isMine ? "claimed-tile-mine" : isClaimed ? "claimed-tile-other" : "open-tile"
           }`}
           style={tileStyle}
         >
@@ -451,8 +442,7 @@ export default function ContributorTaskList({
               aria-hidden
             />
             <span
-              className={`min-w-0 flex-1 text-[15px] leading-snug ${isClaimed ? "claimed-name" : ""}`}
-              style={isClaimed ? undefined : { color: "#111827" }}
+              className={`min-w-0 flex-1 text-[15px] leading-snug ${isClaimed ? "claimed-name" : "open-name"}`}
             >
               {task.name}
             </span>
@@ -477,14 +467,14 @@ export default function ContributorTaskList({
                       setPendingUnclaimId(null)
                     }
                   }}
-                  className="text-sm font-medium text-red-600 min-h-[44px] px-1"
+                  className="task-unclaim text-sm font-medium min-h-[44px] px-1"
                 >
                   Remove?
                 </button>
                 <button
                   type="button"
                   onClick={() => setPendingUnclaimId(null)}
-                  className="text-sm text-gray-500 min-h-[44px] px-1"
+                  className="task-unclaim-cancel text-sm min-h-[44px] px-1"
                 >
                   Cancel
                 </button>
@@ -494,14 +484,12 @@ export default function ContributorTaskList({
             <button
               type="button"
               onClick={(e) => toggleComments(task.id, e)}
-              className={`claimed-comment relative flex-shrink-0 flex items-center justify-center w-11 h-11 ${
-                isClaimed ? "" : "text-gray-400 hover:text-gray-700"
-              }`}
+              className="claimed-comment relative flex-shrink-0 flex items-center justify-center w-11 h-11"
               aria-label={`${task.comments.length} comments`}
             >
               <MessageCircle className="w-4 h-4" />
               {task.comments.length > 0 && (
-                <span className="absolute top-1.5 right-1.5 bg-blue-600 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                <span className="task-comment-badge absolute top-1.5 right-1.5 text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                   {task.comments.length > 9 ? "9+" : task.comments.length}
                 </span>
               )}
@@ -512,8 +500,8 @@ export default function ContributorTaskList({
             <div className="pt-3 space-y-2" onClick={(e) => e.stopPropagation()}>
               {task.comments.map((comment) => (
                 <div key={comment.id} className="text-sm">
-                  <span className="font-medium text-gray-800">{comment.author}</span>
-                  <p className="text-gray-600">{comment.text}</p>
+                  <span className="task-comment-author font-medium">{comment.author}</span>
+                  <p className="task-comment-body">{comment.text}</p>
                 </div>
               ))}
               <div className="flex gap-2">
@@ -522,13 +510,13 @@ export default function ContributorTaskList({
                   value={newComments[task.id] || ""}
                   onChange={(e) => setNewComments((prev) => ({ ...prev, [task.id]: e.target.value }))}
                   placeholder="Add a comment"
-                  className="flex-1 min-h-[44px] px-3 text-sm border border-gray-200 rounded-lg"
+                  className="task-comment-input flex-1 min-h-[44px] px-3 text-sm rounded-lg"
                 />
                 <button
                   type="button"
                   onClick={() => handleAddComment(task.id)}
                   disabled={!newComments[task.id]?.trim()}
-                  className="text-sm font-medium text-blue-600 disabled:text-gray-300 min-h-[44px] px-2"
+                  className="task-comment-post text-sm font-medium min-h-[44px] px-2"
                 >
                   Post
                 </button>
@@ -547,8 +535,8 @@ export default function ContributorTaskList({
         className="identity-strip sticky top-0"
         style={{
           zIndex: 20,
-          borderTop: "0.5px solid var(--border, #e2e8f0)",
-          borderBottom: "0.5px solid var(--border, #e2e8f0)",
+          borderTop: "0.5px solid var(--border)",
+          borderBottom: "0.5px solid var(--border)",
         }}
       >
         <div
@@ -561,7 +549,7 @@ export default function ContributorTaskList({
         >
           <div className="min-w-0 flex-1">{renderNameControl(isStuck)}</div>
           {isStuck && (
-            <span className="whitespace-nowrap" style={{ fontSize: 12, color: "var(--text-secondary, #64748b)" }}>
+            <span className="whitespace-nowrap" style={{ fontSize: 12, color: "var(--text-secondary)" }}>
               {claimedCount} of {totalCount}
             </span>
           )}
@@ -586,13 +574,13 @@ export default function ContributorTaskList({
             placeholder={`Add a ${singular} or Just Coming`}
             maxLength={100}
             autoFocus
-            className="flex-1 min-h-[44px] text-[15px] border-0 border-b border-gray-200 rounded-none px-0 focus:outline-none focus:border-blue-500 bg-transparent"
+            className="task-add-input flex-1 min-h-[44px] text-[15px] border-0 border-b rounded-none px-0 focus:outline-none bg-transparent"
           />
           <button
             type="submit"
             disabled={!newTaskName.trim()}
             className="text-sm font-medium min-h-[44px] px-2"
-            style={{ color: newTaskName.trim() ? "var(--text-accent, #2563eb)" : "var(--text-disabled, #94a3b8)" }}
+            style={{ color: newTaskName.trim() ? "var(--text-accent)" : "var(--text-disabled)" }}
           >
             Add
           </button>
@@ -602,7 +590,8 @@ export default function ContributorTaskList({
               setShowAddInput(false)
               setNewTaskName("")
             }}
-            className="text-sm text-gray-400 min-h-[44px] px-1"
+            className="text-sm min-h-[44px] px-1"
+            style={{ color: "var(--text-disabled)" }}
           >
             Cancel
           </button>
@@ -623,7 +612,7 @@ export default function ContributorTaskList({
                 letterSpacing: "0.06em",
                 marginTop: 20,
                 marginBottom: 10,
-                color: "var(--text-secondary, #64748b)",
+                color: "var(--text-secondary)",
               }}
             >
               Still needed · {stillNeeded.length}

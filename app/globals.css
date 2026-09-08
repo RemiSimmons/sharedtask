@@ -59,15 +59,31 @@
   --claimed-text-dark: #27500A;
   --claimed-other-bg: var(--claimed-tint);
   --claimed-other-text: var(--claimed-text-dark);
+  --open-bg: #F4F8ED;
+  --open-border: #DFEBCE;
+  --open-text: #2E3A22;
+  --open-icon: #4F6B33;
+  --open-muted: #7E9963;
+  --open-circle: #B4C99A;
   --strip-bg: #F1EFE8;
   --strip-text: #5F5E5A;
   --strip-chip-bg: #ffffff;
+  --text-secondary: #64748b;
+  --text-accent: #2563eb;
+  --text-disabled: #94a3b8;
+  --border-strong: #94a3b8;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --claimed-other-bg: #173404;
     --claimed-other-text: #C0DD97;
+    --open-bg: #1E2A16;
+    --open-border: #35472A;
+    --open-text: #DCE8CE;
+    --open-icon: #9DBB7C;
+    --open-muted: #8AAB6E;
+    --open-circle: #6B8554;
     --strip-bg: #2C2C2A;
     --strip-text: #B4B2A9;
     --strip-chip-bg: rgba(255, 255, 255, 0.12);
@@ -85,6 +101,28 @@
 .claimed-tile-mine .claimed-comment {
   color: var(--claimed-tint);
 }
+.claimed-tile-mine .task-comment-author {
+  color: #ffffff;
+}
+.claimed-tile-mine .task-comment-body {
+  color: var(--claimed-tint);
+}
+.claimed-tile-mine .task-comment-input {
+  border-color: var(--claimed-tint);
+  color: #ffffff;
+}
+.claimed-tile-mine .task-comment-post {
+  color: #ffffff;
+}
+.claimed-tile-mine .task-comment-post:disabled {
+  color: var(--claimed-tint);
+}
+.claimed-tile-mine .task-unclaim {
+  color: var(--destructive);
+}
+.claimed-tile-mine .task-unclaim-cancel {
+  color: var(--claimed-tint);
+}
 .claimed-tile-mine .claimed-circle {
   background: #ffffff;
   color: var(--claimed-solid-dark);
@@ -92,6 +130,7 @@
 .claimed-row-mine .claimed-circle {
   background: var(--claimed-solid);
   color: #ffffff;
+  border: none;
 }
 
 .claimed-tile-other {
@@ -109,29 +148,105 @@
 .claimed-row-other .claimed-circle {
   background: var(--claimed-tint-mid);
   color: #ffffff;
+  border: none;
+}
+.claimed-tile-other .task-comment-author {
+  color: var(--claimed-other-text);
+}
+.claimed-tile-other .task-comment-body {
+  color: var(--claimed-solid-dark);
+}
+.claimed-tile-other .task-comment-input {
+  border-color: var(--claimed-tint-mid);
+  color: var(--claimed-other-text);
+}
+.claimed-tile-other .task-comment-post {
+  color: var(--claimed-solid-dark);
+}
+.claimed-tile-other .task-comment-post:disabled {
+  color: var(--claimed-tint-mid);
+}
+.claimed-tile-other .task-unclaim {
+  color: var(--destructive);
+}
+.claimed-tile-other .task-unclaim-cancel {
+  color: var(--claimed-solid-dark);
 }
 
-.task-row-unclaimed:hover .claimed-circle {
-  border-color: var(--text-accent, #2563eb);
+.open-tile {
+  background: var(--open-bg);
+  border: 1px solid var(--open-border);
+}
+.open-tile .open-name {
+  color: var(--open-text);
+}
+.open-row .claimed-circle {
+  border: 1.5px solid var(--open-circle);
+  background: transparent;
+}
+.open-row .task-food-icon,
+.open-row .task-food-icon-fallback {
+  color: var(--open-icon);
+  opacity: 1;
+}
+.open-row .claimed-comment {
+  color: var(--open-muted);
+}
+.open-row .claimed-comment:hover {
+  color: var(--open-icon);
+}
+.task-comment-badge {
+  background: var(--text-accent);
+  color: var(--primary-foreground);
+}
+.open-tile .task-comment-author {
+  color: var(--open-text);
+}
+.open-tile .task-comment-body {
+  color: var(--open-muted);
+}
+.open-tile .task-comment-input {
+  border-color: var(--open-border);
+  color: var(--open-text);
+}
+.open-tile .task-comment-post {
+  color: var(--claimed-solid);
+}
+.open-tile .task-comment-post:disabled {
+  color: var(--open-muted);
+}
+.open-tile .task-unclaim {
+  color: var(--destructive);
+}
+.open-tile .task-unclaim-cancel {
+  color: var(--open-muted);
 }
 
+.task-row-unclaimed:hover .claimed-circle,
 .task-row-unclaimed:hover .task-tile {
-  border-color: var(--text-accent, #2563eb);
+  border-color: var(--claimed-solid);
 }
 
-.task-food-icon {
-  width: 19px;
-  height: 19px;
-  flex-shrink: 0;
-  color: var(--text-secondary, #64748b);
+.task-comment-input {
+  border: 1px solid var(--border);
+  background: transparent;
 }
 
+.task-add-input {
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.task-add-input:focus {
+  border-bottom-color: var(--text-accent);
+}
+
+.task-food-icon,
 .task-food-icon-fallback {
   width: 19px;
   height: 19px;
   flex-shrink: 0;
-  color: var(--border-strong, #64748b);
-  opacity: 0.55;
+  color: var(--open-icon);
 }
 
 .claimed-tile-mine .task-food-icon,
