@@ -283,6 +283,38 @@ export type Database = {
           },
         ]
       }
+      project_guests: {
+        Row: {
+          contributor_name: string
+          guest_count: number
+          id: string
+          project_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          contributor_name: string
+          guest_count?: number
+          id?: string
+          project_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          contributor_name?: string
+          guest_count?: number
+          id?: string
+          project_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_guests_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_assignments: {
         Row: {
           claimed_at: string | null
@@ -838,6 +870,7 @@ export interface UpdateUserTrial {
 
 // Type aliases for easier imports
 export type Project = Database['public']['Tables']['projects']['Row']
+export type ProjectGuest = Database['public']['Tables']['project_guests']['Row']
 export type Task = Database['public']['Tables']['tasks']['Row']
 export type TaskAssignment = Database['public']['Tables']['task_assignments']['Row']
 export type TaskComment = Database['public']['Tables']['task_comments']['Row']

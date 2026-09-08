@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from "react"
-import { Check, MessageCircle, Plus } from "lucide-react"
+import { Check, MessageCircle, Minus, Plus, Users } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTask } from "@/contexts/TaskContextWithSupabase"
 import { getInitials, getTaskLabels } from "@/lib/task-labels"
@@ -18,6 +18,135 @@ function firstName(name: string) {
   return name.trim().split(/\s+/)[0] || name
 }
 
+function GuestRow({
+  storedName,
+  tasks,
+  guestCounts,
+  updateGuestCount,
+}: {
+  storedName: string
+  tasks: Task[]
+  guestCounts: Record<string, number>
+  updateGuestCount: (name: string, count: number) => Promise<void>
+}) {
+  const serverCount = guestCounts[storedName] ?? 0
+  const [count, setCount] = useState(serverCount)
+  const countRef = useRef(count)
+  const pendingRef = useRef(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const saveRef = useRef(updateGuestCount)
+  const nameRef = useRef(storedName)
+  const saveIdRef = useRef(0)
+
+  countRef.current = count
+  saveRef.current = updateGuestCount
+  nameRef.current = storedName
+
+  useEffect(() => {
+    if (!pendingRef.current) setCount(serverCount)
+  }, [serverCount])
+
+  useEffect(() => {
+    pendingRef.current = false
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    setCount(guestCounts[storedName] ?? 0)
+  }, [storedName])
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+      if (pendingRef.current) {
+        void saveRef.current(nameRef.current, countRef.current)
+      }
+    }
+  }, [])
+
+  const distinctClaimants = new Set(
+    tasks.flatMap((task) => (task.status === "available" ? [] : task.claimedBy || []))
+  ).size
+  const othersGuests = Object.entries(guestCounts).reduce((sum, [name, extra]) => {
+    if (name === storedName) return sum
+    return sum + extra
+  }, 0)
+  const totalComing = distinctClaimants + othersGuests + count
+
+  const scheduleSave = (next: number) => {
+    const clamped = Math.max(0, Math.min(20, next))
+    pendingRef.current = true
+    setCount(clamped)
+    countRef.current = clamped
+    if (timerRef.current) clearTimeout(timerRef.current)
+    const saveId = ++saveIdRef.current
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null
+      void updateGuestCount(storedName, clamped).finally(() => {
+        if (saveIdRef.current === saveId) pendingRef.current = false
+      })
+    }, 500)
+  }
+
+  return (
+    <div
+      className="flex items-center"
+      style={{
+        padding: "8px 1.25rem",
+        gap: 8,
+        borderTop: "0.5px solid var(--border, #e2e8f0)",
+      }}
+    >
+      <Users
+        className="flex-shrink-0"
+        width={16}
+        height={16}
+        strokeWidth={2}
+        style={{ color: "var(--claimed-solid)" }}
+        aria-hidden
+      />
+      <p className="min-w-0 flex-1" style={{ fontSize: 13, lineHeight: "16px" }}>
+        <span className="font-medium" style={{ color: "var(--claimed-solid)" }}>
+          {totalComing}
+        </span>
+        <span className="font-medium" style={{ color: "var(--claimed-solid)" }}>
+          {" "}guests{" "}
+        </span>
+        <span style={{ color: "var(--text-secondary, #64748b)" }}>coming</span>
+      </p>
+      <span className="guest-row-label">Your guests</span>
+      <div className="guest-stepper" role="group" aria-label="Guests accompanying you">
+        <button
+          type="button"
+          onClick={() => scheduleSave(count - 1)}
+          disabled={count <= 0}
+          aria-label="Decrease guests"
+        >
+          <Minus className="w-3 h-3" strokeWidth={2.5} />
+        </button>
+        <span
+          className="guest-stepper-value"
+          style={
+            count === 0
+              ? { fontSize: 11, color: "var(--text-secondary, #64748b)" }
+              : { fontSize: 12, color: "var(--foreground, #1e293b)", fontWeight: 500 }
+          }
+        >
+          {count === 0 ? "Just me" : `+${count}`}
+        </span>
+        <button
+          type="button"
+          onClick={() => scheduleSave(count + 1)}
+          disabled={count >= 20}
+          aria-label="Increase guests"
+        >
+          <Plus className="w-3 h-3" strokeWidth={2.5} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function ContributorTaskList({
   onClaimTask,
   onAddOwnTask,
@@ -31,6 +160,8 @@ export default function ContributorTaskList({
     currentContributorName,
     setCurrentContributorName,
     unclaimTask,
+    guestCounts,
+    updateGuestCount,
   } = useTask()
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [newComments, setNewComments] = useState<Record<string, string>>({})
@@ -426,6 +557,14 @@ export default function ContributorTaskList({
           )}
           {renderAddButton(isStuck)}
         </div>
+        {hasName && (
+          <GuestRow
+            storedName={storedName}
+            tasks={tasks}
+            guestCounts={guestCounts}
+            updateGuestCount={updateGuestCount}
+          />
+        )}
       </div>
 
       {showAddInput && hasName && (

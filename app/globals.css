@@ -126,6 +126,63 @@
   color: var(--strip-text);
 }
 
+.guest-row-label {
+  font-size: 11px;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 419px) {
+  .guest-row-label {
+    display: none;
+  }
+}
+
+.guest-stepper {
+  display: inline-flex;
+  align-items: stretch;
+  height: 26px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--strip-chip-bg, #ffffff);
+  border: 0.5px solid var(--border, #e2e8f0);
+  border-radius: 6px;
+}
+
+.guest-stepper button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--foreground, #1e293b);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.guest-stepper button:disabled {
+  color: var(--text-disabled, #94a3b8);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.guest-stepper-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 26px;
+  border-left: 0.5px solid var(--border, #e2e8f0);
+  border-right: 0.5px solid var(--border, #e2e8f0);
+}
+
 @layer base {
   * {
     @apply border-border/50;

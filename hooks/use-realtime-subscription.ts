@@ -134,6 +134,23 @@ export function useRealtimeSubscription({
           }
         }
       )
+      // Subscribe to per-contributor guest counts
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_guests',
+          filter: `project_id=eq.${projectId}`
+        },
+        async (payload) => {
+          console.log('🔄 Realtime: Project guests changed', payload.eventType)
+          if (!isEditing) {
+            await onTasksChangeRef.current()
+            setLastUpdate(new Date())
+          }
+        }
+      )
       // Subscribe to project settings changes
       .on(
         'postgres_changes',

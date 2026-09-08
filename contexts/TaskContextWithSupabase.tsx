@@ -88,6 +88,10 @@ interface TaskContextType {
   updateContributorHeadcount: (contributorName: string, headcount: number) => Promise<void>
   getTotalHeadcount: () => number
   getContributorHeadcounts: () => Map<string, number>
+
+  // Per-contributor extra guests (not including the contributor)
+  guestCounts: Record<string, number>
+  updateGuestCount: (contributorName: string, guestCount: number) => Promise<void>
   
   // Quick claiming functions
   setCurrentContributorName: (name: string) => void
@@ -111,6 +115,7 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
   const { data: session } = useSession()
   const [tasks, setTasks] = useState<Task[]>([])
   const [assignments, setAssignments] = useState<TaskAssignment[]>([])
+  const [guestCounts, setGuestCounts] = useState<Record<string, number>>({})
   const [projectSettings, setProjectSettings] = useState<ProjectSettings>({
     projectName: "",
     projectDescription: undefined,
@@ -376,6 +381,22 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
 
       // Store assignments for headcount tracking
       setAssignments(assignmentsData || [])
+
+      const { data: guestsData, error: guestsError } = await supabase
+        .from('project_guests')
+        .select('contributor_name, guest_count')
+        .eq('project_id', projectToUse.id)
+
+      if (guestsError) {
+        console.warn('Failed to fetch project guests:', guestsError)
+        setGuestCounts({})
+      } else {
+        const next: Record<string, number> = {}
+        for (const row of guestsData || []) {
+          next[row.contributor_name] = row.guest_count
+        }
+        setGuestCounts(next)
+      }
       
       // Convert to UI format
       const uiTasks = (tasksData || []).map(task => 
@@ -1045,6 +1066,32 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     return Array.from(headcounts.values()).reduce((sum, count) => sum + count, 0)
   }
 
+  const updateGuestCount = async (contributorName: string, guestCount: number) => {
+    if (!currentProject) throw new Error('No project loaded')
+    const trimmed = contributorName.trim()
+    if (!trimmed) throw new Error('Contributor name is required')
+    const clamped = Math.max(0, Math.min(20, Math.round(guestCount)))
+
+    setGuestCounts((prev) => ({ ...prev, [trimmed]: clamped }))
+
+    const { error } = await supabase
+      .from('project_guests')
+      .upsert(
+        {
+          project_id: currentProject.id,
+          contributor_name: trimmed,
+          guest_count: clamped,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'project_id,contributor_name' }
+      )
+
+    if (error) {
+      await refreshTasks()
+      handleSupabaseError(error, 'updating guest count')
+    }
+  }
+
   // Calculate active contributors
   // Use project contributor names if available, otherwise fall back to task assignments
   const activeContributors = Array.from(
@@ -1110,6 +1157,8 @@ export function TaskProvider({ children, projectId }: TaskProviderProps) {
     updateContributorHeadcount,
     getTotalHeadcount,
     getContributorHeadcounts,
+    guestCounts,
+    updateGuestCount,
     
     // Quick claiming functions
     setCurrentContributorName: setCurrentContributorNameHandler,
