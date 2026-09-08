@@ -85,10 +85,13 @@
 .claimed-tile-mine .claimed-comment {
   color: var(--claimed-tint);
 }
-.claimed-tile-mine .claimed-circle,
-.claimed-row-mine .claimed-circle {
+.claimed-tile-mine .claimed-circle {
   background: #ffffff;
   color: var(--claimed-solid-dark);
+}
+.claimed-row-mine .claimed-circle {
+  background: var(--claimed-solid);
+  color: #ffffff;
 }
 
 .claimed-tile-other {

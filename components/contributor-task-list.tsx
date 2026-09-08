@@ -409,20 +409,28 @@ export default function ContributorTaskList({
         key={task.id}
         data-unclaim-row={isMine ? task.id : undefined}
         onClick={isInteractive ? handleRowActivate : undefined}
-        className={`flex items-center min-w-0 ${
+        className={`flex items-center min-w-0 w-full ${
           isMine ? "claimed-row-mine" : isClaimed ? "claimed-row-other" : ""
         } ${isAvailable && hasName ? "task-row-unclaimed" : ""} ${
           isInteractive ? "cursor-pointer" : ""
         }`}
-        style={{ gap: 12 }}
+        style={{ gap: 12, padding: 0, margin: 0 }}
       >
         <span
           className="claimed-circle flex-shrink-0 flex items-center justify-center rounded-full"
           style={{
             width: 21,
             height: 21,
+            minWidth: 21,
+            minHeight: 21,
+            boxSizing: "border-box",
             border: isAvailable ? "1.5px solid var(--border-strong, #94a3b8)" : "none",
-            backgroundColor: isClaimed ? undefined : "transparent",
+            backgroundColor: isMine
+              ? "var(--claimed-solid)"
+              : isClaimed
+                ? "var(--claimed-tint-mid)"
+                : "transparent",
+            color: isClaimed ? "#ffffff" : undefined,
           }}
         >
           {isClaimed && <Check className="w-2.5 h-2.5" strokeWidth={3} />}
