@@ -592,7 +592,7 @@ function BulkAddSection() {
             disabled={isAdding}
           />
           <p className="text-xs text-gray-600 mt-1">
-            These details will be added to all tasks entered above
+            These details will be added to all tasks entered above and shown on the host dashboard, not the guest view.
           </p>
         </div>
       </div>
